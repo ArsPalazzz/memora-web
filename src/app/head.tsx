@@ -3,7 +3,23 @@ export default function Head() {
     <>
       <link rel="manifest" href="/manifest.json" />
       <meta name="theme-color" content="#317EFB" />
-      <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent"
+      />
+
+      <link
+        rel="apple-touch-icon"
+        sizes="192x192"
+        href="/icons/logo-192x192.png"
+      />
+      <link
+        rel="apple-touch-icon"
+        sizes="512x512"
+        href="/icons/logo-512x512.png"
+      />
     </>
   );
 }
