@@ -1,0 +1,672 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/utils/auth";
+import { FullPageLoader, Loader } from "./ui/Loader";
+import {
+  Box,
+  Card,
+  Divider,
+  Grid,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/material";
+import Header from "./layout/Header";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { USER_DESK, USER_DESKS } from "@/routes/react-query";
+import { useProtectedRequest } from "@/utils/protected";
+import ScreenRotationIcon from "@mui/icons-material/ScreenRotation";
+import SettingsIcon from "@mui/icons-material/Settings";
+import {
+  archiveDeskRequest,
+  createCardRequest,
+  deleteDeskRequest,
+  fetchDeskRequest,
+  updateCardRequest,
+  updateDeskRequest,
+  updateDeskSettingsRequest,
+} from "@/services/desk/desk";
+import BottomNav from "./layout/BottomNav";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import NewCardModal from "./modals/NewCard/NewCard.modal";
+import { useForm } from "react-hook-form";
+import {
+  createCardSchema,
+  CreateCardValues,
+} from "@/schemas/createCard.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthContext } from "@/context/AuthContext";
+import { notifyError, notifySuccess } from "@/utils/notification";
+import React from "react";
+import DeskSettingsModal from "./modals/DeskSettings/DeskSettingsCardsPerSession.modal";
+import DeskSettingsCardsPerSessionModal from "./modals/DeskSettings/DeskSettingsCardsPerSession.modal";
+import { DeskSettings } from "@/services/desk/desk.types";
+import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettingsCardOrientation.modal";
+import { CARD_ORIENTATION } from "@/services/desk/desk.const";
+import {
+  updateDeskSchema,
+  UpdateDeskValues,
+} from "@/schemas/updateDesk.schema";
+import EditDeskModal from "./modals/EditDesk/EditDesk.modal";
+import DeleteDeskModal from "./modals/DeleteDesk/DeleteDesk.modal";
+import { ROUTES } from "@/routes/next";
+import EditCardModal from "./modals/EditCard/EditCard.modal";
+import {
+  updateCardSchema,
+  UpdateCardValues,
+} from "@/schemas/updateCard.schema";
+
+const BOTTOM_NAV_HEIGHT = 56; // MUI BottomNavigation
+const PLAY_BUTTON_HEIGHT = 64;
+
+export default function DeskClient() {
+  const params = useParams() as { id: string };
+  const { loading, authenticated } = useAuth();
+  const { accessToken } = useAuthContext();
+  const queryClient = useQueryClient();
+  const { call } = useProtectedRequest();
+
+  const sub = params.id;
+
+  const { data: desk, isLoading: isDeskLoading } = useQuery({
+    queryKey: [USER_DESK, sub],
+    enabled: !!sub,
+    queryFn: async () => call((token) => fetchDeskRequest(sub, token)),
+  });
+
+  const [anchorMenu, setAnchorMenu] = useState<Element | null>(null);
+  const openMenu = Boolean(anchorMenu);
+
+  const handleMenuOpen = (event) => setAnchorMenu(event.currentTarget);
+  const handleMenuClose = () => setAnchorMenu(null);
+
+  const [createCardModal, setCreateCardModal] = useState(false);
+  const [updateDeskModal, setUpdateDeskModal] = useState(false);
+  const [updateCardModalSub, setUpdateCardModalSub] = useState("");
+  const [deleteDeskModal, setDeleteDeskModal] = useState(false);
+  const [openSheet, setOpenSheet] = useState<null | string>(null);
+
+  const router = useRouter();
+
+  const {
+    handleSubmit: handleSubmitCreateCard,
+    register: registerCreateCard,
+    reset: resetCreateCard,
+    formState: { errors: errorsCreateCard },
+  } = useForm<CreateCardValues>({
+    resolver: zodResolver(createCardSchema),
+    mode: "onChange",
+  });
+
+  const {
+    handleSubmit: handleSubmitUpdateDesk,
+    register: registerUpdateDesk,
+    reset: resetUpdateDesk,
+    formState: { errors: errorsUpdateDesk },
+  } = useForm<UpdateDeskValues>({
+    resolver: zodResolver(updateDeskSchema),
+    mode: "onChange",
+    defaultValues: { title: "", description: "" },
+  });
+
+  const {
+    handleSubmit: handleSubmitUpdateCard,
+    register: registerUpdateCard,
+    reset: resetUpdateCard,
+    formState: { errors: errorsUpdateCard },
+  } = useForm<UpdateCardValues>({
+    resolver: zodResolver(updateCardSchema),
+    mode: "onChange",
+    defaultValues: { front: "", back: "" },
+  });
+
+  const onCreateSubmit = (data: CreateCardValues) => {
+    createCardMutation.mutate({ data, token: accessToken! });
+  };
+
+  const onUpdateDeskSubmit = (data: UpdateDeskValues) => {
+    updateDeskMutation.mutate({ data, token: accessToken! });
+  };
+
+  const onUpdateCardSubmit = (data: UpdateCardValues) => {
+    updateCardMutation.mutate({ data, token: accessToken! });
+  };
+
+  const onArchiveDeskSubmit = () => {
+    archiveDeskMutation.mutate({ token: accessToken! });
+  };
+
+  const onUpdateSettingsSubmit = (data: DeskSettings) => {
+    updateDeskSettingsMutation.mutate({ data, token: accessToken! });
+  };
+
+  const createCardMutation = useMutation({
+    mutationFn: (payload: { data: CreateCardValues; token: string }) => {
+      const data = { desk_sub: sub, ...payload.data };
+
+      return call(() => createCardRequest(data, payload.token));
+    },
+    onSuccess: () => {
+      resetCreateCard();
+      setCreateCardModal(false);
+      notifySuccess(`Card created successfully`);
+
+      queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const updateDeskSettingsMutation = useMutation({
+    mutationFn: (payload: { data: DeskSettings; token: string }) => {
+      const data = { desk_sub: sub, settings: payload.data };
+
+      return call(() => updateDeskSettingsRequest(data, payload.token));
+    },
+    onSuccess: () => {
+      notifySuccess(`Desk settings updated successfully`);
+
+      queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const updateDeskMutation = useMutation({
+    mutationFn: (payload: { data: UpdateDeskValues; token: string }) => {
+      const data = { desk_sub: sub, payload: payload.data };
+
+      return call(() => updateDeskRequest(data, payload.token));
+    },
+    onSuccess: () => {
+      resetUpdateDesk();
+      setUpdateDeskModal(false);
+      notifySuccess(`Desk updated successfully`);
+
+      queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
+      queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const updateCardMutation = useMutation({
+    mutationFn: (payload: { data: UpdateCardValues; token: string }) => {
+      const data = { card_sub: updateCardModalSub, payload: payload.data };
+
+      return call(() => updateCardRequest(data, payload.token));
+    },
+    onSuccess: () => {
+      resetUpdateCard();
+      setUpdateCardModalSub("");
+      notifySuccess(`Card updated successfully`);
+
+      queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const archiveDeskMutation = useMutation({
+    mutationFn: (payload: { token: string }) => {
+      const data = { desk_sub: sub };
+
+      return call(() => archiveDeskRequest(data, payload.token));
+    },
+    onSuccess: () => {
+      setUpdateDeskModal(false);
+
+      router.replace(ROUTES.HOME);
+
+      notifySuccess(`Desk archived successfully`);
+
+      queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
+      queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const cardOrientation =
+    desk &&
+    desk.settings.card_orientation.charAt(0).toUpperCase() +
+      desk.settings.card_orientation.slice(1);
+
+  const settingsItems = [
+    {
+      key: "cardsPerSession",
+      icon: <SettingsIcon />,
+      title: "Cards per session",
+      subtitle: "How many cards to show each session",
+      value: desk?.settings.cards_per_session,
+    },
+    {
+      key: "cardOrientation",
+      icon: <ScreenRotationIcon />,
+      title: "Card orientation",
+      subtitle: "How cards should be displayed",
+      value: cardOrientation,
+    },
+  ];
+
+  useEffect(() => {
+    if (desk && updateDeskModal) {
+      resetUpdateDesk({
+        title: desk.title,
+        description: desk.description,
+      });
+    }
+  }, [desk, updateDeskModal, resetUpdateDesk]);
+
+  useEffect(() => {
+    if (desk && updateCardModalSub) {
+      const el = desk.cards.filter(
+        (item) => item.sub === updateCardModalSub
+      )[0];
+
+      resetUpdateCard({
+        front: el.front_side,
+        back: el.back_side,
+      });
+    }
+  }, [desk, updateCardModalSub, resetUpdateCard]);
+
+  if (loading) return <FullPageLoader />;
+
+  if (!authenticated) return null;
+
+  return (
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
+          position: "relative",
+        }}
+      >
+        <Header
+          title="Desks"
+          backIcon
+          RightButton={
+            <>
+              <IconButton onClick={(e) => handleMenuOpen(e)}>
+                <MoreHorizIcon sx={{ color: "white", fontSize: 30 }} />
+              </IconButton>
+
+              <Menu
+                anchorEl={anchorMenu}
+                open={openMenu}
+                onClose={handleMenuClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+              >
+                <MenuItem
+                  sx={{
+                    display: "flex",
+                    gap: 0.5,
+                    alignItems: "center",
+                  }}
+                  onClick={() => {
+                    setAnchorMenu(null);
+                    setCreateCardModal(true);
+                  }}
+                >
+                  <AddIcon sx={{ fontSize: 20 }} />
+                  <Typography>Add card</Typography>
+                </MenuItem>
+
+                <MenuItem
+                  sx={{
+                    display: "flex",
+                    gap: 0.5,
+                    alignItems: "center",
+                  }}
+                  onClick={() => {
+                    setAnchorMenu(null);
+                    setUpdateDeskModal(true);
+                  }}
+                >
+                  <EditIcon sx={{ fontSize: 20 }} />
+                  <Typography>Edit desk</Typography>
+                </MenuItem>
+
+                <MenuItem
+                  sx={{
+                    display: "flex",
+                    gap: 0.5,
+                    alignItems: "center",
+                    color: "red",
+                  }}
+                  onClick={() => {
+                    setAnchorMenu(null);
+                    setDeleteDeskModal(true);
+                  }}
+                >
+                  <DeleteIcon sx={{ fontSize: 20 }} />
+                  <Typography>Archive desk</Typography>
+                </MenuItem>
+              </Menu>
+            </>
+          }
+        />
+        <Box
+          sx={{
+            flex: 1,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: "auto",
+              paddingBottom: `${BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16}px`,
+            }}
+          >
+            {isDeskLoading && <Loader />}
+
+            {desk && (
+              <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                    width: "100%",
+                  }}
+                >
+                  <Grid item xs={12} mb={4}>
+                    <Typography variant="h4" fontWeight={600}>
+                      {desk.title}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} mb={1}>
+                    <Typography variant="h6" fontWeight={600}>
+                      Cards
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    {!desk.cards?.length && (
+                      <Typography sx={{ display: "inline" }}>
+                        You don't have any cards yet.{" "}
+                        <Typography
+                          component="span"
+                          sx={{
+                            display: "inline",
+                            cursor: "pointer",
+                            color: "#5961d3",
+                          }}
+                          fontWeight={700}
+                          onClick={() => {
+                            setAnchorMenu(null);
+                            setCreateCardModal(true);
+                          }}
+                        >
+                          Add one?
+                        </Typography>
+                      </Typography>
+                    )}
+
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 0.5,
+                        overflowX: "auto",
+                        overflowY: "hidden",
+                        py: 1,
+                        pb: 2,
+                        px: 0.5,
+                        scrollSnapType: "x proximity",
+                        width: "100%",
+                        boxSizing: "border-box",
+                        "&::-webkit-scrollbar": { display: "none" },
+                        overscrollBehaviorX: "contain",
+                      }}
+                    >
+                      {desk.cards?.map((card) => (
+                        <Card
+                          key={card.sub}
+                          sx={{
+                            flex: "0 0 44vw",
+                            maxWidth: "44vw",
+                            height: "44vw",
+                            scrollSnapAlign: "start",
+                            boxShadow: 3,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            px: 2,
+                            py: 3,
+                            textAlign: "center",
+                            transition: "0.25s ease",
+                            "&:hover": {
+                              transform: "translateY(-4px)",
+                              boxShadow: 6,
+                            },
+                          }}
+                          onClick={() => setUpdateCardModalSub(card.sub)}
+                        >
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 600, mb: 1 }}
+                          >
+                            {card.front_side}
+                          </Typography>
+
+                          {/* Divider */}
+                          <Box
+                            sx={{
+                              width: "60%",
+                              height: "2px",
+                              bgcolor: "divider",
+                              my: 1,
+                              borderRadius: 1,
+                            }}
+                          />
+
+                          {/* Back side */}
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "text.secondary" }}
+                          >
+                            {card.back_side}
+                          </Typography>
+                        </Card>
+                      ))}
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12} mb={1}>
+                    <Typography variant="h6" fontWeight={600}>
+                      Settings
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} mb={2}>
+                    <List
+                      sx={{
+                        width: "100%",
+                        bgcolor: "background.paper",
+                        borderRadius: 2,
+                        overflow: "hidden",
+                      }}
+                    >
+                      {settingsItems.map((item, index) => (
+                        <React.Fragment key={item.key}>
+                          <ListItemButton
+                            onClick={() => setOpenSheet(item.key)}
+                            sx={{
+                              py: 2,
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <ListItemIcon sx={{ minWidth: 40 }}>
+                                {item.icon}
+                              </ListItemIcon>
+
+                              <ListItemText
+                                primary={item.title}
+                                secondary={item.subtitle}
+                                primaryTypographyProps={{ fontWeight: 600 }}
+                              />
+                            </Box>
+
+                            <Typography color="text.secondary" fontWeight={600}>
+                              {item.value}
+                            </Typography>
+                          </ListItemButton>
+
+                          {index !== 1 && <Divider component="li" />}
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  </Grid>
+                </Box>
+              </Grid>
+            )}
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: `${BOTTOM_NAV_HEIGHT}px`,
+            left: 0,
+            right: 0,
+            px: 2,
+            pb: 1,
+            zIndex: 1200,
+            bgcolor: "background.default",
+          }}
+        >
+          <Card
+            sx={{
+              py: 1.5,
+              textAlign: "center",
+              fontWeight: 700,
+              boxShadow: 4,
+              borderRadius: 2,
+              bgcolor: desk?.cards.length ? "#5961d3" : "#5a5a5a",
+              color: "white",
+              "&:active": {
+                transform: desk?.cards.length ? "scale(0.98)" : "scale(1)",
+              },
+              cursor: desk?.cards.length ? "pointer" : "not-allowed",
+            }}
+            onClick={() => {
+              if (!desk?.cards.length) return;
+              router.push(`/desk/${sub}/play`);
+            }}
+          >
+            Play
+          </Card>
+        </Box>
+
+        <BottomNav />
+      </Box>
+      {createCardModal && (
+        <NewCardModal
+          open={createCardModal}
+          onClose={() => setCreateCardModal(false)}
+          errors={errorsCreateCard}
+          register={registerCreateCard}
+          onSubmit={handleSubmitCreateCard(onCreateSubmit)}
+        />
+      )}
+
+      {desk && updateDeskModal && (
+        <EditDeskModal
+          open={updateDeskModal}
+          onClose={() => setUpdateDeskModal(false)}
+          errors={errorsUpdateDesk}
+          register={registerUpdateDesk}
+          onSubmit={handleSubmitUpdateDesk(onUpdateDeskSubmit)}
+        />
+      )}
+
+      {desk && updateCardModalSub && (
+        <EditCardModal
+          open={!!updateCardModalSub}
+          onClose={() => setUpdateCardModalSub("")}
+          errors={errorsUpdateCard}
+          register={registerUpdateCard}
+          onSubmit={handleSubmitUpdateCard(onUpdateCardSubmit)}
+        />
+      )}
+
+      {desk && deleteDeskModal && (
+        <DeleteDeskModal
+          open={deleteDeskModal}
+          onClose={() => setDeleteDeskModal(false)}
+          onSubmit={onArchiveDeskSubmit}
+        />
+      )}
+
+      {desk && openSheet === "cardsPerSession" && (
+        <DeskSettingsCardsPerSessionModal
+          setOpenSheet={setOpenSheet}
+          currentValue={desk?.settings.cards_per_session}
+          onClose={(value: number) => {
+            if (value === desk.settings.cards_per_session) return;
+
+            onUpdateSettingsSubmit({
+              ...desk.settings,
+              cards_per_session: value,
+            });
+          }}
+        />
+      )}
+
+      {desk && openSheet === "cardOrientation" && (
+        <DeskSettingsCardOrientationModal
+          setOpenSheet={setOpenSheet}
+          currentValue={desk?.settings.card_orientation}
+          onClose={(value: CARD_ORIENTATION) => {
+            if (value === desk.settings.card_orientation) return;
+
+            onUpdateSettingsSubmit({
+              ...desk.settings,
+              card_orientation: value,
+            });
+          }}
+        />
+      )}
+    </>
+  );
+}
