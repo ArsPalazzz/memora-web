@@ -122,7 +122,7 @@ export default function HomeClient() {
                 }}
               >
                 <Typography sx={{ display: "inline" }}>
-                  You don't have any desks yet.{" "}
+                  You don&apos;t have any desks yet.{" "}
                   <Box
                     component="span"
                     sx={{

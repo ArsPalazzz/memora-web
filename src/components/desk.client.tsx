@@ -419,7 +419,7 @@ export default function DeskClient() {
                   <Grid item xs={12}>
                     {!desk.cards?.length && (
                       <Typography sx={{ display: "inline" }}>
-                        You don't have any cards yet.{" "}
+                        You don&apos;t have any cards yet.{" "}
                         <Typography
                           component="span"
                           sx={{
