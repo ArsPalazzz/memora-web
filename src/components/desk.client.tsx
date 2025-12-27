@@ -8,9 +8,9 @@ import {
   Box,
   Card,
   Divider,
-  Grid,
   IconButton,
   List,
+  Grid,
   ListItem,
   ListItemButton,
   ListItemIcon,
@@ -28,7 +28,6 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import {
   archiveDeskRequest,
   createCardRequest,
-  deleteDeskRequest,
   fetchDeskRequest,
   updateCardRequest,
   updateDeskRequest,
@@ -88,7 +87,9 @@ export default function DeskClient() {
   const [anchorMenu, setAnchorMenu] = useState<Element | null>(null);
   const openMenu = Boolean(anchorMenu);
 
-  const handleMenuOpen = (event) => setAnchorMenu(event.currentTarget);
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => setAnchorMenu(event.currentTarget);
   const handleMenuClose = () => setAnchorMenu(null);
 
   const [createCardModal, setCreateCardModal] = useState(false);
@@ -404,19 +405,19 @@ export default function DeskClient() {
                     width: "100%",
                   }}
                 >
-                  <Grid item xs={12} mb={4}>
+                  <Grid size={{ xs: 12 }} mb={4}>
                     <Typography variant="h4" fontWeight={600}>
                       {desk.title}
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={12} mb={1}>
+                  <Grid size={{ xs: 12 }} mb={1}>
                     <Typography variant="h6" fontWeight={600}>
                       Cards
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     {!desk.cards?.length && (
                       <Typography sx={{ display: "inline" }}>
                         You don&apos;t have any cards yet.{" "}
@@ -508,13 +509,13 @@ export default function DeskClient() {
                     </Box>
                   </Grid>
 
-                  <Grid item xs={12} mb={1}>
+                  <Grid size={{ xs: 12 }} mb={1}>
                     <Typography variant="h6" fontWeight={600}>
                       Settings
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={12} mb={2}>
+                  <Grid size={{ xs: 12 }} mb={2}>
                     <List
                       sx={{
                         width: "100%",

@@ -64,12 +64,19 @@ export default function PlayDeskPage() {
 
   // const cardColor =
   //   isCorrect === null ? "background.paper" : isCorrect ? "#e8f5e9" : "#fdecea";
+  console.log(theme.palette);
+  // const cardColor =
+  //   isCorrect === null
+  //     ? theme.palette.background.paper
+  //     : isCorrect
+  //     ? theme.palette.successBg
+  //     : theme.palette.errorBg;
   const cardColor =
     isCorrect === null
       ? theme.palette.background.paper
       : isCorrect
-      ? theme.palette.successBg
-      : theme.palette.errorBg;
+      ? theme.palette.success
+      : theme.palette.error;
 
   return (
     <>
@@ -95,7 +102,7 @@ export default function PlayDeskPage() {
               sx={{
                 flex: 1,
                 display: "flex",
-                bgcolor: cardColor,
+                // bgcolor: cardColor,
                 transition: "background-color 0.3s",
                 boxShadow: 4,
                 borderRadius: 3,

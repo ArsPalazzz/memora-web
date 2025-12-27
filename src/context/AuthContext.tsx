@@ -1,7 +1,7 @@
 "use client";
 
 import { refreshRequest } from "@/services/auth/auth";
-import { processOfflineQueue } from "@/services/indexedDB";
+// import { processOfflineQueue } from "@/services/indexedDB";
 import { useProtectedRequest } from "@/utils/protected";
 import {
   createContext,
