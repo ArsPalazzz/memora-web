@@ -15,6 +15,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import { getCardsToPlayRequest } from "@/services/desk/desk";
+import { FullPageLoader } from "./ui/Loader";
 
 export default function PlayDeskPage() {
   const { id: sub } = useParams() as { id: string };
@@ -35,9 +36,7 @@ export default function PlayDeskPage() {
   const current = res?.cards?.[index];
   const isLast = index === (res?.cards.length ?? 0) - 1;
 
-  if (isLoading || !current) {
-    return <Typography sx={{ p: 2 }}>Loading...</Typography>;
-  }
+  if (isLoading || !current) return <FullPageLoader />;
 
   const question = current.showSide === "front" ? current.front : current.back;
   const correctAnswer =
