@@ -8,26 +8,29 @@ export default function OrientationLock({
   children: React.ReactNode;
 }) {
   const [isLandscape, setIsLandscape] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkOrientation = () => {
-      if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
 
-      // Используем screen.orientation, если доступно
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+    const mobileCheck = /android|iphone|ipad|ipod|mobile/i.test(ua);
+    setIsMobile(mobileCheck);
+
+    const checkOrientation = () => {
+      if (!mobileCheck) return;
+
       if (screen.orientation && screen.orientation.type) {
         setIsLandscape(screen.orientation.type.startsWith("landscape"));
       } else {
-        // fallback: сравниваем ширину и высоту окна
         setIsLandscape(window.innerWidth > window.innerHeight);
       }
     };
 
     checkOrientation();
 
-    const handleResize = () => {
-      // на iOS иногда нужно подождать обновления размеров
-      setTimeout(checkOrientation, 100);
-    };
+    const handleResize = () => setTimeout(checkOrientation, 100);
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("orientationchange", handleResize);
@@ -38,7 +41,7 @@ export default function OrientationLock({
     };
   }, []);
 
-  if (isLandscape) {
+  if (isMobile && isLandscape) {
     return (
       <div
         style={{
