@@ -293,381 +293,382 @@ export default function DeskClient() {
     }
   }, [desk, updateCardModalSub, resetUpdateCard]);
 
-  if (loading) return <FullPageLoader />;
+  // if (loading) return <FullPageLoader />;
+  return <FullPageLoader />;
 
-  if (!authenticated) return null;
+  // if (!authenticated) return null;
 
-  return (
-    <>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100vh",
-          position: "relative",
-        }}
-      >
-        <Header
-          title="Desks"
-          backIcon
-          RightButton={
-            <>
-              <IconButton onClick={(e) => handleMenuOpen(e)}>
-                <MoreHorizIcon sx={{ color: "white", fontSize: 30 }} />
-              </IconButton>
+  // return (
+  //   <>
+  //     <Box
+  //       sx={{
+  //         display: "flex",
+  //         flexDirection: "column",
+  //         minHeight: "100vh",
+  //         position: "relative",
+  //       }}
+  //     >
+  //       <Header
+  //         title="Desks"
+  //         backIcon
+  //         RightButton={
+  //           <>
+  //             <IconButton onClick={(e) => handleMenuOpen(e)}>
+  //               <MoreHorizIcon sx={{ color: "white", fontSize: 30 }} />
+  //             </IconButton>
 
-              <Menu
-                anchorEl={anchorMenu}
-                open={openMenu}
-                onClose={handleMenuClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-              >
-                <MenuItem
-                  sx={{
-                    display: "flex",
-                    gap: 0.5,
-                    alignItems: "center",
-                  }}
-                  onClick={() => {
-                    setAnchorMenu(null);
-                    setCreateCardModal(true);
-                  }}
-                >
-                  <AddIcon sx={{ fontSize: 20 }} />
-                  <Typography>Add card</Typography>
-                </MenuItem>
+  //             <Menu
+  //               anchorEl={anchorMenu}
+  //               open={openMenu}
+  //               onClose={handleMenuClose}
+  //               anchorOrigin={{
+  //                 vertical: "bottom",
+  //                 horizontal: "right",
+  //               }}
+  //               transformOrigin={{
+  //                 vertical: "top",
+  //                 horizontal: "right",
+  //               }}
+  //             >
+  //               <MenuItem
+  //                 sx={{
+  //                   display: "flex",
+  //                   gap: 0.5,
+  //                   alignItems: "center",
+  //                 }}
+  //                 onClick={() => {
+  //                   setAnchorMenu(null);
+  //                   setCreateCardModal(true);
+  //                 }}
+  //               >
+  //                 <AddIcon sx={{ fontSize: 20 }} />
+  //                 <Typography>Add card</Typography>
+  //               </MenuItem>
 
-                <MenuItem
-                  sx={{
-                    display: "flex",
-                    gap: 0.5,
-                    alignItems: "center",
-                  }}
-                  onClick={() => {
-                    setAnchorMenu(null);
-                    setUpdateDeskModal(true);
-                  }}
-                >
-                  <EditIcon sx={{ fontSize: 20 }} />
-                  <Typography>Edit desk</Typography>
-                </MenuItem>
+  //               <MenuItem
+  //                 sx={{
+  //                   display: "flex",
+  //                   gap: 0.5,
+  //                   alignItems: "center",
+  //                 }}
+  //                 onClick={() => {
+  //                   setAnchorMenu(null);
+  //                   setUpdateDeskModal(true);
+  //                 }}
+  //               >
+  //                 <EditIcon sx={{ fontSize: 20 }} />
+  //                 <Typography>Edit desk</Typography>
+  //               </MenuItem>
 
-                <MenuItem
-                  sx={{
-                    display: "flex",
-                    gap: 0.5,
-                    alignItems: "center",
-                    color: "red",
-                  }}
-                  onClick={() => {
-                    setAnchorMenu(null);
-                    setDeleteDeskModal(true);
-                  }}
-                >
-                  <DeleteIcon sx={{ fontSize: 20 }} />
-                  <Typography>Archive desk</Typography>
-                </MenuItem>
-              </Menu>
-            </>
-          }
-        />
-        <Box
-          sx={{
-            flex: 1,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <Box
-            sx={{
-              flex: 1,
-              overflowY: "auto",
-              paddingBottom: `${BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16}px`,
-            }}
-          >
-            {isDeskLoading && <Loader />}
+  //               <MenuItem
+  //                 sx={{
+  //                   display: "flex",
+  //                   gap: 0.5,
+  //                   alignItems: "center",
+  //                   color: "red",
+  //                 }}
+  //                 onClick={() => {
+  //                   setAnchorMenu(null);
+  //                   setDeleteDeskModal(true);
+  //                 }}
+  //               >
+  //                 <DeleteIcon sx={{ fontSize: 20 }} />
+  //                 <Typography>Archive desk</Typography>
+  //               </MenuItem>
+  //             </Menu>
+  //           </>
+  //         }
+  //       />
+  //       <Box
+  //         sx={{
+  //           flex: 1,
+  //           overflow: "hidden",
+  //           display: "flex",
+  //           flexDirection: "column",
+  //         }}
+  //       >
+  //         <Box
+  //           sx={{
+  //             flex: 1,
+  //             overflowY: "auto",
+  //             paddingBottom: `${BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16}px`,
+  //           }}
+  //         >
+  //           {isDeskLoading && <Loader />}
 
-            {desk && (
-              <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 1,
-                    width: "100%",
-                  }}
-                >
-                  <Grid size={{ xs: 12 }} mb={4}>
-                    <Typography variant="h4" fontWeight={600}>
-                      {desk.title}
-                    </Typography>
-                  </Grid>
+  //           {desk && (
+  //             <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>
+  //               <Box
+  //                 sx={{
+  //                   display: "flex",
+  //                   flexDirection: "column",
+  //                   gap: 1,
+  //                   width: "100%",
+  //                 }}
+  //               >
+  //                 <Grid size={{ xs: 12 }} mb={4}>
+  //                   <Typography variant="h4" fontWeight={600}>
+  //                     {desk.title}
+  //                   </Typography>
+  //                 </Grid>
 
-                  <Grid size={{ xs: 12 }} mb={1}>
-                    <Typography variant="h6" fontWeight={600}>
-                      Cards
-                    </Typography>
-                  </Grid>
+  //                 <Grid size={{ xs: 12 }} mb={1}>
+  //                   <Typography variant="h6" fontWeight={600}>
+  //                     Cards
+  //                   </Typography>
+  //                 </Grid>
 
-                  <Grid size={{ xs: 12 }}>
-                    {!desk.cards?.length && (
-                      <Typography sx={{ display: "inline" }}>
-                        You don&apos;t have any cards yet.{" "}
-                        <Typography
-                          component="span"
-                          sx={{
-                            display: "inline",
-                            cursor: "pointer",
-                            color: "#5961d3",
-                          }}
-                          fontWeight={700}
-                          onClick={() => {
-                            setAnchorMenu(null);
-                            setCreateCardModal(true);
-                          }}
-                        >
-                          Add one?
-                        </Typography>
-                      </Typography>
-                    )}
+  //                 <Grid size={{ xs: 12 }}>
+  //                   {!desk.cards?.length && (
+  //                     <Typography sx={{ display: "inline" }}>
+  //                       You don&apos;t have any cards yet.{" "}
+  //                       <Typography
+  //                         component="span"
+  //                         sx={{
+  //                           display: "inline",
+  //                           cursor: "pointer",
+  //                           color: "#5961d3",
+  //                         }}
+  //                         fontWeight={700}
+  //                         onClick={() => {
+  //                           setAnchorMenu(null);
+  //                           setCreateCardModal(true);
+  //                         }}
+  //                       >
+  //                         Add one?
+  //                       </Typography>
+  //                     </Typography>
+  //                   )}
 
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: 0.5,
-                        overflowX: "auto",
-                        overflowY: "hidden",
-                        py: 1,
-                        pb: 2,
-                        px: 0.5,
-                        scrollSnapType: "x proximity",
-                        width: "100%",
-                        boxSizing: "border-box",
-                        "&::-webkit-scrollbar": { display: "none" },
-                        overscrollBehaviorX: "contain",
-                      }}
-                    >
-                      {desk.cards?.map((card) => (
-                        <Card
-                          key={card.sub}
-                          sx={{
-                            flex: "0 0 44vw",
-                            maxWidth: "44vw",
-                            height: "44vw",
-                            scrollSnapAlign: "start",
-                            boxShadow: 3,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            px: 2,
-                            py: 3,
-                            textAlign: "center",
-                            transition: "0.25s ease",
-                            "&:hover": {
-                              transform: "translateY(-4px)",
-                              boxShadow: 6,
-                            },
-                          }}
-                          onClick={() => setUpdateCardModalSub(card.sub)}
-                        >
-                          <Typography
-                            variant="h6"
-                            sx={{ fontWeight: 600, mb: 1 }}
-                          >
-                            {card.front_side}
-                          </Typography>
+  //                   <Box
+  //                     sx={{
+  //                       display: "flex",
+  //                       gap: 0.5,
+  //                       overflowX: "auto",
+  //                       overflowY: "hidden",
+  //                       py: 1,
+  //                       pb: 2,
+  //                       px: 0.5,
+  //                       scrollSnapType: "x proximity",
+  //                       width: "100%",
+  //                       boxSizing: "border-box",
+  //                       "&::-webkit-scrollbar": { display: "none" },
+  //                       overscrollBehaviorX: "contain",
+  //                     }}
+  //                   >
+  //                     {desk.cards?.map((card) => (
+  //                       <Card
+  //                         key={card.sub}
+  //                         sx={{
+  //                           flex: "0 0 44vw",
+  //                           maxWidth: "44vw",
+  //                           height: "44vw",
+  //                           scrollSnapAlign: "start",
+  //                           boxShadow: 3,
+  //                           display: "flex",
+  //                           flexDirection: "column",
+  //                           alignItems: "center",
+  //                           justifyContent: "center",
+  //                           px: 2,
+  //                           py: 3,
+  //                           textAlign: "center",
+  //                           transition: "0.25s ease",
+  //                           "&:hover": {
+  //                             transform: "translateY(-4px)",
+  //                             boxShadow: 6,
+  //                           },
+  //                         }}
+  //                         onClick={() => setUpdateCardModalSub(card.sub)}
+  //                       >
+  //                         <Typography
+  //                           variant="h6"
+  //                           sx={{ fontWeight: 600, mb: 1 }}
+  //                         >
+  //                           {card.front_side}
+  //                         </Typography>
 
-                          {/* Divider */}
-                          <Box
-                            sx={{
-                              width: "60%",
-                              height: "2px",
-                              bgcolor: "divider",
-                              my: 1,
-                              borderRadius: 1,
-                            }}
-                          />
+  //                         {/* Divider */}
+  //                         <Box
+  //                           sx={{
+  //                             width: "60%",
+  //                             height: "2px",
+  //                             bgcolor: "divider",
+  //                             my: 1,
+  //                             borderRadius: 1,
+  //                           }}
+  //                         />
 
-                          {/* Back side */}
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "text.secondary" }}
-                          >
-                            {card.back_side}
-                          </Typography>
-                        </Card>
-                      ))}
-                    </Box>
-                  </Grid>
+  //                         {/* Back side */}
+  //                         <Typography
+  //                           variant="body2"
+  //                           sx={{ color: "text.secondary" }}
+  //                         >
+  //                           {card.back_side}
+  //                         </Typography>
+  //                       </Card>
+  //                     ))}
+  //                   </Box>
+  //                 </Grid>
 
-                  <Grid size={{ xs: 12 }} mb={1}>
-                    <Typography variant="h6" fontWeight={600}>
-                      Settings
-                    </Typography>
-                  </Grid>
+  //                 <Grid size={{ xs: 12 }} mb={1}>
+  //                   <Typography variant="h6" fontWeight={600}>
+  //                     Settings
+  //                   </Typography>
+  //                 </Grid>
 
-                  <Grid size={{ xs: 12 }} mb={2}>
-                    <List
-                      sx={{
-                        width: "100%",
-                        bgcolor: "background.paper",
-                        borderRadius: 2,
-                        overflow: "hidden",
-                      }}
-                    >
-                      {settingsItems.map((item, index) => (
-                        <React.Fragment key={item.key}>
-                          <ListItemButton
-                            onClick={() => setOpenSheet(item.key)}
-                            sx={{
-                              py: 2,
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              gap: 2,
-                            }}
-                          >
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <ListItemIcon sx={{ minWidth: 40 }}>
-                                {item.icon}
-                              </ListItemIcon>
+  //                 <Grid size={{ xs: 12 }} mb={2}>
+  //                   <List
+  //                     sx={{
+  //                       width: "100%",
+  //                       bgcolor: "background.paper",
+  //                       borderRadius: 2,
+  //                       overflow: "hidden",
+  //                     }}
+  //                   >
+  //                     {settingsItems.map((item, index) => (
+  //                       <React.Fragment key={item.key}>
+  //                         <ListItemButton
+  //                           onClick={() => setOpenSheet(item.key)}
+  //                           sx={{
+  //                             py: 2,
+  //                             display: "flex",
+  //                             justifyContent: "space-between",
+  //                             alignItems: "center",
+  //                             gap: 2,
+  //                           }}
+  //                         >
+  //                           <Box sx={{ display: "flex", alignItems: "center" }}>
+  //                             <ListItemIcon sx={{ minWidth: 40 }}>
+  //                               {item.icon}
+  //                             </ListItemIcon>
 
-                              <ListItemText
-                                primary={item.title}
-                                secondary={item.subtitle}
-                                primaryTypographyProps={{ fontWeight: 600 }}
-                              />
-                            </Box>
+  //                             <ListItemText
+  //                               primary={item.title}
+  //                               secondary={item.subtitle}
+  //                               primaryTypographyProps={{ fontWeight: 600 }}
+  //                             />
+  //                           </Box>
 
-                            <Typography color="text.secondary" fontWeight={600}>
-                              {item.value}
-                            </Typography>
-                          </ListItemButton>
+  //                           <Typography color="text.secondary" fontWeight={600}>
+  //                             {item.value}
+  //                           </Typography>
+  //                         </ListItemButton>
 
-                          {index !== 1 && <Divider component="li" />}
-                        </React.Fragment>
-                      ))}
-                    </List>
-                  </Grid>
-                </Box>
-              </Grid>
-            )}
-          </Box>
-        </Box>
+  //                         {index !== 1 && <Divider component="li" />}
+  //                       </React.Fragment>
+  //                     ))}
+  //                   </List>
+  //                 </Grid>
+  //               </Box>
+  //             </Grid>
+  //           )}
+  //         </Box>
+  //       </Box>
 
-        <Box
-          sx={{
-            position: "fixed",
-            bottom: `${BOTTOM_NAV_HEIGHT}px`,
-            left: 0,
-            right: 0,
-            px: 2,
-            pb: 1,
-            zIndex: 1200,
-            bgcolor: "background.default",
-          }}
-        >
-          <Card
-            sx={{
-              py: 1.5,
-              textAlign: "center",
-              fontWeight: 700,
-              boxShadow: 4,
-              borderRadius: 2,
-              bgcolor: desk?.cards.length ? "#5961d3" : "#5a5a5a",
-              color: "white",
-              "&:active": {
-                transform: desk?.cards.length ? "scale(0.98)" : "scale(1)",
-              },
-              cursor: desk?.cards.length ? "pointer" : "not-allowed",
-            }}
-            onClick={() => {
-              if (!desk?.cards.length) return;
-              router.push(`/desk/${sub}/play`);
-            }}
-          >
-            Play
-          </Card>
-        </Box>
+  //       <Box
+  //         sx={{
+  //           position: "fixed",
+  //           bottom: `${BOTTOM_NAV_HEIGHT}px`,
+  //           left: 0,
+  //           right: 0,
+  //           px: 2,
+  //           pb: 1,
+  //           zIndex: 1200,
+  //           bgcolor: "background.default",
+  //         }}
+  //       >
+  //         <Card
+  //           sx={{
+  //             py: 1.5,
+  //             textAlign: "center",
+  //             fontWeight: 700,
+  //             boxShadow: 4,
+  //             borderRadius: 2,
+  //             bgcolor: desk?.cards.length ? "#5961d3" : "#5a5a5a",
+  //             color: "white",
+  //             "&:active": {
+  //               transform: desk?.cards.length ? "scale(0.98)" : "scale(1)",
+  //             },
+  //             cursor: desk?.cards.length ? "pointer" : "not-allowed",
+  //           }}
+  //           onClick={() => {
+  //             if (!desk?.cards.length) return;
+  //             router.push(`/desk/${sub}/play`);
+  //           }}
+  //         >
+  //           Play
+  //         </Card>
+  //       </Box>
 
-        <BottomNav />
-      </Box>
-      {createCardModal && (
-        <NewCardModal
-          open={createCardModal}
-          onClose={() => setCreateCardModal(false)}
-          errors={errorsCreateCard}
-          register={registerCreateCard}
-          onSubmit={handleSubmitCreateCard(onCreateSubmit)}
-        />
-      )}
+  //       <BottomNav />
+  //     </Box>
+  //     {createCardModal && (
+  //       <NewCardModal
+  //         open={createCardModal}
+  //         onClose={() => setCreateCardModal(false)}
+  //         errors={errorsCreateCard}
+  //         register={registerCreateCard}
+  //         onSubmit={handleSubmitCreateCard(onCreateSubmit)}
+  //       />
+  //     )}
 
-      {desk && updateDeskModal && (
-        <EditDeskModal
-          open={updateDeskModal}
-          onClose={() => setUpdateDeskModal(false)}
-          errors={errorsUpdateDesk}
-          register={registerUpdateDesk}
-          onSubmit={handleSubmitUpdateDesk(onUpdateDeskSubmit)}
-        />
-      )}
+  //     {desk && updateDeskModal && (
+  //       <EditDeskModal
+  //         open={updateDeskModal}
+  //         onClose={() => setUpdateDeskModal(false)}
+  //         errors={errorsUpdateDesk}
+  //         register={registerUpdateDesk}
+  //         onSubmit={handleSubmitUpdateDesk(onUpdateDeskSubmit)}
+  //       />
+  //     )}
 
-      {desk && updateCardModalSub && (
-        <EditCardModal
-          open={!!updateCardModalSub}
-          onClose={() => setUpdateCardModalSub("")}
-          errors={errorsUpdateCard}
-          register={registerUpdateCard}
-          onSubmit={handleSubmitUpdateCard(onUpdateCardSubmit)}
-        />
-      )}
+  //     {desk && updateCardModalSub && (
+  //       <EditCardModal
+  //         open={!!updateCardModalSub}
+  //         onClose={() => setUpdateCardModalSub("")}
+  //         errors={errorsUpdateCard}
+  //         register={registerUpdateCard}
+  //         onSubmit={handleSubmitUpdateCard(onUpdateCardSubmit)}
+  //       />
+  //     )}
 
-      {desk && deleteDeskModal && (
-        <DeleteDeskModal
-          open={deleteDeskModal}
-          onClose={() => setDeleteDeskModal(false)}
-          onSubmit={onArchiveDeskSubmit}
-        />
-      )}
+  //     {desk && deleteDeskModal && (
+  //       <DeleteDeskModal
+  //         open={deleteDeskModal}
+  //         onClose={() => setDeleteDeskModal(false)}
+  //         onSubmit={onArchiveDeskSubmit}
+  //       />
+  //     )}
 
-      {desk && openSheet === "cardsPerSession" && (
-        <DeskSettingsCardsPerSessionModal
-          setOpenSheet={setOpenSheet}
-          currentValue={desk?.settings.cards_per_session}
-          onClose={(value: number) => {
-            if (value === desk.settings.cards_per_session) return;
+  //     {desk && openSheet === "cardsPerSession" && (
+  //       <DeskSettingsCardsPerSessionModal
+  //         setOpenSheet={setOpenSheet}
+  //         currentValue={desk?.settings.cards_per_session}
+  //         onClose={(value: number) => {
+  //           if (value === desk.settings.cards_per_session) return;
 
-            onUpdateSettingsSubmit({
-              ...desk.settings,
-              cards_per_session: value,
-            });
-          }}
-        />
-      )}
+  //           onUpdateSettingsSubmit({
+  //             ...desk.settings,
+  //             cards_per_session: value,
+  //           });
+  //         }}
+  //       />
+  //     )}
 
-      {desk && openSheet === "cardOrientation" && (
-        <DeskSettingsCardOrientationModal
-          setOpenSheet={setOpenSheet}
-          currentValue={desk?.settings.card_orientation}
-          onClose={(value: CARD_ORIENTATION) => {
-            if (value === desk.settings.card_orientation) return;
+  //     {desk && openSheet === "cardOrientation" && (
+  //       <DeskSettingsCardOrientationModal
+  //         setOpenSheet={setOpenSheet}
+  //         currentValue={desk?.settings.card_orientation}
+  //         onClose={(value: CARD_ORIENTATION) => {
+  //           if (value === desk.settings.card_orientation) return;
 
-            onUpdateSettingsSubmit({
-              ...desk.settings,
-              card_orientation: value,
-            });
-          }}
-        />
-      )}
-    </>
-  );
+  //           onUpdateSettingsSubmit({
+  //             ...desk.settings,
+  //             card_orientation: value,
+  //           });
+  //         }}
+  //       />
+  //     )}
+  //   </>
+  // );
 }
