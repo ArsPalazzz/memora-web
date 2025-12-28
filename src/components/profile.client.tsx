@@ -18,7 +18,7 @@ import ThemeToggle from "./ui/Buttons/ThemeToggler";
 
 export default function ProfileClient() {
   const router = useRouter();
-  const { loading, authenticated } = useAuth();
+  const { authenticated } = useAuth();
   const { setAccessToken } = useAuthContext();
   const { call } = useProtectedRequest();
 

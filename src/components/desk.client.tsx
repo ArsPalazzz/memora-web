@@ -66,7 +66,7 @@ import {
   UpdateCardValues,
 } from "@/schemas/updateCard.schema";
 
-const BOTTOM_NAV_HEIGHT = 56; // MUI BottomNavigation
+const BOTTOM_NAV_HEIGHT = 56 + 4 * 10; // MUI BottomNavigation
 const PLAY_BUTTON_HEIGHT = 64;
 
 export default function DeskClient() {
