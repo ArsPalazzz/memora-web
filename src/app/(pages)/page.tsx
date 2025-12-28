@@ -1,16 +1,16 @@
-import { FullPageLoader } from "@/components/ui/Loader";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { ROUTES } from "@/routes/next";
+import { isAuthenticatedRequest } from "@/services/auth/auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default async function RootPage() {
-  const cookieStore = await cookies();
-  const refreshToken = cookieStore.get("refreshToken")?.value;
+export default function RootPage() {
+  const router = useRouter();
 
-  if (!refreshToken) {
-    redirect("/login");
-  } else {
-    redirect("/desks");
-  }
+  useEffect(() => {
+    isAuthenticatedRequest()
+      .then(() => router.replace(ROUTES.HOME))
+      .catch(() => router.replace(ROUTES.LOGIN));
+  }, [router]);
 
-  return <FullPageLoader />;
+  return null;
 }

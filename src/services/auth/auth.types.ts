@@ -11,6 +11,11 @@ export interface RefreshResponse {
   accessToken: string;
 }
 
+export interface IsAuthenticatedResponse {
+  sub: string;
+  authenticated: boolean;
+}
+
 export interface LogoutResponse {
   message: string;
 }

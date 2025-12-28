@@ -1,5 +1,6 @@
 // AUTH
 export const SIGN_IN_API = "/auth/sign-in";
+export const IS_AUTHENTICATED_API = "/auth/me";
 export const REFRESH_API = "/auth/refresh";
 export const LOGOUT_API = "/auth/logout";
 
