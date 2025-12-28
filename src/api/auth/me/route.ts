@@ -6,6 +6,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
+    console.log("start");
     const response = await axios.get(
       "https://memora-api-production.up.railway.app/auth/me",
       {
@@ -14,6 +15,7 @@ export default async function handler(
         },
       }
     );
+    console.log("finish");
 
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
