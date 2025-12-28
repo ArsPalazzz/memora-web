@@ -4,6 +4,7 @@ import "./globals.css";
 import { getTheme } from "@/theme/theme";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { InnerThemeProvider } from "@/components/InnerThemeProvider";
+import OrientationLock from "@/components/orientation-lock.client";
 
 export const metadata = {
   title: "Memora App",
@@ -26,7 +27,9 @@ export default function RootLayout({
       <body>
         <ThemeProviderClient>
           <InnerThemeProvider>
-            <ClientProviders>{children}</ClientProviders>
+            <ClientProviders>
+              <OrientationLock>{children}</OrientationLock>
+            </ClientProviders>
           </InnerThemeProvider>
         </ThemeProviderClient>
       </body>
