@@ -1,3 +1,5 @@
+"use client";
+
 import { ROUTES } from "@/routes/next";
 import { isAuthenticatedRequest } from "@/services/auth/auth";
 import { useRouter } from "next/navigation";
