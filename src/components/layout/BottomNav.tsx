@@ -30,7 +30,7 @@ export default function BottomNav() {
         right: 0,
         height: 56,
         zIndex: 1300,
-        pb: 5,
+        pb: 10,
       }}
       elevation={3}
     >
