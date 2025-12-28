@@ -2,17 +2,23 @@ import { Box, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 
 const images = ["/icons/kitty.png", "/icons/kitty-tongue.png"];
+const durations = [500, 250];
 
 export const Loader = () => {
   const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 500);
+    let timeout: NodeJS.Timeout;
 
-    return () => clearInterval(interval);
-  }, []);
+    const nextImage = () => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+      timeout = setTimeout(nextImage, durations[currentImage]);
+    };
+
+    timeout = setTimeout(nextImage, durations[currentImage]);
+
+    return () => clearTimeout(timeout);
+  }, [currentImage]);
 
   return (
     <Box
@@ -33,19 +39,19 @@ export const Loader = () => {
           alignItems: "center",
         }}
       >
-        <CircularProgress
+        {/* <CircularProgress
           size={64}
           sx={{
             position: "absolute",
           }}
-        />
+        /> */}
         <Box
           component="img"
           src={images[currentImage]}
           alt="logo"
           sx={{
-            width: 64,
-            height: 64,
+            width: 128,
+            height: 128,
             zIndex: 1,
           }}
         />
@@ -58,12 +64,17 @@ export const FullPageLoader = () => {
   const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 500);
+    let timeout: NodeJS.Timeout;
 
-    return () => clearInterval(interval);
-  }, []);
+    const nextImage = () => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+      timeout = setTimeout(nextImage, durations[currentImage]);
+    };
+
+    timeout = setTimeout(nextImage, durations[currentImage]);
+
+    return () => clearTimeout(timeout);
+  }, [currentImage]);
 
   return (
     <Box
@@ -86,19 +97,19 @@ export const FullPageLoader = () => {
           alignItems: "center",
         }}
       >
-        <CircularProgress
+        {/* <CircularProgress
           size={64}
           sx={{
             position: "absolute",
           }}
-        />
+        /> */}
         <Box
           component="img"
           src={images[currentImage]}
           alt="logo"
           sx={{
-            width: 64,
-            height: 64,
+            width: 128,
+            height: 128,
             zIndex: 1,
           }}
         />
