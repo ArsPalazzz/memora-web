@@ -33,6 +33,7 @@ export const Loader = () => {
     <Box
       sx={{
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         flexGrow: 1,
@@ -85,6 +86,7 @@ export const FullPageLoader = () => {
         width: "100vw",
         height: "100vh",
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         flexGrow: 1,
