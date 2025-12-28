@@ -1,11 +1,13 @@
-import { Box, CircularProgress } from "@mui/material";
+import { Box } from "@mui/material";
 import { useEffect, useState } from "react";
 
 const images = ["/icons/kitty.png", "/icons/kitty-tongue.png"];
 const durations = [500, 250];
+const maxDots = 3;
 
 export const Loader = () => {
   const [currentImage, setCurrentImage] = useState(0);
+  const [dots, setDots] = useState(1);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -19,6 +21,13 @@ export const Loader = () => {
 
     return () => clearTimeout(timeout);
   }, [currentImage]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots((prev) => (prev % maxDots) + 1);
+    }, 400);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Box
@@ -30,31 +39,17 @@ export const Loader = () => {
       }}
     >
       <Box
+        component="img"
+        src={images[currentImage]}
+        alt="logo"
         sx={{
-          position: "relative",
           width: 128,
           height: 128,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+          zIndex: 1,
         }}
-      >
-        {/* <CircularProgress
-          size={64}
-          sx={{
-            position: "absolute",
-          }}
-        /> */}
-        <Box
-          component="img"
-          src={images[currentImage]}
-          alt="logo"
-          sx={{
-            width: 128,
-            height: 128,
-            zIndex: 1,
-          }}
-        />
+      />
+      <Box sx={{ mt: 2, fontSize: 18, fontWeight: 500 }}>
+        Loading{".".repeat(dots)}
       </Box>
     </Box>
   );
@@ -62,6 +57,7 @@ export const Loader = () => {
 
 export const FullPageLoader = () => {
   const [currentImage, setCurrentImage] = useState(0);
+  const [dots, setDots] = useState(1);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -75,6 +71,13 @@ export const FullPageLoader = () => {
 
     return () => clearTimeout(timeout);
   }, [currentImage]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots((prev) => (prev % maxDots) + 1);
+    }, 400);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Box
@@ -88,31 +91,17 @@ export const FullPageLoader = () => {
       }}
     >
       <Box
+        component="img"
+        src={images[currentImage]}
+        alt="logo"
         sx={{
-          position: "relative",
           width: 128,
           height: 128,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+          zIndex: 1,
         }}
-      >
-        {/* <CircularProgress
-          size={64}
-          sx={{
-            position: "absolute",
-          }}
-        /> */}
-        <Box
-          component="img"
-          src={images[currentImage]}
-          alt="logo"
-          sx={{
-            width: 128,
-            height: 128,
-            zIndex: 1,
-          }}
-        />
+      />
+      <Box sx={{ mt: 2, fontSize: 18, fontWeight: 500 }}>
+        Loading{".".repeat(dots)}
       </Box>
     </Box>
   );
