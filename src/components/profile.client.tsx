@@ -41,7 +41,7 @@ export default function ProfileClient() {
 
   const onClick = () => logoutMutation.mutate();
 
-  if (loading) return <FullPageLoader />;
+  if (isProfileLoading) return <FullPageLoader />;
 
   if (!authenticated) return null;
 
