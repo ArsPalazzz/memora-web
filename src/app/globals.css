@@ -35,30 +35,8 @@ a {
   text-decoration: none;
 }
 
-.landscape-warning {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: #fff;
-  z-index: 9999;
-  text-align: center;
-  padding-top: 50%;
-  font-size: 24px;
-}
-
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
-  }
-}
-
-@media (orientation: landscape) {
-  .landscape-warning {
-    display: block;
-  }
-  #root,
-  main,
-  body {
-    display: none;
   }
 }
