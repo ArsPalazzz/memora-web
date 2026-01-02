@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/utils/auth";
 import { FullPageLoader, Loader } from "./ui/Loader";
@@ -11,7 +11,6 @@ import {
   IconButton,
   List,
   Grid,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -48,7 +47,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthContext } from "@/context/AuthContext";
 import { notifyError, notifySuccess } from "@/utils/notification";
 import React from "react";
-import DeskSettingsModal from "./modals/DeskSettings/DeskSettingsCardsPerSession.modal";
 import DeskSettingsCardsPerSessionModal from "./modals/DeskSettings/DeskSettingsCardsPerSession.modal";
 import { DeskSettings } from "@/services/desk/desk.types";
 import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettingsCardOrientation.modal";
@@ -66,7 +64,7 @@ import {
   UpdateCardValues,
 } from "@/schemas/updateCard.schema";
 
-const BOTTOM_NAV_HEIGHT = 56 + 4 * 10; // MUI BottomNavigation
+const BOTTOM_NAV_HEIGHT = 56 + 4 * 10;
 const PLAY_BUTTON_HEIGHT = 64;
 
 export default function DeskClient() {
@@ -98,6 +96,8 @@ export default function DeskClient() {
   const [deleteDeskModal, setDeleteDeskModal] = useState(false);
   const [openSheet, setOpenSheet] = useState<null | string>(null);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const router = useRouter();
 
   const {
@@ -105,9 +105,11 @@ export default function DeskClient() {
     register: registerCreateCard,
     reset: resetCreateCard,
     formState: { errors: errorsCreateCard },
+    control: controlCreateCard,
   } = useForm<CreateCardValues>({
     resolver: zodResolver(createCardSchema),
     mode: "onChange",
+    defaultValues: { front: [], back: [] },
   });
 
   const {
@@ -126,10 +128,11 @@ export default function DeskClient() {
     register: registerUpdateCard,
     reset: resetUpdateCard,
     formState: { errors: errorsUpdateCard },
+    control: controlUpdateCard,
   } = useForm<UpdateCardValues>({
     resolver: zodResolver(updateCardSchema),
     mode: "onChange",
-    defaultValues: { front: "", back: "" },
+    defaultValues: { front: [], back: [] },
   });
 
   const onCreateSubmit = (data: CreateCardValues) => {
@@ -154,7 +157,12 @@ export default function DeskClient() {
 
   const createCardMutation = useMutation({
     mutationFn: (payload: { data: CreateCardValues; token: string }) => {
-      const data = { desk_sub: sub, ...payload.data };
+      const values = {
+        front: payload.data.front.map((item) => item.value),
+        back: payload.data.back.map((item) => item.value),
+      };
+
+      const data = { desk_sub: sub, ...values };
 
       return call(() => createCardRequest(data, payload.token));
     },
@@ -210,7 +218,12 @@ export default function DeskClient() {
 
   const updateCardMutation = useMutation({
     mutationFn: (payload: { data: UpdateCardValues; token: string }) => {
-      const data = { card_sub: updateCardModalSub, payload: payload.data };
+      const values = {
+        front: payload.data.front.map((item) => item.value),
+        back: payload.data.back.map((item) => item.value),
+      };
+
+      const data = { card_sub: updateCardModalSub, payload: values };
 
       return call(() => updateCardRequest(data, payload.token));
     },
@@ -272,6 +285,12 @@ export default function DeskClient() {
   ];
 
   useEffect(() => {
+    if (scrollRef.current && desk && desk.cards.length) {
+      scrollRef.current.scrollLeft = 0;
+    }
+  }, [desk?.cards, desk]);
+
+  useEffect(() => {
     if (desk && updateDeskModal) {
       resetUpdateDesk({
         title: desk.title,
@@ -287,8 +306,8 @@ export default function DeskClient() {
       )[0];
 
       resetUpdateCard({
-        front: el.front_side,
-        back: el.back_side,
+        front: el.front_variants.map((item) => ({ value: item })),
+        back: el.back_variants.map((item) => ({ value: item })),
       });
     }
   }, [desk, updateCardModalSub, resetUpdateCard]);
@@ -309,7 +328,7 @@ export default function DeskClient() {
       >
         <Header
           title="Desks"
-          backIcon
+          onBack={() => router.push(ROUTES.HOME)}
           RightButton={
             <>
               <IconButton onClick={(e) => handleMenuOpen(e)}>
@@ -440,6 +459,7 @@ export default function DeskClient() {
                     )}
 
                     <Box
+                      ref={scrollRef}
                       sx={{
                         display: "flex",
                         gap: 0.5,
@@ -483,10 +503,21 @@ export default function DeskClient() {
                             variant="h6"
                             sx={{ fontWeight: 600, mb: 1 }}
                           >
-                            {card.front_side}
+                            {card.front_variants[0]}
+                            {card.front_variants.length > 1 && (
+                              <Box
+                                component="span"
+                                sx={{
+                                  fontWeight: 400,
+                                  color: "text.secondary",
+                                  ml: 0.5,
+                                }}
+                              >
+                                +{card.front_variants.length - 1} more
+                              </Box>
+                            )}
                           </Typography>
 
-                          {/* Divider */}
                           <Box
                             sx={{
                               width: "60%",
@@ -497,12 +528,23 @@ export default function DeskClient() {
                             }}
                           />
 
-                          {/* Back side */}
                           <Typography
                             variant="body2"
-                            sx={{ color: "text.secondary" }}
+                            sx={{ color: "text.primary" }}
                           >
-                            {card.back_side}
+                            {card.back_variants[0]}
+                            {card.back_variants.length > 1 && (
+                              <Box
+                                component="span"
+                                sx={{
+                                  fontWeight: 400,
+                                  color: "text.secondary",
+                                  ml: 0.5,
+                                }}
+                              >
+                                +{card.back_variants.length - 1} more
+                              </Box>
+                            )}
                           </Typography>
                         </Card>
                       ))}
@@ -564,48 +606,54 @@ export default function DeskClient() {
           </Box>
         </Box>
 
-        <Box
-          sx={{
-            position: "fixed",
-            bottom: `${BOTTOM_NAV_HEIGHT}px`,
-            left: 0,
-            right: 0,
-            px: 2,
-            pb: 1,
-            zIndex: 1200,
-            bgcolor: "background.default",
-          }}
-        >
-          <Card
+        {desk && desk.cards.length && (
+          <Box
             sx={{
-              py: 1.5,
-              textAlign: "center",
-              fontWeight: 700,
-              boxShadow: 4,
-              borderRadius: 2,
-              bgcolor: desk?.cards.length ? "#5961d3" : "#5a5a5a",
-              color: "white",
-              "&:active": {
-                transform: desk?.cards.length ? "scale(0.98)" : "scale(1)",
-              },
-              cursor: desk?.cards.length ? "pointer" : "not-allowed",
-            }}
-            onClick={() => {
-              if (!desk?.cards.length) return;
-              router.push(`/desk/${sub}/play`);
+              position: "fixed",
+              bottom: `${BOTTOM_NAV_HEIGHT}px`,
+              left: 0,
+              right: 0,
+              px: 2,
+              pb: 1,
+              zIndex: 1200,
+              bgcolor: "background.default",
             }}
           >
-            Play
-          </Card>
-        </Box>
+            <Card
+              sx={{
+                py: 1.5,
+                textAlign: "center",
+                fontWeight: 700,
+                boxShadow: 4,
+                borderRadius: 2,
+                bgcolor: desk?.cards.length ? "#5961d3" : "#5a5a5a",
+                color: "white",
+                "&:active": {
+                  transform: desk?.cards.length ? "scale(0.98)" : "scale(1)",
+                },
+                cursor: desk?.cards.length ? "pointer" : "not-allowed",
+              }}
+              onClick={() => {
+                if (!desk?.cards.length) return;
+                router.push(`/desk/${sub}/play`);
+              }}
+            >
+              Play
+            </Card>
+          </Box>
+        )}
 
         <BottomNav />
       </Box>
       {createCardModal && (
         <NewCardModal
           open={createCardModal}
-          onClose={() => setCreateCardModal(false)}
+          onClose={() => {
+            setCreateCardModal(false);
+            resetCreateCard();
+          }}
           errors={errorsCreateCard}
+          control={controlCreateCard}
           register={registerCreateCard}
           onSubmit={handleSubmitCreateCard(onCreateSubmit)}
         />
@@ -628,6 +676,7 @@ export default function DeskClient() {
           errors={errorsUpdateCard}
           register={registerUpdateCard}
           onSubmit={handleSubmitUpdateCard(onUpdateCardSubmit)}
+          control={controlUpdateCard}
         />
       )}
 

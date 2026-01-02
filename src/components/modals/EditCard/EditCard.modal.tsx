@@ -3,7 +3,7 @@ import { EditCardModalProps } from "./EditCard.types";
 import EditCard from "@/components/forms/EditCard/EditCard.form";
 
 export default function EditCardModal(props: EditCardModalProps) {
-  const { open, onClose, onSubmit, errors, register } = props;
+  const { open, onClose, onSubmit, errors, register, control } = props;
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -14,6 +14,7 @@ export default function EditCardModal(props: EditCardModalProps) {
           onSubmit={onSubmit}
           errors={errors}
           register={register}
+          control={control}
         />
       </DialogContent>
     </Dialog>

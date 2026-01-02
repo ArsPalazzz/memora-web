@@ -1,4 +1,4 @@
-import { FieldErrors, UseFormRegister } from "react-hook-form";
+import { Control, FieldErrors, UseFormRegister } from "react-hook-form";
 import { UpdateCardValues } from "@/schemas/updateCard.schema";
 
 export interface EditCardModalProps {
@@ -7,4 +7,5 @@ export interface EditCardModalProps {
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   errors: FieldErrors<UpdateCardValues>;
   register: UseFormRegister<UpdateCardValues>;
+  control: Control<UpdateCardValues>;
 }

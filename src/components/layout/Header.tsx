@@ -3,19 +3,16 @@
 import { Box, IconButton, Typography } from "@mui/material";
 import React from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useRouter } from "next/navigation";
 
 export default function Header({
   title,
-  backIcon = false,
+  onBack,
   RightButton,
 }: {
   title: string;
-  backIcon?: boolean;
+  onBack?: () => void;
   RightButton?: React.ReactNode;
 }) {
-  const router = useRouter();
-
   return (
     <Box
       sx={{
@@ -33,8 +30,8 @@ export default function Header({
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center" }}>
-        {backIcon && (
-          <IconButton onClick={router.back}>
+        {onBack && (
+          <IconButton onClick={onBack}>
             <ArrowBackIcon sx={{ color: "white", fontSize: 30 }} />
           </IconButton>
         )}

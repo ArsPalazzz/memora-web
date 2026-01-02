@@ -1,4 +1,4 @@
-import { FieldErrors, UseFormRegister } from "react-hook-form";
+import { Control, FieldErrors, UseFormRegister } from "react-hook-form";
 import { CreateCardValues } from "@/schemas/createCard.schema";
 
 export interface NewCardModalProps {
@@ -7,4 +7,5 @@ export interface NewCardModalProps {
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   errors: FieldErrors<CreateCardValues>;
   register: UseFormRegister<CreateCardValues>;
+  control: Control<CreateCardValues>;
 }

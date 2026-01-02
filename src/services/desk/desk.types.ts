@@ -1,6 +1,5 @@
 import { UpdateDeskValues } from "@/schemas/updateDesk.schema";
 import { CARD_ORIENTATION } from "./desk.const";
-import { UpdateCardValues } from "@/schemas/updateCard.schema";
 
 export interface FetchDesksResponse {
   sub: string;
@@ -11,8 +10,8 @@ export interface FetchDesksResponse {
 
 interface Card {
   sub: string;
-  front_side: string;
-  back_side: string;
+  front_variants: string[];
+  back_variants: string[];
   created_at: string;
 }
 
@@ -48,8 +47,8 @@ export interface CreateDeskParams {
 
 export interface CreateCardParams {
   desk_sub: string;
-  front: string;
-  back: string;
+  front: string[];
+  back: string[];
 }
 
 export interface UpdateDeskSettingsParams {
@@ -64,7 +63,10 @@ export interface UpdateDeskParams {
 
 export interface UpdateCardParams {
   card_sub: string;
-  payload: UpdateCardValues;
+  payload: {
+    front: string[];
+    back: string[];
+  };
 }
 
 export interface ArchiveDeskParams {
@@ -82,7 +84,7 @@ export interface CreateCardResult {
   id: number;
   sub: string;
   creator_sub: string;
-  front_side: string;
-  back_side: string;
+  front_variants: string[];
+  back_variants: string[];
   created_at: string;
 }

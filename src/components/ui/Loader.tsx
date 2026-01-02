@@ -59,7 +59,6 @@ export const FullPageLoader = () => {
       <Box
         component="img"
         src={images[currentImage]}
-        alt="logo"
         sx={{
           width: 96,
           height: 96,

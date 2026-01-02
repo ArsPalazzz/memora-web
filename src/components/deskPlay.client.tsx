@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Box,
@@ -12,176 +12,228 @@ import {
   Fade,
   useTheme,
 } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { useProtectedRequest } from "@/utils/protected";
-import { getCardsToPlayRequest } from "@/services/desk/desk";
 import { FullPageLoader } from "./ui/Loader";
+import { useMutation } from "@tanstack/react-query";
+import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
+import { NextCardResponse } from "@/services/games/games.types";
+import { startDeskSessionRequest } from "@/services/games/games";
+
+type AnswerResult = {
+  isCorrect: boolean;
+  finished: boolean;
+  correctVariants: string[];
+};
 
 export default function PlayDeskPage() {
-  const { id: sub } = useParams() as { id: string };
+  const params = useParams() as { id: string };
+  const deskSub = params.id;
+
   const router = useRouter();
-  const { call } = useProtectedRequest();
   const theme = useTheme();
+  const { call } = useProtectedRequest();
 
-  const [index, setIndex] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [answer, setAnswer] = useState("");
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [result, setResult] = useState<AnswerResult | null>(null);
 
-  const { data: res, isLoading } = useQuery({
-    queryKey: ["cards-to-play", sub],
-    enabled: !!sub,
-    queryFn: () => call((token) => getCardsToPlayRequest(sub, token)),
+  const [currentCard, setCurrentCard] = useState<NextCardResponse | null>(null);
+  const [cardLoading, setCardLoading] = useState<boolean>(false);
+
+  const [token, setToken] = useState<string | null>(null);
+  const startedRef = useRef(false);
+
+  const nextCardMutation = useNextCard();
+  const answerMutation = useAnswerCard();
+
+  const startSessionMutation = useMutation({
+    mutationFn: async (deskSub: string) => {
+      return await call((token) => startDeskSessionRequest(deskSub, token));
+    },
+    onSuccess: (res) => setSessionId(res.sessionId),
+    onError: (err) => console.log("ERROR", err),
   });
 
-  const current = res?.cards?.[index];
-  const isLast = index === (res?.cards.length ?? 0) - 1;
+  const handleStartSession = () => {
+    startSessionMutation.mutate(deskSub);
+  };
 
-  if (isLoading || !current) return <FullPageLoader />;
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    handleStartSession();
+  }, [deskSub]);
 
-  const question = current.showSide === "front" ? current.front : current.back;
-  const correctAnswer =
-    current.showSide === "front" ? current.back : current.front;
+  useEffect(() => {
+    if (!sessionId) return;
+    setCardLoading(true);
+    nextCardMutation.mutate(sessionId, {
+      onSuccess: (res) => {
+        setCurrentCard(res);
+        setCardLoading(false);
+      },
+    });
+  }, [sessionId]);
 
-  function normalize(text: string) {
-    return text.trim().toLowerCase().replace(/\s+/g, " ");
-  }
+  const submitAnswer = () => {
+    if (!sessionId || !answer.trim()) return;
 
-  function checkAnswer() {
-    setIsCorrect(normalize(answer) === normalize(correctAnswer));
-  }
+    answerMutation.mutate(
+      { sessionId, answer },
+      {
+        onSuccess: (res) => {
+          setResult(res);
+        },
+      }
+    );
+  };
 
-  function nextCard() {
-    if (isLast) {
-      router.back(); // можно заменить на страницу статистики
+  const nextCard = async () => {
+    if (!sessionId) return;
+
+    if (result?.finished) {
+      router.push(`/desk/${deskSub}`);
       return;
     }
 
     setAnswer("");
-    setIsCorrect(null);
-    setIndex((i) => i + 1);
-  }
+    setResult(null);
+    setCardLoading(true);
+    nextCardMutation.mutate(sessionId, {
+      onSuccess: (res) => {
+        setCurrentCard(res);
+        setCardLoading(false);
+      },
+    });
+  };
 
-  // const cardColor =
-  //   isCorrect === null ? "background.paper" : isCorrect ? "#e8f5e9" : "#fdecea";
-  console.log(theme.palette);
+  useEffect(() => {
+    call((token) => {
+      setToken(token);
+      return Promise.resolve();
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (!sessionId || result?.finished || !token) return;
+
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/games/finish`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ sessionId }),
+        keepalive: true,
+      });
+    };
+  }, []);
+
+  if (cardLoading && !currentCard) return <FullPageLoader />;
+
   const cardColor =
-    isCorrect === null
+    result === null
       ? theme.palette.background.paper
-      : isCorrect
+      : result.isCorrect
       ? theme.palette.successBg
       : theme.palette.errorBg;
 
   return (
-    <>
-      {/* MAIN LAYOUT */}
-      <Box
-        sx={{
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          px: 2,
-          pb: 2,
-        }}
-      >
-        {/* Progress */}
-        <Typography textAlign="center" color="text.secondary" mt={2} mb={2}>
-          {index + 1} / {res.cards.length}
-        </Typography>
-
-        {/* CARD */}
-        <Fade in key={index}>
-          <Box sx={{ flex: 1, display: "flex" }}>
-            <Card
-              sx={{
-                flex: 1,
-                display: "flex",
-                bgcolor: cardColor,
-                transition: "background-color 0.3s",
-                boxShadow: 4,
-                borderRadius: 3,
-              }}
-            >
-              <CardContent
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        px: 2,
+        pb: 2,
+      }}
+    >
+      {currentCard && (
+        <>
+          <Fade in key={currentCard.sub}>
+            <Box sx={{ flex: 1, display: "flex" }}>
+              <Card
                 sx={{
                   flex: 1,
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  px: 3,
+                  bgcolor: cardColor,
+                  transition: "background-color 0.3s",
+                  boxShadow: 4,
+                  borderRadius: 3,
                 }}
               >
-                <Typography variant="h4" fontWeight={600}>
-                  {question}
-                </Typography>
-              </CardContent>
-            </Card>
+                <CardContent
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    px: 3,
+                  }}
+                >
+                  <Typography variant="h4" fontWeight={600}>
+                    {currentCard.text.join(", ")}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Box>
+          </Fade>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+            <TextField
+              fullWidth
+              disabled={result !== null}
+              placeholder="Type your answer"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && result === null && answer.trim()) {
+                  submitAnswer();
+                }
+              }}
+            />
+
+            <Button
+              variant="contained"
+              size="large"
+              disabled={!answer.trim() || result !== null}
+              onClick={submitAnswer}
+            >
+              Check
+            </Button>
           </Box>
-        </Fade>
 
-        {/* INPUT + CHECK */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-          <TextField
-            fullWidth
-            disabled={isCorrect !== null}
-            placeholder="Type your answer"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && isCorrect === null && answer.trim()) {
-                checkAnswer();
-              }
-            }}
-          />
+          {result && (
+            <Fade in={result !== null}>
+              <Box sx={{ mt: 2 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight={700}
+                  color={result.isCorrect ? "green" : "red"}
+                  mb={1}
+                >
+                  {result.isCorrect ? "Correct 🎉" : "Wrong ❌"}
+                </Typography>
 
-          <Button
-            variant="contained"
-            size="large"
-            disabled={!answer.trim()}
-            onClick={checkAnswer}
-          >
-            Check
-          </Button>
-        </Box>
-      </Box>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Correct answers: {result.correctVariants.join(", ")}
+                </Typography>
 
-      {/* RESULT OVERLAY */}
-      <Fade in={isCorrect !== null}>
-        <Box
-          sx={{
-            position: "fixed",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1300,
-            p: 2,
-            pb: 3,
-            bgcolor: "background.default",
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-            boxShadow: "0 -4px 20px rgba(0,0,0,0.15)",
-          }}
-        >
-          <Typography
-            variant="h6"
-            fontWeight={700}
-            color={isCorrect ? "green" : "red"}
-            mb={1}
-          >
-            {isCorrect ? "Correct 🎉" : "Wrong ❌"}
-          </Typography>
-
-          {!isCorrect && (
-            <Typography mb={2}>
-              Correct answer: <b>{correctAnswer}</b>
-            </Typography>
+                <Button
+                  fullWidth
+                  size="large"
+                  variant="contained"
+                  onClick={nextCard}
+                >
+                  {result.finished ? "Finish" : "Next"}
+                </Button>
+              </Box>
+            </Fade>
           )}
-
-          <Button fullWidth size="large" variant="contained" onClick={nextCard}>
-            {isLast ? "Finish" : "Next"}
-          </Button>
-        </Box>
-      </Fade>
-    </>
+        </>
+      )}
+    </Box>
   );
 }

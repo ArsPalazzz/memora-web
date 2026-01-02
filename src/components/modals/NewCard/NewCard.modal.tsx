@@ -3,7 +3,7 @@ import { NewCardModalProps } from "./NewCard.types";
 import CreateCard from "@/components/forms/CreateCard/CreateCard.form";
 
 export default function NewCardModal(props: NewCardModalProps) {
-  const { open, onClose, onSubmit, errors, register } = props;
+  const { open, onClose, onSubmit, errors, register, control } = props;
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -14,6 +14,7 @@ export default function NewCardModal(props: NewCardModalProps) {
           onSubmit={onSubmit}
           errors={errors}
           register={register}
+          control={control}
         />
       </DialogContent>
     </Dialog>
