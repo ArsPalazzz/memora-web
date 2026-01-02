@@ -83,7 +83,7 @@ export default function HomeClient() {
     createDeskMutation.mutate({ data, token: accessToken! });
   };
 
-  if (loading) return <FullPageLoader />;
+  if (isDesksLoading) return <FullPageLoader />;
 
   if (!authenticated) return null;
 
