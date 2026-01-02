@@ -27,6 +27,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import {
   archiveDeskRequest,
   createCardRequest,
+  deleteCardRequest,
   fetchDeskRequest,
   updateCardRequest,
   updateDeskRequest,
@@ -151,6 +152,10 @@ export default function DeskClient() {
     archiveDeskMutation.mutate({ token: accessToken! });
   };
 
+  const onDeleteCardSubmit = (cardSub: string) => {
+    deleteCardMutation.mutate({ token: accessToken!, cardSub });
+  };
+
   const onUpdateSettingsSubmit = (data: DeskSettings) => {
     updateDeskSettingsMutation.mutate({ data, token: accessToken! });
   };
@@ -255,6 +260,23 @@ export default function DeskClient() {
 
       queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
       queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const deleteCardMutation = useMutation({
+    mutationFn: (payload: { token: string; cardSub: string }) => {
+      const data = { cardSub: payload.cardSub };
+
+      return call(() => deleteCardRequest(data, payload.token));
+    },
+    onSuccess: () => {
+      notifySuccess(`Card deleted successfully`);
+
+      queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
     },
     onError: (err) => {
       console.warn(err);
@@ -494,6 +516,7 @@ export default function DeskClient() {
                             py: 3,
                             textAlign: "center",
                             transition: "0.25s ease",
+                            position: "relative",
                             "&:hover": {
                               transform: "translateY(-4px)",
                               boxShadow: 6,
@@ -501,6 +524,22 @@ export default function DeskClient() {
                           }}
                           onClick={() => setUpdateCardModalSub(card.sub)}
                         >
+                          <IconButton
+                            size="small"
+                            sx={{
+                              position: "absolute",
+                              top: 4,
+                              right: 4,
+                              bgcolor: "background.paper",
+                              "&:hover": { bgcolor: "error.light" },
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteCardSubmit(card.sub);
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" color="error" />
+                          </IconButton>
                           <Typography
                             variant="h6"
                             sx={{ fontWeight: 600, mb: 1 }}

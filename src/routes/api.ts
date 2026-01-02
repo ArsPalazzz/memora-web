@@ -16,6 +16,7 @@ export const FETCH_CARDS_TO_PLAY_API = (sub: string) => `/desks/${sub}/play`;
 export const CREATE_CARD_API = "/cards/create";
 export const UPDATE_DESK_API = (sub: string) => `/desks/${sub}`;
 export const UPDATE_CARD_API = (sub: string) => `/cards/${sub}`;
+export const DELETE_CARD_API = (sub: string) => `/cards/${sub}`;
 export const ARCHIVE_DESK_API = (sub: string) => `/desks/${sub}`;
 export const UPDATE_DESK_SETTINGS_API = (sub: string) =>
   `/desks/${sub}/settings`;

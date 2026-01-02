@@ -4,6 +4,7 @@ import {
   CreateCardResult,
   CreateDeskParams,
   CreateDeskResult,
+  DeleteCardParams,
   FetchDeskResponse,
   FetchDesksResponse,
   GetCardsToPlayResponse,
@@ -16,6 +17,7 @@ import {
   ARCHIVE_DESK_API,
   CREATE_CARD_API,
   CREATE_DESK_API,
+  DELETE_CARD_API,
   FETCH_CARDS_TO_PLAY_API,
   FETCH_DESK_API,
   FETCH_DESKS_API,
@@ -110,6 +112,17 @@ export async function updateCardRequest(
 ): Promise<{ updated: boolean }> {
   return handleApiRequest(
     api.put(UPDATE_CARD_API(payload.card_sub), payload.payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function deleteCardRequest(
+  payload: DeleteCardParams,
+  token: string
+): Promise<{ archived: boolean }> {
+  return handleApiRequest(
+    api.delete(DELETE_CARD_API(payload.cardSub), {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

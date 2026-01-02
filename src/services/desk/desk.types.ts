@@ -69,6 +69,10 @@ export interface UpdateCardParams {
   };
 }
 
+export interface DeleteCardParams {
+  cardSub: string;
+}
+
 export interface ArchiveDeskParams {
   desk_sub: string;
 }
