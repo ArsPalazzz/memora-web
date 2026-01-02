@@ -182,56 +182,57 @@ export default function PlayDeskPage() {
           </Fade>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-            <TextField
-              fullWidth
-              disabled={result !== null}
-              placeholder="Type your answer"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && result === null && answer.trim()) {
-                  submitAnswer();
-                }
-              }}
-            />
-
-            <Button
-              variant="contained"
-              size="large"
-              disabled={!answer.trim() || result !== null}
-              onClick={submitAnswer}
-            >
-              Check
-            </Button>
-          </Box>
-
-          {result && (
-            <Fade in={result !== null}>
-              <Box sx={{ mt: 2 }}>
-                <Typography
-                  variant="h6"
-                  fontWeight={700}
-                  color={result.isCorrect ? "green" : "red"}
-                  mb={1}
-                >
-                  {result.isCorrect ? "Correct 🎉" : "Wrong ❌"}
-                </Typography>
-
-                <Typography variant="body2" color="text.secondary" mb={2}>
-                  Correct answers: {result.correctVariants.join(", ")}
-                </Typography>
+            {result === null ? (
+              <>
+                <TextField
+                  fullWidth
+                  placeholder="Type your answer"
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && answer.trim()) {
+                      submitAnswer();
+                    }
+                  }}
+                />
 
                 <Button
-                  fullWidth
-                  size="large"
                   variant="contained"
-                  onClick={nextCard}
+                  size="large"
+                  disabled={!answer.trim()}
+                  onClick={submitAnswer}
                 >
-                  {result.finished ? "Finish" : "Next"}
+                  Check
                 </Button>
-              </Box>
-            </Fade>
-          )}
+              </>
+            ) : (
+              <Fade in>
+                <Box>
+                  <Typography
+                    variant="h6"
+                    fontWeight={700}
+                    color={result.isCorrect ? "green" : "red"}
+                    mb={1}
+                  >
+                    {result.isCorrect ? "Correct 🎉" : "Wrong ❌"}
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Correct answers: {result.correctVariants.join(", ")}
+                  </Typography>
+
+                  <Button
+                    fullWidth
+                    size="large"
+                    variant="contained"
+                    onClick={nextCard}
+                  >
+                    {result.finished ? "Finish" : "Next"}
+                  </Button>
+                </Box>
+              </Fade>
+            )}
+          </Box>
         </>
       )}
     </Box>
