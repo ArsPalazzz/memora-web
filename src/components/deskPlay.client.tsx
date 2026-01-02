@@ -294,7 +294,10 @@ export default function PlayDeskPage() {
                         onClick={submitAnswer}
                         disabled={!answer.trim()}
                       >
-                        <ArrowForwardIosIcon fontSize="small" color="primary" />
+                        <ArrowForwardIosIcon
+                          fontSize="small"
+                          color={answer.trim() ? "primary" : "disabled"}
+                        />
                       </IconButton>
                     </InputAdornment>
                   ),
