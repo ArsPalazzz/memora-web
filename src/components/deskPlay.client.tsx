@@ -11,12 +11,15 @@ import {
   Typography,
   Fade,
   useTheme,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader } from "./ui/Loader";
 import { useMutation } from "@tanstack/react-query";
 import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
 import { NextCardResponse } from "@/services/games/games.types";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import {
   gradeCardRequest,
   startDeskSessionRequest,
@@ -282,6 +285,19 @@ export default function PlayDeskPage() {
                     display: "flex",
                     alignItems: "center",
                   },
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={submitAnswer}
+                        disabled={!answer.trim()}
+                      >
+                        <ArrowForwardIosIcon fontSize="small" color="primary" />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
               />
             ) : (
