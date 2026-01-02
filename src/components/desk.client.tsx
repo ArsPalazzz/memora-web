@@ -410,8 +410,8 @@ export default function DeskClient() {
               flex: 1,
               overflowY: "auto",
               paddingBottom: `${BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16}px`,
-              display: isDeskLoading ? "flex" : "inherit",
-              alignItems: isDeskLoading ? "center" : "inherit",
+              display: isDeskLoading ? "flex" : undefined,
+              alignItems: isDeskLoading ? "center" : undefined,
             }}
           >
             {isDeskLoading && <Loader />}

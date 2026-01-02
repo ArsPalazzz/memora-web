@@ -42,3 +42,14 @@ export async function answerCardRequest(
     })
   );
 }
+
+export async function gradeCardRequest(
+  payload: { sessionId: string; quality: number },
+  token: string
+): Promise<AnswerResult> {
+  return handleApiRequest(
+    api.post("/games/grade", payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}

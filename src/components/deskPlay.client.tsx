@@ -17,13 +17,32 @@ import { FullPageLoader } from "./ui/Loader";
 import { useMutation } from "@tanstack/react-query";
 import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
 import { NextCardResponse } from "@/services/games/games.types";
-import { startDeskSessionRequest } from "@/services/games/games";
+import {
+  gradeCardRequest,
+  startDeskSessionRequest,
+} from "@/services/games/games";
 
 type AnswerResult = {
   isCorrect: boolean;
   finished: boolean;
   correctVariants: string[];
 };
+
+const GRADE_COLORS: Record<number, string> = {
+  1: "#e53935",
+  2: "#fb8c00",
+  3: "#fbc02d",
+  4: "#43a047",
+  5: "#2e7d32",
+};
+
+const GRADE_OPTIONS = [
+  { quality: 1, label: "Forgot" },
+  { quality: 2, label: "Hard" },
+  { quality: 3, label: "Okay" },
+  { quality: 4, label: "Good" },
+  { quality: 5, label: "Easy" },
+] as const;
 
 export default function PlayDeskPage() {
   const params = useParams() as { id: string };
@@ -88,6 +107,29 @@ export default function PlayDeskPage() {
     );
   };
 
+  const gradeMutation = useMutation({
+    mutationFn: ({
+      sessionId,
+      quality,
+    }: {
+      sessionId: string;
+      quality: number;
+    }) => call((token) => gradeCardRequest({ sessionId, quality }, token)),
+  });
+
+  const submitGrade = (quality: number) => {
+    if (!sessionId) return;
+
+    gradeMutation.mutate(
+      { sessionId, quality },
+      {
+        onSuccess: () => {
+          nextCard();
+        },
+      }
+    );
+  };
+
   const nextCard = async () => {
     if (!sessionId) return;
 
@@ -145,14 +187,14 @@ export default function PlayDeskPage() {
         height: "100vh",
         display: "flex",
         flexDirection: "column",
-        px: 2,
         pb: 2,
+        pt: 2,
       }}
     >
       {currentCard && (
         <>
           <Fade in key={currentCard.sub}>
-            <Box sx={{ flex: 1, display: "flex" }}>
+            <Box sx={{ flex: 1, display: "flex", px: 2 }}>
               <Card
                 sx={{
                   flex: 1,
@@ -167,6 +209,7 @@ export default function PlayDeskPage() {
                   sx={{
                     flex: 1,
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     textAlign: "center",
@@ -176,59 +219,119 @@ export default function PlayDeskPage() {
                   <Typography variant="h4" fontWeight={600}>
                     {currentCard.text.join(", ")}
                   </Typography>
+
+                  <Box sx={{ height: 48, width: "100%", mt: 2 }}>
+                    <Fade in={result !== null}>
+                      <Box>
+                        <Box
+                          sx={{
+                            height: "1px",
+                            width: "40%",
+                            mx: "auto",
+                            mb: 1,
+                            bgcolor: "divider",
+                          }}
+                        />
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: "0.95rem" }}
+                        >
+                          {result?.correctVariants.join(", ")}
+                        </Typography>
+                      </Box>
+                    </Fade>
+                  </Box>
                 </CardContent>
               </Card>
             </Box>
           </Fade>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              mt: 2,
+              px: 2,
+            }}
+          >
             {result === null ? (
-              <>
-                <TextField
-                  fullWidth
-                  placeholder="Type your answer"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && answer.trim()) {
-                      submitAnswer();
-                    }
-                  }}
-                />
-
-                <Button
-                  variant="contained"
-                  size="large"
-                  disabled={!answer.trim()}
-                  onClick={submitAnswer}
-                >
-                  Check
-                </Button>
-              </>
+              <TextField
+                fullWidth
+                placeholder="Type your answer"
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && answer.trim()) {
+                    submitAnswer();
+                  }
+                }}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    height: 48,
+                    minHeight: 48,
+                    px: 2,
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                  "& .MuiInputBase-input": {
+                    padding: 0,
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                }}
+              />
             ) : (
               <Fade in>
-                <Box>
-                  <Typography
-                    variant="h6"
-                    fontWeight={700}
-                    color={result.isCorrect ? "green" : "red"}
-                    mb={1}
-                  >
-                    {result.isCorrect ? "Correct 🎉" : "Wrong ❌"}
-                  </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    width: "100%",
+                    overflow: "hidden",
+                  }}
+                >
+                  {GRADE_OPTIONS.map(({ quality, label }) => (
+                    <Box
+                      key={quality}
+                      onClick={() => submitGrade(quality)}
+                      sx={{
+                        flex: 1,
+                        cursor: "pointer",
+                        textAlign: "center",
+                        py: 1.5,
+                        position: "relative",
+                        transition: "background-color 0.2s",
+                        "&:hover": {
+                          bgcolor: "action.hover",
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: 4,
+                          bgcolor: GRADE_COLORS[quality],
+                        }}
+                      />
 
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    Correct answers: {result.correctVariants.join(", ")}
-                  </Typography>
-
-                  <Button
-                    fullWidth
-                    size="large"
-                    variant="contained"
-                    onClick={nextCard}
-                  >
-                    {result.finished ? "Finish" : "Next"}
-                  </Button>
+                      <Typography
+                        variant="body2"
+                        fontWeight={500}
+                        sx={{
+                          fontSize: "1.05rem",
+                          userSelect: "none",
+                          color: GRADE_COLORS[quality],
+                        }}
+                      >
+                        {label}
+                      </Typography>
+                    </Box>
+                  ))}
                 </Box>
               </Fade>
             )}
