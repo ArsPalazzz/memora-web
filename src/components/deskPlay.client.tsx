@@ -253,6 +253,7 @@ export default function PlayDeskPage() {
               flexDirection: "column",
               gap: 2,
               mt: 2,
+              mb: 2,
               px: 2,
             }}
           >
