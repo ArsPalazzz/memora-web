@@ -662,7 +662,6 @@ export default function DeskClient() {
               px: 2,
               pb: 1,
               zIndex: 1200,
-              bgcolor: "background.default",
             }}
           >
             <Card
