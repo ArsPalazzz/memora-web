@@ -32,19 +32,19 @@ type AnswerResult = {
 };
 
 const GRADE_COLORS: Record<number, string> = {
-  1: "#e53935",
-  2: "#fb8c00",
-  3: "#fbc02d",
-  4: "#43a047",
-  5: "#2e7d32",
+  0: "#e53935",
+  1: "#fb8c00",
+  2: "#fbc02d",
+  3: "#43a047",
+  4: "#2e7d32",
 };
 
 const GRADE_OPTIONS = [
-  { quality: 1, label: "Forgot" },
-  { quality: 2, label: "Hard" },
-  { quality: 3, label: "Okay" },
-  { quality: 4, label: "Good" },
-  { quality: 5, label: "Easy" },
+  { quality: 0, label: "Forgot" },
+  { quality: 1, label: "Hard" },
+  { quality: 2, label: "Okay" },
+  { quality: 3, label: "Good" },
+  { quality: 4, label: "Easy" },
 ] as const;
 
 export default function PlayDeskPage() {

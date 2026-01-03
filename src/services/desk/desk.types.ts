@@ -27,6 +27,13 @@ export interface FetchDeskResponse {
   created_at: string;
   cards: Card[];
   settings: DeskSettings;
+  stats: {
+    total_cards: number;
+    new_cards: number;
+    due_today: number;
+    mastered_cards: number;
+    avg_ease_factor: number;
+  };
 }
 
 export interface GetCardsToPlayResponse {
