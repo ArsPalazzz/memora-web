@@ -8,4 +8,6 @@ export interface EditCardModalProps {
   errors: FieldErrors<UpdateCardValues>;
   register: UseFormRegister<UpdateCardValues>;
   control: Control<UpdateCardValues>;
+  examples: string[];
+  onDelete: () => void;
 }

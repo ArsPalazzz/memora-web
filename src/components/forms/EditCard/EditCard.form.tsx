@@ -1,9 +1,14 @@
-import { Box, Button, Chip, TextField } from "@mui/material";
+import { Box, Chip, TextField } from "@mui/material";
 import { EditCardFormProps } from "./EditCard.types";
 import { useFieldArray } from "react-hook-form";
 import { useState, useEffect } from "react";
 
-const EditCard = ({ onSubmit, control, errors }: EditCardFormProps) => {
+const EditCard = ({
+  onSubmit,
+  control,
+  errors,
+  examples,
+}: EditCardFormProps) => {
   const {
     fields: frontFields,
     append: appendFront,
@@ -100,9 +105,41 @@ const EditCard = ({ onSubmit, control, errors }: EditCardFormProps) => {
         </Box>
       </Box>
 
-      <Button type="submit" variant="contained">
-        Update
-      </Button>
+      {examples && examples.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                bgcolor: "primary.main",
+                mr: 1,
+              }}
+            />
+            <Box sx={{ fontWeight: 500, fontSize: "0.9rem" }}>
+              Examples ({examples.length})
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              maxHeight: 150,
+              overflowY: "auto",
+              bgcolor: "background.default",
+              borderRadius: 1,
+              p: 2,
+              fontSize: "0.875rem",
+              lineHeight: 1.5,
+            }}
+          >
+            {examples.map((example, index) => (
+              <Box key={index} sx={{ mb: 1 }}>
+                {index + 1}. {example}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };

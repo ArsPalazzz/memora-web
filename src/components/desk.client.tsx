@@ -449,15 +449,17 @@ export default function DeskClient() {
                     width: "100%",
                   }}
                 >
-                  <Grid size={{ xs: 12 }} mb={1}>
+                  <Grid size={{ xs: 12 }} mb={desk.cards.length ? 1 : 2}>
                     <Typography variant="h4" fontWeight={600}>
                       {desk.title}
                     </Typography>
                   </Grid>
 
-                  <Grid size={{ xs: 12 }}>
-                    <AnkiStyleStats stats={desk.stats} />
-                  </Grid>
+                  {!!desk.cards.length && (
+                    <Grid size={{ xs: 12 }}>
+                      <AnkiStyleStats stats={desk.stats} />
+                    </Grid>
+                  )}
 
                   <Grid size={{ xs: 12 }}>
                     <Typography variant="h6" fontWeight={600}>
@@ -722,6 +724,11 @@ export default function DeskClient() {
           register={registerUpdateCard}
           onSubmit={handleSubmitUpdateCard(onUpdateCardSubmit)}
           control={controlUpdateCard}
+          examples={
+            desk.cards?.find((c) => c.sub === updateCardModalSub)?.examples ||
+            []
+          }
+          onDelete={() => onDeleteCardSubmit(updateCardModalSub)}
         />
       )}
 

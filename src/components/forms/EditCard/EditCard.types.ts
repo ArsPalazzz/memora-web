@@ -7,4 +7,5 @@ export interface EditCardFormProps {
   errors: FieldErrors<UpdateCardValues>;
   onClose: () => void;
   control: Control<UpdateCardValues>;
+  examples: string[];
 }

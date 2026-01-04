@@ -8,13 +8,6 @@ export interface FetchDesksResponse {
   created_at: string;
 }
 
-interface Card {
-  sub: string;
-  front_variants: string[];
-  back_variants: string[];
-  created_at: string;
-}
-
 export interface DeskSettings {
   cards_per_session: number;
   card_orientation: CARD_ORIENTATION;
@@ -25,7 +18,13 @@ export interface FetchDeskResponse {
   title: string;
   description: string;
   created_at: string;
-  cards: Card[];
+  cards: {
+    sub: string;
+    front_variants: string[];
+    back_variants: string[];
+    examples: string[];
+    created_at: string;
+  }[];
   settings: DeskSettings;
   stats: {
     total_cards: number;
