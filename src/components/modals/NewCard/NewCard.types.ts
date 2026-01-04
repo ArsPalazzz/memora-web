@@ -8,4 +8,5 @@ export interface NewCardModalProps {
   errors: FieldErrors<CreateCardValues>;
   register: UseFormRegister<CreateCardValues>;
   control: Control<CreateCardValues>;
+  isSubmitting: boolean;
 }

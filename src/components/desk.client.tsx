@@ -703,6 +703,7 @@ export default function DeskClient() {
           control={controlCreateCard}
           register={registerCreateCard}
           onSubmit={handleSubmitCreateCard(onCreateSubmit)}
+          isSubmitting={createCardMutation.isPending}
         />
       )}
 

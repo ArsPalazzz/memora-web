@@ -9,7 +9,8 @@ import { NewCardModalProps } from "./NewCard.types";
 import CreateCard from "@/components/forms/CreateCard/CreateCard.form";
 
 export default function NewCardModal(props: NewCardModalProps) {
-  const { open, onClose, onSubmit, errors, register, control } = props;
+  const { open, onClose, onSubmit, errors, register, control, isSubmitting } =
+    props;
   const theme = useTheme();
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -34,6 +35,7 @@ export default function NewCardModal(props: NewCardModalProps) {
           errors={errors}
           register={register}
           control={control}
+          isSubmitting={isSubmitting}
         />
       </DialogContent>
     </Dialog>
