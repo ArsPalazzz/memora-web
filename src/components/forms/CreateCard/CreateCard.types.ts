@@ -7,4 +7,5 @@ export interface CreateCardFormProps {
   errors: FieldErrors<CreateCardValues>;
   onClose: () => void;
   control: Control<CreateCardValues>;
+  isSubmitting?: boolean;
 }

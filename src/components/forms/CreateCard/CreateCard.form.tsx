@@ -1,9 +1,14 @@
-import { Box, Button, Chip, TextField } from "@mui/material";
+import { Box, Button, Chip, CircularProgress, TextField } from "@mui/material";
 import { CreateCardFormProps } from "./CreateCard.types";
 import { useFieldArray } from "react-hook-form";
 import { useEffect, useState } from "react";
 
-const CreateCard = ({ onSubmit, control, errors }: CreateCardFormProps) => {
+const CreateCard = ({
+  onSubmit,
+  control,
+  errors,
+  isSubmitting,
+}: CreateCardFormProps) => {
   const {
     fields: frontFields,
     append: appendFront,
@@ -100,8 +105,13 @@ const CreateCard = ({ onSubmit, control, errors }: CreateCardFormProps) => {
         </Box>
       </Box>
 
-      <Button type="submit" variant="contained">
-        Create
+      <Button
+        type="submit"
+        variant="contained"
+        disabled={isSubmitting}
+        startIcon={isSubmitting && <CircularProgress size={20} />}
+      >
+        {isSubmitting ? "Creating..." : "Create"}
       </Button>
     </Box>
   );
