@@ -28,14 +28,25 @@ export default function BottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 56,
+        height: "calc(56px + 20px + env(safe-area-inset-bottom, 0px))",
         zIndex: 1300,
-        pb: "env(safe-area-inset-bottom, 0px)",
         transition: "padding-bottom 0.3s ease",
+        display: "flex",
+        flexDirection: "column",
+        padding: 0,
       }}
       elevation={3}
     >
-      <BottomNavigation value={value} onChange={handleChange}>
+      <BottomNavigation
+        value={value}
+        onChange={handleChange}
+        sx={{
+          height: 56,
+          flexShrink: 0,
+          padding: 0,
+          backgroundColor: "background.paper",
+        }}
+      >
         <BottomNavigationAction
           label="Home"
           value={ROUTES.HOME}
@@ -47,6 +58,13 @@ export default function BottomNav() {
           icon={<PersonIcon />}
         />
       </BottomNavigation>
+
+      <div
+        style={{
+          flex: 1,
+          backgroundColor: "inherit",
+        }}
+      />
     </Paper>
   );
 }
