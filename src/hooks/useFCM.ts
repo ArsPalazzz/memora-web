@@ -18,8 +18,15 @@ export const useFCM = () => {
   const [swRegistration, setSwRegistration] =
     useState<ServiceWorkerRegistration | null>(null);
 
+  const [isClient, setIsClient] = useState(false);
+
+  // Устанавливаем флаг после монтирования на клиенте
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
 
     const supported =
       "Notification" in window &&
@@ -29,10 +36,10 @@ export const useFCM = () => {
 
     setIsSupported(!!supported);
     setPermission(Notification.permission);
-  }, []);
+  }, [isClient]);
 
   useEffect(() => {
-    if (!isSupported) return;
+    if (!isClient || !isSupported) return;
 
     const registerSW = async () => {
       try {
@@ -47,7 +54,7 @@ export const useFCM = () => {
     };
 
     registerSW();
-  }, [isSupported]);
+  }, [isClient, isSupported]);
 
   const sendTokenToBackend = useCallback(
     async (fcmToken: string) => {
