@@ -201,6 +201,7 @@ export default function ProfileClient() {
                     borderRadius: "50%",
                     bgcolor: theme.palette.primary.main,
                     display: "flex",
+                    flexShrink: 0,
                     alignItems: "center",
                     justifyContent: "center",
                     color: "white",
@@ -215,7 +216,7 @@ export default function ProfileClient() {
                   {profile?.nickname?.[0]?.toUpperCase() || "U"}
                 </Box>
                 <Box>
-                  <Typography variant="h5" fontWeight={700}>
+                  <Typography variant="h6" fontWeight={700}>
                     {profile?.nickname || "User"}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -385,7 +386,7 @@ export default function ProfileClient() {
           <Card
             sx={{
               borderRadius: 3,
-              bgcolor: alpha("#bb0101", 0.05),
+              bgcolor: "#bb0101",
               border: `1px solid ${alpha("#bb0101", 0.1)}`,
               cursor: "pointer",
               transition: "all 0.2s",
@@ -406,13 +407,11 @@ export default function ProfileClient() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 1.5,
                 }}
               >
-                <LogoutIcon sx={{ color: "#bb0101", fontSize: 20 }} />
                 <Typography
                   variant="h6"
-                  color="#bb0101"
+                  color="#ececec"
                   fontWeight={600}
                   sx={{ userSelect: "none" }}
                 >
