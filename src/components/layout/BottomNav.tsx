@@ -30,7 +30,8 @@ export default function BottomNav() {
         right: 0,
         height: 56,
         zIndex: 1300,
-        pb: 10,
+        pb: "env(safe-area-inset-bottom, 0px)",
+        transition: "padding-bottom 0.3s ease",
       }}
       elevation={3}
     >

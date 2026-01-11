@@ -4,6 +4,7 @@
 
 ###Frontend
 .next
+firebase-messaging-sw.js
 
 # dependencies
 /apps/memora-web/.pnp.*

@@ -30,11 +30,12 @@ import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader, Loader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import { v4 as uuidV4 } from "uuid";
-import { useRouter, useSearchParams } from "next/navigation";
-import { getMyProfileRequest } from "@/services/user/user";
+import { useRouter } from "next/navigation";
+import WithBottomNav from "./layout/WithBottomNav";
+import { motion } from "framer-motion";
 
 export default function HomeClient() {
-  const { loading, authenticated } = useAuth();
+  const { authenticated } = useAuth();
   const { accessToken } = useAuthContext();
   const queryClient = useQueryClient();
   const { call } = useProtectedRequest();
@@ -88,15 +89,8 @@ export default function HomeClient() {
   if (!authenticated) return null;
 
   return (
-    <>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100vh",
-          position: "relative",
-        }}
-      >
+    <WithBottomNav>
+      <Box sx={{ position: "relative" }}>
         <Header
           title="Desks"
           RightButton={
@@ -139,60 +133,68 @@ export default function HomeClient() {
             )}
 
             {desks &&
-              desks.map((desk) => (
+              desks.map((desk, index) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={desk.sub}>
-                  <Card
-                    variant="outlined"
-                    sx={{
-                      transition: "0.3s",
-                      "&:hover": {
-                        boxShadow: 6,
-                        transform: "translateY(-2px)",
-                      },
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.3,
+                      delay: Number(`0.${index + 1}`),
                     }}
-                    onClick={() => router.push(`desk/${desk.sub}`)}
                   >
-                    <CardContent>
-                      <Typography
-                        variant="h6"
-                        fontWeight={600}
-                        mb={0.5}
-                        sx={{ lineHeight: 1.2 }}
-                      >
-                        {desk.title}
-                      </Typography>
-
-                      {desk.description && (
+                    <Card
+                      variant="outlined"
+                      sx={{
+                        transition: "0.3s",
+                        "&:hover": {
+                          boxShadow: 6,
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                      onClick={() => router.push(`desk/${desk.sub}`)}
+                    >
+                      <CardContent>
                         <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          mb={1.5}
-                          sx={{
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                          }}
+                          variant="h6"
+                          fontWeight={600}
+                          mb={0.5}
+                          sx={{ lineHeight: 1.2 }}
                         >
-                          {desk.description}
+                          {desk.title}
                         </Typography>
-                      )}
 
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ opacity: 0.8 }}
-                      >
-                        Created {new Date(desk.created_at).toLocaleDateString()}
-                      </Typography>
-                    </CardContent>
-                  </Card>
+                        {desk.description && (
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            mb={1.5}
+                            sx={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {desk.description}
+                          </Typography>
+                        )}
+
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ opacity: 0.8 }}
+                        >
+                          Created
+                          {new Date(desk.created_at).toLocaleDateString()}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 </Grid>
               ))}
           </Grid>
         </Box>
-
-        <BottomNav />
       </Box>
 
       {open && (
@@ -204,6 +206,6 @@ export default function HomeClient() {
           onSubmit={handleSubmit(onSubmit)}
         />
       )}
-    </>
+    </WithBottomNav>
   );
 }

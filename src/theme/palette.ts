@@ -31,7 +31,7 @@ export const darkPalette = {
     main: "#6C757D",
   },
   background: {
-    default: "#121212",
+    default: "#1a191b",
     paper: "#1E1E1E",
   },
   text: {

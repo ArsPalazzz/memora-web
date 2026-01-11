@@ -12,3 +12,7 @@ export type AnswerResult = {
   finished: boolean;
   correctVariants: string[];
 };
+
+export type StartReviewSessionResult = {
+  sessionId: string;
+};

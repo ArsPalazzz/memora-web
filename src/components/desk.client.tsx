@@ -65,8 +65,9 @@ import {
   UpdateCardValues,
 } from "@/schemas/updateCard.schema";
 import { AnkiStyleStats } from "./ui/DeskStats";
+import WithBottomNav from "./layout/WithBottomNav";
 
-const BOTTOM_NAV_HEIGHT = 56 + 4 * 10;
+const BOTTOM_NAV_HEIGHT = 36 + 4 * 10;
 const PLAY_BUTTON_HEIGHT = 64;
 
 export default function DeskClient() {
@@ -341,357 +342,362 @@ export default function DeskClient() {
 
   return (
     <>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100vh",
-          position: "relative",
-        }}
-      >
-        <Header
-          title="Desks"
-          onBack={() => router.push(ROUTES.HOME)}
-          RightButton={
-            <>
-              <IconButton onClick={(e) => handleMenuOpen(e)}>
-                <MoreHorizIcon sx={{ color: "white", fontSize: 30 }} />
-              </IconButton>
-
-              <Menu
-                anchorEl={anchorMenu}
-                open={openMenu}
-                onClose={handleMenuClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-              >
-                <MenuItem
-                  sx={{
-                    display: "flex",
-                    gap: 0.5,
-                    alignItems: "center",
-                  }}
-                  onClick={() => {
-                    setAnchorMenu(null);
-                    setCreateCardModal(true);
-                  }}
-                >
-                  <AddIcon sx={{ fontSize: 20 }} />
-                  <Typography>Add card</Typography>
-                </MenuItem>
-
-                <MenuItem
-                  sx={{
-                    display: "flex",
-                    gap: 0.5,
-                    alignItems: "center",
-                  }}
-                  onClick={() => {
-                    setAnchorMenu(null);
-                    setUpdateDeskModal(true);
-                  }}
-                >
-                  <EditIcon sx={{ fontSize: 20 }} />
-                  <Typography>Edit desk</Typography>
-                </MenuItem>
-
-                <MenuItem
-                  sx={{
-                    display: "flex",
-                    gap: 0.5,
-                    alignItems: "center",
-                    color: "red",
-                  }}
-                  onClick={() => {
-                    setAnchorMenu(null);
-                    setDeleteDeskModal(true);
-                  }}
-                >
-                  <DeleteIcon sx={{ fontSize: 20 }} />
-                  <Typography>Archive desk</Typography>
-                </MenuItem>
-              </Menu>
-            </>
-          }
-        />
+      <WithBottomNav>
         <Box
           sx={{
-            flex: 1,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
+            position: "relative",
           }}
         >
+          <Header
+            title="Desks"
+            onBack={() => router.push(ROUTES.HOME)}
+            RightButton={
+              <>
+                <IconButton onClick={(e) => handleMenuOpen(e)}>
+                  <MoreHorizIcon sx={{ color: "white", fontSize: 30 }} />
+                </IconButton>
+
+                <Menu
+                  anchorEl={anchorMenu}
+                  open={openMenu}
+                  onClose={handleMenuClose}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                >
+                  <MenuItem
+                    sx={{
+                      display: "flex",
+                      gap: 0.5,
+                      alignItems: "center",
+                    }}
+                    onClick={() => {
+                      setAnchorMenu(null);
+                      setCreateCardModal(true);
+                    }}
+                  >
+                    <AddIcon sx={{ fontSize: 20 }} />
+                    <Typography>Add card</Typography>
+                  </MenuItem>
+
+                  <MenuItem
+                    sx={{
+                      display: "flex",
+                      gap: 0.5,
+                      alignItems: "center",
+                    }}
+                    onClick={() => {
+                      setAnchorMenu(null);
+                      setUpdateDeskModal(true);
+                    }}
+                  >
+                    <EditIcon sx={{ fontSize: 20 }} />
+                    <Typography>Edit desk</Typography>
+                  </MenuItem>
+
+                  <MenuItem
+                    sx={{
+                      display: "flex",
+                      gap: 0.5,
+                      alignItems: "center",
+                      color: "red",
+                    }}
+                    onClick={() => {
+                      setAnchorMenu(null);
+                      setDeleteDeskModal(true);
+                    }}
+                  >
+                    <DeleteIcon sx={{ fontSize: 20 }} />
+                    <Typography>Archive desk</Typography>
+                  </MenuItem>
+                </Menu>
+              </>
+            }
+          />
           <Box
             sx={{
               flex: 1,
-              overflowY: "auto",
-              paddingBottom: `${BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16}px`,
-              display: isDeskLoading ? "flex" : undefined,
-              alignItems: isDeskLoading ? "center" : undefined,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            {isDeskLoading && <Loader />}
-
-            {desk && (
-              <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 1,
-                    width: "100%",
-                  }}
-                >
-                  <Grid size={{ xs: 12 }} mb={desk.cards.length ? 1 : 2}>
-                    <Typography variant="h4" fontWeight={600}>
-                      {desk.title}
-                    </Typography>
-                  </Grid>
-
-                  {!!desk.cards.length && (
-                    <Grid size={{ xs: 12 }}>
-                      <AnkiStyleStats stats={desk.stats} />
-                    </Grid>
-                  )}
-
-                  <Grid size={{ xs: 12 }}>
-                    <Typography variant="h6" fontWeight={600}>
-                      Cards
-                    </Typography>
-                  </Grid>
-
-                  <Grid size={{ xs: 12 }}>
-                    {!desk.cards?.length && (
-                      <Typography sx={{ display: "inline" }}>
-                        You don&apos;t have any cards yet.{" "}
-                        <Typography
-                          component="span"
-                          sx={{
-                            display: "inline",
-                            cursor: "pointer",
-                            color: "#5961d3",
-                          }}
-                          fontWeight={700}
-                          onClick={() => {
-                            setAnchorMenu(null);
-                            setCreateCardModal(true);
-                          }}
-                        >
-                          Add one?
-                        </Typography>
-                      </Typography>
-                    )}
-
-                    <Box
-                      ref={scrollRef}
-                      sx={{
-                        display: "flex",
-                        gap: 0.5,
-                        overflowX: "auto",
-                        overflowY: "hidden",
-                        py: 1,
-                        pb: 2,
-                        px: 0.5,
-                        scrollSnapType: "x proximity",
-                        width: "100%",
-                        boxSizing: "border-box",
-                        "&::-webkit-scrollbar": { display: "none" },
-                        overscrollBehaviorX: "contain",
-                      }}
-                    >
-                      {desk.cards?.map((card) => (
-                        <Card
-                          key={card.sub}
-                          sx={{
-                            flex: "0 0 44vw",
-                            maxWidth: "44vw",
-                            height: "44vw",
-                            scrollSnapAlign: "start",
-                            boxShadow: 3,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            px: 2,
-                            py: 3,
-                            textAlign: "center",
-                            transition: "0.25s ease",
-                            position: "relative",
-                            "&:hover": {
-                              transform: "translateY(-4px)",
-                              boxShadow: 6,
-                            },
-                          }}
-                          onClick={() => setUpdateCardModalSub(card.sub)}
-                        >
-                          <IconButton
-                            size="small"
-                            sx={{
-                              position: "absolute",
-                              top: 4,
-                              right: 4,
-                              bgcolor: "background.paper",
-                              "&:hover": { bgcolor: "error.light" },
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteCardSubmit(card.sub);
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" color="error" />
-                          </IconButton>
-                          <Typography
-                            variant="h6"
-                            sx={{ fontWeight: 600, mb: 1 }}
-                          >
-                            {card.front_variants[0]}
-                            {card.front_variants.length > 1 && (
-                              <Box
-                                component="span"
-                                sx={{
-                                  fontWeight: 400,
-                                  color: "text.secondary",
-                                  ml: 0.5,
-                                }}
-                              >
-                                +{card.front_variants.length - 1} more
-                              </Box>
-                            )}
-                          </Typography>
-
-                          <Box
-                            sx={{
-                              width: "60%",
-                              height: "2px",
-                              bgcolor: "divider",
-                              my: 1,
-                              borderRadius: 1,
-                            }}
-                          />
-
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "text.primary" }}
-                          >
-                            {card.back_variants[0]}
-                            {card.back_variants.length > 1 && (
-                              <Box
-                                component="span"
-                                sx={{
-                                  fontWeight: 400,
-                                  color: "text.secondary",
-                                  ml: 0.5,
-                                }}
-                              >
-                                +{card.back_variants.length - 1} more
-                              </Box>
-                            )}
-                          </Typography>
-                        </Card>
-                      ))}
-                    </Box>
-                  </Grid>
-
-                  <Grid size={{ xs: 12 }} mb={1}>
-                    <Typography variant="h6" fontWeight={600}>
-                      Settings
-                    </Typography>
-                  </Grid>
-
-                  <Grid size={{ xs: 12 }} mb={2}>
-                    <List
-                      sx={{
-                        width: "100%",
-                        bgcolor: "background.paper",
-                        borderRadius: 2,
-                        overflow: "hidden",
-                      }}
-                    >
-                      {settingsItems.map((item, index) => (
-                        <React.Fragment key={item.key}>
-                          <ListItemButton
-                            onClick={() => setOpenSheet(item.key)}
-                            sx={{
-                              py: 2,
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              gap: 2,
-                            }}
-                          >
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <ListItemIcon sx={{ minWidth: 40 }}>
-                                {item.icon}
-                              </ListItemIcon>
-
-                              <ListItemText
-                                primary={item.title}
-                                secondary={item.subtitle}
-                                primaryTypographyProps={{ fontWeight: 600 }}
-                              />
-                            </Box>
-
-                            <Typography color="text.secondary" fontWeight={600}>
-                              {item.value}
-                            </Typography>
-                          </ListItemButton>
-
-                          {index !== 1 && <Divider component="li" />}
-                        </React.Fragment>
-                      ))}
-                    </List>
-                  </Grid>
-                </Box>
-              </Grid>
-            )}
-          </Box>
-        </Box>
-
-        {desk && desk.cards.length && (
-          <Box
-            sx={{
-              position: "fixed",
-              bottom: `${BOTTOM_NAV_HEIGHT}px`,
-              left: 0,
-              right: 0,
-              px: 2,
-              pb: 1,
-              zIndex: 1200,
-            }}
-          >
-            <Card
+            <Box
               sx={{
-                py: 1.5,
-                textAlign: "center",
-                fontWeight: 700,
-                boxShadow: 4,
-                borderRadius: 2,
-                bgcolor: desk?.cards.length ? "#5961d3" : "#5a5a5a",
-                color: "white",
-                "&:active": {
-                  transform: desk?.cards.length ? "scale(0.98)" : "scale(1)",
-                },
-                cursor: desk?.cards.length ? "pointer" : "not-allowed",
-              }}
-              onClick={() => {
-                if (!desk?.cards.length) return;
-                router.push(`/desk/${sub}/play`);
+                flex: 1,
+                overflowY: "auto",
+                paddingBottom: `${
+                  BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16
+                }px`,
+                display: isDeskLoading ? "flex" : undefined,
+                alignItems: isDeskLoading ? "center" : undefined,
               }}
             >
-              Play
-            </Card>
-          </Box>
-        )}
+              {isDeskLoading && <Loader />}
 
-        <BottomNav />
-      </Box>
+              {desk && (
+                <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                      width: "100%",
+                    }}
+                  >
+                    <Grid size={{ xs: 12 }} mb={desk.cards.length ? 1 : 2}>
+                      <Typography variant="h4" fontWeight={600}>
+                        {desk.title}
+                      </Typography>
+                    </Grid>
+
+                    {!!desk.cards.length && (
+                      <Grid size={{ xs: 12 }}>
+                        <AnkiStyleStats stats={desk.stats} />
+                      </Grid>
+                    )}
+
+                    <Grid size={{ xs: 12 }}>
+                      <Typography variant="h6" fontWeight={600}>
+                        Cards
+                      </Typography>
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }}>
+                      {!desk.cards?.length && (
+                        <Typography sx={{ display: "inline" }}>
+                          You don&apos;t have any cards yet.{" "}
+                          <Typography
+                            component="span"
+                            sx={{
+                              display: "inline",
+                              cursor: "pointer",
+                              color: "#5961d3",
+                            }}
+                            fontWeight={700}
+                            onClick={() => {
+                              setAnchorMenu(null);
+                              setCreateCardModal(true);
+                            }}
+                          >
+                            Add one?
+                          </Typography>
+                        </Typography>
+                      )}
+
+                      <Box
+                        ref={scrollRef}
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          overflowX: "auto",
+                          overflowY: "hidden",
+                          py: 1,
+                          pb: 2,
+                          px: 0.5,
+                          scrollSnapType: "x proximity",
+                          width: "100%",
+                          boxSizing: "border-box",
+                          "&::-webkit-scrollbar": { display: "none" },
+                          overscrollBehaviorX: "contain",
+                        }}
+                      >
+                        {desk.cards?.map((card) => (
+                          <Card
+                            key={card.sub}
+                            sx={{
+                              flex: "0 0 44vw",
+                              maxWidth: "44vw",
+                              height: "44vw",
+                              scrollSnapAlign: "start",
+                              boxShadow: 3,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              px: 2,
+                              py: 3,
+                              textAlign: "center",
+                              transition: "0.25s ease",
+                              position: "relative",
+                              "&:hover": {
+                                transform: "translateY(-4px)",
+                                boxShadow: 6,
+                              },
+                            }}
+                            onClick={() => setUpdateCardModalSub(card.sub)}
+                          >
+                            <IconButton
+                              size="small"
+                              sx={{
+                                position: "absolute",
+                                top: 4,
+                                right: 4,
+                                bgcolor: "background.paper",
+                                "&:hover": { bgcolor: "error.light" },
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteCardSubmit(card.sub);
+                              }}
+                            >
+                              <DeleteIcon fontSize="small" color="error" />
+                            </IconButton>
+                            <Typography
+                              variant="h6"
+                              sx={{ fontWeight: 600, mb: 1 }}
+                            >
+                              {card.front_variants[0]}
+                              {card.front_variants.length > 1 && (
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    fontWeight: 400,
+                                    color: "text.secondary",
+                                    ml: 0.5,
+                                  }}
+                                >
+                                  +{card.front_variants.length - 1} more
+                                </Box>
+                              )}
+                            </Typography>
+
+                            <Box
+                              sx={{
+                                width: "60%",
+                                height: "2px",
+                                bgcolor: "divider",
+                                my: 1,
+                                borderRadius: 1,
+                              }}
+                            />
+
+                            <Typography
+                              variant="body2"
+                              sx={{ color: "text.primary" }}
+                            >
+                              {card.back_variants[0]}
+                              {card.back_variants.length > 1 && (
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    fontWeight: 400,
+                                    color: "text.secondary",
+                                    ml: 0.5,
+                                  }}
+                                >
+                                  +{card.back_variants.length - 1} more
+                                </Box>
+                              )}
+                            </Typography>
+                          </Card>
+                        ))}
+                      </Box>
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }} mb={1}>
+                      <Typography variant="h6" fontWeight={600}>
+                        Settings
+                      </Typography>
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }}>
+                      <List
+                        sx={{
+                          width: "100%",
+                          bgcolor: "background.paper",
+                          borderRadius: 2,
+                          overflow: "hidden",
+                        }}
+                      >
+                        {settingsItems.map((item, index) => (
+                          <React.Fragment key={item.key}>
+                            <ListItemButton
+                              onClick={() => setOpenSheet(item.key)}
+                              sx={{
+                                py: 2,
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              <Box
+                                sx={{ display: "flex", alignItems: "center" }}
+                              >
+                                <ListItemIcon sx={{ minWidth: 40 }}>
+                                  {item.icon}
+                                </ListItemIcon>
+
+                                <ListItemText
+                                  primary={item.title}
+                                  secondary={item.subtitle}
+                                  primaryTypographyProps={{ fontWeight: 600 }}
+                                />
+                              </Box>
+
+                              <Typography
+                                color="text.secondary"
+                                fontWeight={600}
+                              >
+                                {item.value}
+                              </Typography>
+                            </ListItemButton>
+
+                            {index !== 1 && <Divider component="li" />}
+                          </React.Fragment>
+                        ))}
+                      </List>
+                    </Grid>
+                  </Box>
+                </Grid>
+              )}
+            </Box>
+          </Box>
+
+          {desk && desk.cards.length && (
+            <Box
+              sx={{
+                position: "fixed",
+                bottom: `${BOTTOM_NAV_HEIGHT}px`,
+                left: 0,
+                right: 0,
+                px: 2,
+                pb: 1,
+                zIndex: 1200,
+              }}
+            >
+              <Card
+                sx={{
+                  py: 1.5,
+                  textAlign: "center",
+                  fontWeight: 700,
+                  boxShadow: 4,
+                  borderRadius: 2,
+                  bgcolor: desk?.cards.length ? "#5961d3" : "#5a5a5a",
+                  color: "white",
+                  "&:active": {
+                    transform: desk?.cards.length ? "scale(0.98)" : "scale(1)",
+                  },
+                  cursor: desk?.cards.length ? "pointer" : "not-allowed",
+                }}
+                onClick={() => {
+                  if (!desk?.cards.length) return;
+                  router.push(`/desk/${sub}/play`);
+                }}
+              >
+                Play
+              </Card>
+            </Box>
+          )}
+        </Box>
+      </WithBottomNav>
+
       {createCardModal && (
         <NewCardModal
           open={createCardModal}

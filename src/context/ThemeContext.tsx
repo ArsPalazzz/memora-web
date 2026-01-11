@@ -22,7 +22,7 @@ const ThemeContext = createContext<ThemeContextProps>({
 });
 
 export const ThemeProviderClient = ({ children }: { children: ReactNode }) => {
-  const [mode, setMode] = useState<ThemeMode>("light");
+  const [mode, setMode] = useState<ThemeMode>("dark");
 
   useEffect(() => {
     const saved = localStorage.getItem("theme") as ThemeMode;

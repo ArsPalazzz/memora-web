@@ -5,7 +5,7 @@ const images = ["/icons/kitty.png", "/icons/kitty-tongue.png"];
 const durations = [500, 250];
 const maxDots = 3;
 
-export const Loader = () => {
+export const Loader = ({ size }: { size?: number }) => {
   return (
     <Box
       sx={{
@@ -15,7 +15,7 @@ export const Loader = () => {
         flexGrow: 1,
       }}
     >
-      <CircularProgress />
+      <CircularProgress size={size || 40} />
     </Box>
   );
 };

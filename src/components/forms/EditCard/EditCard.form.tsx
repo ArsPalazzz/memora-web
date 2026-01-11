@@ -1,4 +1,4 @@
-import { Box, Chip, TextField } from "@mui/material";
+import { alpha, Box, Chip, TextField, useTheme } from "@mui/material";
 import { EditCardFormProps } from "./EditCard.types";
 import { useFieldArray } from "react-hook-form";
 import { useState, useEffect } from "react";
@@ -29,6 +29,8 @@ const EditCard = ({
 
   const [frontInput, setFrontInput] = useState("");
   const [backInput, setBackInput] = useState("");
+
+  const theme = useTheme();
 
   const handleFrontKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -61,11 +63,15 @@ const EditCard = ({
     <Box
       component="form"
       onSubmit={onSubmit}
-      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+      }}
     >
       <Box>
         <TextField
-          label="Front"
+          label="Front Side"
           value={frontInput}
           onChange={(e) => setFrontInput(e.target.value)}
           onKeyDown={handleFrontKeyDown}
@@ -86,7 +92,7 @@ const EditCard = ({
 
       <Box>
         <TextField
-          label="Back"
+          label="Back Side"
           value={backInput}
           onChange={(e) => setBackInput(e.target.value)}
           onKeyDown={handleBackKeyDown}
@@ -113,7 +119,6 @@ const EditCard = ({
                 width: 8,
                 height: 8,
                 borderRadius: "50%",
-                bgcolor: "primary.main",
                 mr: 1,
               }}
             />
@@ -125,7 +130,7 @@ const EditCard = ({
             sx={{
               maxHeight: 150,
               overflowY: "auto",
-              bgcolor: "background.default",
+              bgcolor: alpha(theme.palette.background.default, 0.25),
               borderRadius: 1,
               p: 2,
               fontSize: "0.875rem",

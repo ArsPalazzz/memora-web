@@ -10,7 +10,6 @@ const withPWA = withPWAInit({
 
 const nextConfig = {
   async rewrites() {
-    //if (process.env.NODE_ENV === "development") {
     return [
       {
         source: "/api/:path*",
@@ -19,9 +18,30 @@ const nextConfig = {
         }/:path*`,
       },
     ];
-    // }
-    // return [];
   },
+
+  async headers() {
+    return [
+      {
+        source: "/firebase-messaging-sw.js",
+        headers: [
+          {
+            key: "Service-Worker-Allowed",
+            value: "/",
+          },
+          {
+            key: "Content-Type",
+            value: "application/javascript; charset=utf-8",
+          },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+        ],
+      },
+    ];
+  },
+
   env: {
     CUSTOM_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
   },

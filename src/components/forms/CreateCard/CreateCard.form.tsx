@@ -65,7 +65,7 @@ const CreateCard = ({
     >
       <Box>
         <TextField
-          label="Front"
+          label="Front Side"
           value={frontInput}
           onChange={(e) => setFrontInput(e.target.value)}
           onKeyDown={handleFrontKeyDown}
@@ -86,7 +86,7 @@ const CreateCard = ({
 
       <Box>
         <TextField
-          label="Back"
+          label="Back Side"
           value={backInput}
           onChange={(e) => setBackInput(e.target.value)}
           onKeyDown={handleBackKeyDown}

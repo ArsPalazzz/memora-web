@@ -35,6 +35,7 @@ export default function EditCardModal(props: EditCardModalProps) {
           maxWidth: isMobile ? "80vw" : "40vw",
           width: isMobile ? "80vw" : "40vw",
           maxHeight: "90vh",
+          bgcolor: "background.default",
         },
       }}
     >

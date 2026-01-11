@@ -2,6 +2,7 @@ import { api, handleApiRequest } from "@/lib/axios";
 import {
   AnswerResult,
   NextCardResponse,
+  StartReviewSessionResult,
   StartSessionResponse,
 } from "./games.types";
 
@@ -49,6 +50,17 @@ export async function gradeCardRequest(
 ): Promise<AnswerResult> {
   return handleApiRequest(
     api.post("/games/grade", payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function startReviewSessionRequest(
+  payload: { batchId: string },
+  token: string
+): Promise<StartReviewSessionResult> {
+  return handleApiRequest(
+    api.post("/games/start-review-session", payload, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );
