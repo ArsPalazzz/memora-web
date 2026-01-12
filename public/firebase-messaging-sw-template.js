@@ -18,9 +18,10 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log("📩 [SW] Background message received:", payload);
 
-  const notificationTitle = payload.notification?.title || "New Notification";
+  const notificationTitle = payload.data?.title || "New Notification";
+
   const notificationOptions = {
-    body: payload.notification?.body || "",
+    body: payload.data?.body || "",
     icon: "/icons/logo-192x192.png",
     badge: "/badge-72.png",
     data: payload.data || {},
