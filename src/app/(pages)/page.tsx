@@ -1,21 +1,22 @@
-"use client";
-
+import { redirect } from "next/navigation";
 import { ROUTES } from "@/routes/next";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
-export default function RootPage() {
-  const router = useRouter();
+export default async function RootPage() {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`,
+      {
+        credentials: "include",
+        cache: "no-store",
+      }
+    );
 
-  useEffect(() => {
-    fetch("/api/auth/me", { credentials: "include" })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Not authenticated");
-        return res.json();
-      })
-      .then(() => router.replace(ROUTES.HOME))
-      .catch(() => router.replace(ROUTES.LOGIN));
-  }, [router]);
-
-  return null;
+    if (response.ok) {
+      redirect(ROUTES.HOME);
+    } else {
+      redirect(ROUTES.LOGIN);
+    }
+  } catch (error) {
+    redirect(ROUTES.LOGIN);
+  }
 }

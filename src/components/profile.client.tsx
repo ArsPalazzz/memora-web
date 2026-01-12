@@ -19,7 +19,6 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import NotificationsOffIcon from "@mui/icons-material/NotificationsOff";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { MY_PROFILE } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
@@ -149,12 +148,7 @@ export default function ProfileClient() {
                   <Button
                     variant="contained"
                     onClick={async () => {
-                      const result = await enableNotifications();
-                      if (result?.success) {
-                        notifySuccess(result.message);
-                      } else if (result?.message) {
-                        notifyError(result.message);
-                      }
+                      await enableNotifications();
                     }}
                     disabled={notificationsLoading}
                     startIcon={
