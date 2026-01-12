@@ -18,21 +18,20 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log("📩 [SW] Background message received:", payload);
 
-  const notificationTitle = payload.data?.title || "New Notification";
+  const title = payload.data?.title ?? "New Notification";
+  const body = payload.data?.body ?? "";
 
   const notificationOptions = {
-    body: payload.data?.body || "",
+    body,
     icon: "/icons/logo-192x192.png",
     badge: "/badge-72.png",
     data: payload.data || {},
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  self.registration.showNotification(title, notificationOptions);
 });
 
 self.addEventListener("notificationclick", (event) => {
-  console.log("🎯 [SW] Notification clicked:", event.notification.data);
-
   event.notification.close();
 
   const data = event.notification.data;
