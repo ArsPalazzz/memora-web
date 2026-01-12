@@ -660,7 +660,7 @@ export default function DeskClient() {
             </Box>
           </Box>
 
-          {desk && desk.cards.length && (
+          {desk && !!desk.cards.length && (
             <Box
               sx={{
                 position: "fixed",
