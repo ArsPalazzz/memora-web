@@ -28,7 +28,7 @@ export default function RootLayout({
           <InnerThemeProvider>
             <ClientProviders>
               {/* <FCMInitializer /> */}
-              {/* <OrientationLock>{children}</OrientationLock> */}
+              <OrientationLock>{children}</OrientationLock>
               {children}
             </ClientProviders>
           </InnerThemeProvider>

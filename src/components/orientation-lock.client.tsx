@@ -9,37 +9,73 @@ export default function OrientationLock({
 }) {
   const [isLandscape, setIsLandscape] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    setIsMounted(true);
+  }, []);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
-    const mobileCheck = /android|iphone|ipad|ipod|mobile/i.test(ua);
-    setIsMobile(mobileCheck);
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const checkMobile = () => {
+      if (typeof navigator === "undefined") return false;
+
+      const userAgent = navigator.userAgent || "";
+      const mobileRegex = /android|iphone|ipad|ipod|mobile/i;
+      return mobileRegex.test(userAgent);
+    };
+
+    const mobile = checkMobile();
+    setIsMobile(mobile);
 
     const checkOrientation = () => {
-      if (!mobileCheck) return;
+      if (!mobile || typeof window === "undefined") return;
+
+      let landscape = false;
 
       if (screen.orientation && screen.orientation.type) {
-        setIsLandscape(screen.orientation.type.startsWith("landscape"));
-      } else {
-        setIsLandscape(window.innerWidth > window.innerHeight);
+        try {
+          landscape = screen.orientation.type.startsWith("landscape");
+        } catch {
+          // fallback
+        }
       }
+
+      if (!landscape && window.innerWidth && window.innerHeight) {
+        landscape = window.innerWidth > window.innerHeight;
+      }
+
+      setIsLandscape(landscape);
     };
 
     checkOrientation();
 
-    const handleResize = () => setTimeout(checkOrientation, 100);
+    const handleResize = () => {
+      setTimeout(checkOrientation, 100);
+    };
 
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("orientationchange", handleResize);
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize);
+
+      if ("onorientationchange" in window) {
+        window.addEventListener("orientationchange", handleResize);
+      }
+    }
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("orientationchange", handleResize);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", handleResize);
+        if ("onorientationchange" in window) {
+          window.removeEventListener("orientationchange", handleResize);
+        }
+      }
     };
-  }, []);
+  }, [isMounted]);
+
+  if (!isMounted) {
+    return <>{children}</>;
+  }
 
   if (isMobile && isLandscape) {
     return (
