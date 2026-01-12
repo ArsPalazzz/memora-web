@@ -32,7 +32,7 @@ const LoginForm = ({ onSubmit, register, errors, isValid }: LoginFormProps) => {
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <TextField
-          label="Email"
+          placeholder="Email"
           fullWidth
           {...register("email")}
           error={!!errors.email}
@@ -51,7 +51,7 @@ const LoginForm = ({ onSubmit, register, errors, isValid }: LoginFormProps) => {
           autoComplete="off"
         />
         <TextField
-          label="Password"
+          placeholder="Password"
           type={showPassword ? "text" : "password"}
           fullWidth
           {...register("password")}

@@ -38,7 +38,7 @@ const SignUpForm = ({
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <TextField
-          label="Email"
+          placeholder="Email"
           fullWidth
           {...register("email")}
           error={!!errors.email}
@@ -57,7 +57,7 @@ const SignUpForm = ({
           autoComplete="off"
         />
         <TextField
-          label="Password"
+          placeholder="Password"
           type={showPassword ? "text" : "password"}
           fullWidth
           {...register("password")}
@@ -91,7 +91,7 @@ const SignUpForm = ({
         />
 
         <TextField
-          label="Confirm Password"
+          placeholder="Confirm Password"
           type={showConfirmPassword ? "text" : "password"}
           fullWidth
           {...register("confirmPassword")}
