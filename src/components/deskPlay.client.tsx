@@ -65,6 +65,8 @@ export default function PlayDeskPage() {
   const [token, setToken] = useState<string | null>(null);
   const startedRef = useRef(false);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const nextCardMutation = useNextCard();
   const answerMutation = useAnswerCard();
 
@@ -158,6 +160,14 @@ export default function PlayDeskPage() {
       return Promise.resolve();
     });
   }, []);
+
+  useEffect(() => {
+    if (result === null) {
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    }
+  }, [result]);
 
   useEffect(() => {
     return () => {
@@ -260,7 +270,73 @@ export default function PlayDeskPage() {
               px: 2,
             }}
           >
-            {result === null ? (
+            <TextField
+              inputRef={inputRef}
+              fullWidth
+              placeholder="Type your answer"
+              value={answer}
+              disabled={result !== null} // 🔑
+              onChange={(e) => setAnswer(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && answer.trim() && result === null) {
+                  submitAnswer();
+                }
+              }}
+              sx={{
+                "& .MuiInputBase-root": {
+                  height: 48,
+                  minHeight: 48,
+                  px: 2,
+                },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={submitAnswer}
+                      disabled={!answer.trim() || result !== null}
+                    >
+                      <ArrowForwardIosIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {result !== null && (
+              <Fade in>
+                <Box
+                  sx={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    bottom: 16,
+                    px: 2,
+                    bgcolor: "background.paper",
+                  }}
+                >
+                  <Box sx={{ display: "flex" }}>
+                    {GRADE_OPTIONS.map(({ quality, label }) => (
+                      <Box
+                        key={quality}
+                        onClick={() => submitGrade(quality)}
+                        sx={{
+                          flex: 1,
+                          textAlign: "center",
+                          py: 1.5,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Typography>{label}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              </Fade>
+            )}
+
+            {/* {result === null ? (
               <TextField
                 fullWidth
                 placeholder="Type your answer"
@@ -354,7 +430,7 @@ export default function PlayDeskPage() {
                   ))}
                 </Box>
               </Fade>
-            )}
+            )} */}
           </Box>
         </>
       )}

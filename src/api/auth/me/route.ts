@@ -1,26 +1,37 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export async function GET(req: NextRequest) {
   try {
-    const response = await axios.get(
-      "https://memora-api-production.up.railway.app/auth/me",
-      {
-        headers: {
-          Cookie: req.headers.cookie,
-        },
-      }
-    );
+    const cookies = req.headers.get("cookie") || "";
 
-    res.status(response.status).json(response.data);
-  } catch (e: unknown) {
-    res
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .status((e as any).response?.status || 500)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .json({ message: (e as any).message });
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookies,
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Auth failed");
+    }
+
+    const data = await response.json();
+
+    const nextResponse = NextResponse.json(data);
+
+    const setCookie = response.headers.get("set-cookie");
+    if (setCookie) {
+      nextResponse.headers.set("set-cookie", setCookie);
+    }
+
+    return nextResponse;
+  } catch (error) {
+    console.error("Auth check error:", error);
+    return NextResponse.json(
+      { message: "Authentication failed" },
+      { status: 401 }
+    );
   }
 }

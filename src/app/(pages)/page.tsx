@@ -1,22 +1,33 @@
 import { redirect } from "next/navigation";
 import { ROUTES } from "@/routes/next";
+import { headers } from "next/headers";
 
 export default async function RootPage() {
+  let redirectPath: string | null = null;
+
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`,
-      {
-        credentials: "include",
-        cache: "no-store",
-      }
-    );
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+    const response = await fetch(`${baseUrl}/api/auth/me`, {
+      cache: "no-store",
+      headers: {
+        Cookie: (await headers()).get("cookie") || "",
+      },
+    });
+    console.log(response);
 
     if (response.ok) {
-      redirect(ROUTES.HOME);
+      redirectPath = ROUTES.HOME;
     } else {
-      redirect(ROUTES.LOGIN);
+      redirectPath = ROUTES.LOGIN;
     }
   } catch (error) {
-    redirect(ROUTES.LOGIN);
+    redirectPath = ROUTES.LOGIN;
+  } finally {
+    if (redirectPath) {
+      redirect(redirectPath);
+    }
   }
+
+  return null;
 }
