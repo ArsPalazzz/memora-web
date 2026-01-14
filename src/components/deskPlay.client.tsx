@@ -515,6 +515,14 @@ export default function PlayDeskPage() {
     onSuccess: (res) => setSessionId(res.sessionId),
   });
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (window.visualViewport && scrollRef.current) {
+      scrollRef.current.scrollTop = 0; // прокрутка вверх при уменьшении viewport
+    }
+  }, [viewportHeight, currentCard]);
+
   const handleStartSession = () => startSessionMutation.mutate(deskSub);
 
   useEffect(() => {
@@ -638,64 +646,76 @@ export default function PlayDeskPage() {
         position: "relative",
         pb: 2,
         pt: 2,
+        overflow: "hidden",
       }}
     >
       {currentCard && (
         <>
           {/* Карточка */}
-          <Fade in key={currentCard.sub}>
-            <Box
-              sx={{
-                flex: 1,
-                display: "flex",
-                px: 2,
-                transition: "all 0.3s",
-              }}
-            >
-              <Card
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              overflowY: "auto",
+              pb: 2, // оставляем место под input
+            }}
+            ref={scrollRef}
+          >
+            <Fade in key={currentCard.sub}>
+              <Box
                 sx={{
                   flex: 1,
                   display: "flex",
-                  bgcolor: cardColor,
-                  transition: "background-color 0.3s, height 0.3s",
-                  boxShadow: 4,
-                  borderRadius: 3,
+                  px: 2,
+                  transition: "all 0.3s",
                 }}
               >
-                <CardContent
+                <Card
                   sx={{
                     flex: 1,
                     display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    px: 3,
+                    bgcolor: cardColor,
+                    transition: "background-color 0.3s, height 0.3s",
+                    boxShadow: 4,
+                    borderRadius: 3,
                   }}
                 >
-                  <Typography variant="h4" fontWeight={600}>
-                    {currentCard.text.join(", ")}
-                  </Typography>
-                  {result && (
-                    <Box sx={{ mt: 2 }}>
-                      <Box
-                        sx={{
-                          height: "1px",
-                          width: "40%",
-                          mx: "auto",
-                          mb: 1,
-                          bgcolor: "divider",
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        {result.correctVariants.join(", ")}
-                      </Typography>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Box>
-          </Fade>
+                  <CardContent
+                    sx={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      px: 3,
+                    }}
+                  >
+                    <Typography variant="h4" fontWeight={600}>
+                      {currentCard.text.join(", ")}
+                    </Typography>
+                    {result && (
+                      <Box sx={{ mt: 2 }}>
+                        <Box
+                          sx={{
+                            height: "1px",
+                            width: "40%",
+                            mx: "auto",
+                            mb: 1,
+                            bgcolor: "divider",
+                          }}
+                        />
+                        <Typography variant="body2" color="text.secondary">
+                          {result.correctVariants.join(", ")}
+                        </Typography>
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              </Box>
+            </Fade>
+          </Box>
 
           {/* Input + grading */}
           <Box
