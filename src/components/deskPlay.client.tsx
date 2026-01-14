@@ -438,6 +438,357 @@
 //   );
 // }
 
+// "use client";
+
+// import { useEffect, useRef, useState } from "react";
+// import { useParams, useRouter } from "next/navigation";
+// import {
+//   Box,
+//   Card,
+//   CardContent,
+//   TextField,
+//   Typography,
+//   Fade,
+//   useTheme,
+//   InputAdornment,
+//   IconButton,
+// } from "@mui/material";
+// import { useProtectedRequest } from "@/utils/protected";
+// import { FullPageLoader } from "./ui/Loader";
+// import { useMutation } from "@tanstack/react-query";
+// import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
+// import { NextCardResponse } from "@/services/games/games.types";
+// import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+// import {
+//   gradeCardRequest,
+//   startDeskSessionRequest,
+// } from "@/services/games/games";
+
+// type AnswerResult = {
+//   isCorrect: boolean;
+//   finished: boolean;
+//   correctVariants: string[];
+// };
+
+// const GRADE_COLORS: Record<number, string> = {
+//   0: "#e53935",
+//   1: "#fb8c00",
+//   2: "#fbc02d",
+//   3: "#43a047",
+//   4: "#2e7d32",
+// };
+
+// const GRADE_OPTIONS = [
+//   { quality: 0, label: "Forgot" },
+//   { quality: 1, label: "Hard" },
+//   { quality: 2, label: "Okay" },
+//   { quality: 3, label: "Good" },
+//   { quality: 4, label: "Easy" },
+// ] as const;
+
+// export default function PlayDeskPage() {
+//   const params = useParams() as { id: string };
+//   const deskSub = params.id;
+//   const router = useRouter();
+//   const theme = useTheme();
+//   const { call } = useProtectedRequest();
+
+//   const [sessionId, setSessionId] = useState<string | null>(null);
+//   const [currentCard, setCurrentCard] = useState<NextCardResponse | null>(null);
+//   const [answer, setAnswer] = useState("");
+//   const [result, setResult] = useState<AnswerResult | null>(null);
+//   const [cardLoading, setCardLoading] = useState<boolean>(false);
+//   const [token, setToken] = useState<string | null>(null);
+//   const [viewportHeight, setViewportHeight] = useState<number>(
+//     window.innerHeight
+//   );
+
+//   const inputRef = useRef<HTMLInputElement>(null);
+//   const startedRef = useRef(false);
+
+//   const nextCardMutation = useNextCard();
+//   const answerMutation = useAnswerCard();
+
+//   const startSessionMutation = useMutation({
+//     mutationFn: async (deskSub: string) =>
+//       call((token) => startDeskSessionRequest(deskSub, token)),
+//     onSuccess: (res) => setSessionId(res.sessionId),
+//   });
+
+//   const scrollRef = useRef<HTMLDivElement>(null);
+
+//   useEffect(() => {
+//     if (window.visualViewport && scrollRef.current) {
+//       scrollRef.current.scrollTop = 0; // прокрутка вверх при уменьшении viewport
+//     }
+//   }, [viewportHeight, currentCard]);
+
+//   const handleStartSession = () => startSessionMutation.mutate(deskSub);
+
+//   useEffect(() => {
+//     if (!startedRef.current) {
+//       startedRef.current = true;
+//       handleStartSession();
+//     }
+//   }, [deskSub]);
+
+//   // Загрузка первой карточки
+//   useEffect(() => {
+//     if (!sessionId) return;
+//     setCardLoading(true);
+//     nextCardMutation.mutate(sessionId, {
+//       onSuccess: (res) => {
+//         setCurrentCard(res);
+//         setCardLoading(false);
+//       },
+//     });
+//   }, [sessionId]);
+
+//   // Получение токена
+//   useEffect(() => {
+//     call((token) => {
+//       setToken(token);
+//       return Promise.resolve();
+//     });
+//   }, []);
+
+//   // Авто-фокус на input
+//   useEffect(() => {
+//     if (result === null) {
+//       requestAnimationFrame(() => inputRef.current?.focus());
+//     }
+//   }, [result]);
+
+//   // Отслеживание изменения viewport при открытии клавиатуры
+//   useEffect(() => {
+//     const handleResize = () => {
+//       setViewportHeight(window.visualViewport?.height || window.innerHeight);
+//     };
+//     window.visualViewport?.addEventListener("resize", handleResize);
+//     return () =>
+//       window.visualViewport?.removeEventListener("resize", handleResize);
+//   }, []);
+
+//   const submitAnswer = () => {
+//     if (!sessionId || !answer.trim()) return;
+//     answerMutation.mutate(
+//       { sessionId, answer },
+//       { onSuccess: (res) => setResult(res) }
+//     );
+//   };
+
+//   const gradeMutation = useMutation({
+//     mutationFn: ({
+//       sessionId,
+//       quality,
+//     }: {
+//       sessionId: string;
+//       quality: number;
+//     }) => call((token) => gradeCardRequest({ sessionId, quality }, token)),
+//   });
+
+//   const submitGrade = (quality: number) => {
+//     if (!sessionId) return;
+//     gradeMutation.mutate(
+//       { sessionId, quality },
+//       { onSuccess: () => nextCard() }
+//     );
+//   };
+
+//   const nextCard = () => {
+//     if (!sessionId) return;
+//     if (result?.finished) {
+//       router.push(`/desk/${deskSub}`);
+//       return;
+//     }
+//     setAnswer("");
+//     setResult(null);
+//     setCardLoading(true);
+//     nextCardMutation.mutate(sessionId, {
+//       onSuccess: (res) => {
+//         setCurrentCard(res);
+//         setCardLoading(false);
+//       },
+//     });
+//   };
+
+//   // Авто-финиш сессии при уходе
+//   useEffect(() => {
+//     return () => {
+//       if (!sessionId || result?.finished || !token) return;
+//       fetch(`${process.env.NEXT_PUBLIC_API_URL}/games/finish`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify({ sessionId }),
+//         keepalive: true,
+//       });
+//     };
+//   }, [sessionId, result, token]);
+
+//   if (cardLoading && !currentCard) return <FullPageLoader />;
+
+//   const cardColor =
+//     result === null
+//       ? theme.palette.background.paper
+//       : result.isCorrect
+//       ? theme.palette.successBg
+//       : theme.palette.errorBg;
+
+//   return (
+//     <Box
+//       sx={{
+//         height: "100%",
+//         display: "flex",
+//         flexDirection: "column",
+//         position: "relative",
+//         pb: 2,
+//         pt: 2,
+//         overflow: "hidden",
+//       }}
+//     >
+//       {currentCard && (
+//         <>
+//           {/* Карточка */}
+//           <Box
+//             sx={{
+//               flex: 1,
+//               display: "flex",
+//               flexDirection: "column",
+//               overflowY: "auto",
+//               pb: 2, // оставляем место под input
+//             }}
+//             ref={scrollRef}
+//           >
+//             <Fade in key={currentCard.sub}>
+//               <Box
+//                 sx={{
+//                   flex: 1,
+//                   display: "flex",
+//                   px: 2,
+//                   transition: "all 0.3s",
+//                 }}
+//               >
+//                 <Card
+//                   sx={{
+//                     flex: 1,
+//                     display: "flex",
+//                     bgcolor: cardColor,
+//                     transition: "background-color 0.3s, height 0.3s",
+//                     boxShadow: 4,
+//                     borderRadius: 3,
+//                   }}
+//                 >
+//                   <CardContent
+//                     sx={{
+//                       flex: 1,
+//                       display: "flex",
+//                       flexDirection: "column",
+//                       alignItems: "center",
+//                       justifyContent: "center",
+//                       textAlign: "center",
+//                       px: 3,
+//                     }}
+//                   >
+//                     <Typography variant="h4" fontWeight={600}>
+//                       {currentCard.text.join(", ")}
+//                     </Typography>
+//                     {result && (
+//                       <Box sx={{ mt: 2 }}>
+//                         <Box
+//                           sx={{
+//                             height: "1px",
+//                             width: "40%",
+//                             mx: "auto",
+//                             mb: 1,
+//                             bgcolor: "divider",
+//                           }}
+//                         />
+//                         <Typography variant="body2" color="text.secondary">
+//                           {result.correctVariants.join(", ")}
+//                         </Typography>
+//                       </Box>
+//                     )}
+//                   </CardContent>
+//                 </Card>
+//               </Box>
+//             </Fade>
+//           </Box>
+
+//           {/* Input + grading */}
+//           <Box
+//             sx={{
+//               px: 2,
+//               position: "sticky",
+//               bottom: 0,
+//               backgroundColor: "background.paper",
+//               zIndex: 10,
+//               pt: 1,
+//               pb: 1,
+//             }}
+//           >
+//             <TextField
+//               inputRef={inputRef}
+//               fullWidth
+//               placeholder="Type your answer"
+//               value={answer}
+//               disabled={result !== null}
+//               onChange={(e) => setAnswer(e.target.value)}
+//               onKeyDown={(e) => {
+//                 if (e.key === "Enter" && answer.trim() && result === null)
+//                   submitAnswer();
+//               }}
+//               sx={{
+//                 "& .MuiInputBase-root": { height: 48, minHeight: 48, px: 2 },
+//               }}
+//               InputProps={{
+//                 endAdornment: (
+//                   <InputAdornment position="end">
+//                     <IconButton
+//                       size="small"
+//                       onClick={submitAnswer}
+//                       disabled={!answer.trim() || result !== null}
+//                     >
+//                       <ArrowForwardIosIcon />
+//                     </IconButton>
+//                   </InputAdornment>
+//                 ),
+//               }}
+//             />
+
+//             {result && (
+//               <Fade in>
+//                 <Box sx={{ display: "flex", mt: 1 }}>
+//                   {GRADE_OPTIONS.map(({ quality, label }) => (
+//                     <Box
+//                       key={quality}
+//                       onClick={() => submitGrade(quality)}
+//                       sx={{
+//                         flex: 1,
+//                         textAlign: "center",
+//                         py: 1.5,
+//                         cursor: "pointer",
+//                       }}
+//                     >
+//                       <Typography
+//                         sx={{ color: GRADE_COLORS[quality], fontWeight: 500 }}
+//                       >
+//                         {label}
+//                       </Typography>
+//                     </Box>
+//                   ))}
+//                 </Box>
+//               </Fade>
+//             )}
+//           </Box>
+//         </>
+//       )}
+//     </Box>
+//   );
+// }
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -499,11 +850,9 @@ export default function PlayDeskPage() {
   const [result, setResult] = useState<AnswerResult | null>(null);
   const [cardLoading, setCardLoading] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null);
-  const [viewportHeight, setViewportHeight] = useState<number>(
-    window.innerHeight
-  );
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
 
   const nextCardMutation = useNextCard();
@@ -515,16 +864,9 @@ export default function PlayDeskPage() {
     onSuccess: (res) => setSessionId(res.sessionId),
   });
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (window.visualViewport && scrollRef.current) {
-      scrollRef.current.scrollTop = 0; // прокрутка вверх при уменьшении viewport
-    }
-  }, [viewportHeight, currentCard]);
-
   const handleStartSession = () => startSessionMutation.mutate(deskSub);
 
+  // Старт сессии один раз
   useEffect(() => {
     if (!startedRef.current) {
       startedRef.current = true;
@@ -540,6 +882,8 @@ export default function PlayDeskPage() {
       onSuccess: (res) => {
         setCurrentCard(res);
         setCardLoading(false);
+        // скроллим к верху карточки
+        scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       },
     });
   }, [sessionId]);
@@ -554,15 +898,13 @@ export default function PlayDeskPage() {
 
   // Авто-фокус на input
   useEffect(() => {
-    if (result === null) {
-      requestAnimationFrame(() => inputRef.current?.focus());
-    }
+    if (result === null) requestAnimationFrame(() => inputRef.current?.focus());
   }, [result]);
 
-  // Отслеживание изменения viewport при открытии клавиатуры
+  // Скролл карточки при смене viewport (клавиатура)
   useEffect(() => {
     const handleResize = () => {
-      setViewportHeight(window.visualViewport?.height || window.innerHeight);
+      scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     };
     window.visualViewport?.addEventListener("resize", handleResize);
     return () =>
@@ -571,10 +913,7 @@ export default function PlayDeskPage() {
 
   const submitAnswer = () => {
     if (!sessionId || !answer.trim()) return;
-    answerMutation.mutate(
-      { sessionId, answer },
-      { onSuccess: (res) => setResult(res) }
-    );
+    answerMutation.mutate({ sessionId, answer }, { onSuccess: setResult });
   };
 
   const gradeMutation = useMutation({
@@ -589,10 +928,7 @@ export default function PlayDeskPage() {
 
   const submitGrade = (quality: number) => {
     if (!sessionId) return;
-    gradeMutation.mutate(
-      { sessionId, quality },
-      { onSuccess: () => nextCard() }
-    );
+    gradeMutation.mutate({ sessionId, quality }, { onSuccess: nextCard });
   };
 
   const nextCard = () => {
@@ -608,6 +944,7 @@ export default function PlayDeskPage() {
       onSuccess: (res) => {
         setCurrentCard(res);
         setCardLoading(false);
+        scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       },
     });
   };
@@ -640,151 +977,126 @@ export default function PlayDeskPage() {
   return (
     <Box
       sx={{
-        height: viewportHeight,
         display: "flex",
         flexDirection: "column",
-        position: "relative",
-        pb: 2,
-        pt: 2,
+        height: "100%", // контейнер всегда full height
         overflow: "hidden",
+        position: "relative",
       }}
     >
-      {currentCard && (
-        <>
-          {/* Карточка */}
-          <Box
-            sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              overflowY: "auto",
-              pb: 2, // оставляем место под input
-            }}
-            ref={scrollRef}
-          >
-            <Fade in key={currentCard.sub}>
-              <Box
-                sx={{
-                  flex: 1,
-                  display: "flex",
-                  px: 2,
-                  transition: "all 0.3s",
-                }}
-              >
-                <Card
+      {/* Scrollable контейнер карточек */}
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          px: 2,
+          pt: 2,
+          pb: 2, // оставляем место под input
+        }}
+        ref={scrollRef}
+      >
+        {currentCard && (
+          <Fade in key={currentCard.sub}>
+            <Card
+              sx={{
+                bgcolor: cardColor,
+                boxShadow: 4,
+                borderRadius: 3,
+                p: 3,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "200px",
+              }}
+            >
+              <Typography variant="h4" fontWeight={600} textAlign="center">
+                {currentCard.text.join(", ")}
+              </Typography>
+              {result && (
+                <Box sx={{ mt: 2, textAlign: "center" }}>
+                  <Box
+                    sx={{
+                      height: "1px",
+                      width: "40%",
+                      mx: "auto",
+                      mb: 1,
+                      bgcolor: "divider",
+                    }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    {result.correctVariants.join(", ")}
+                  </Typography>
+                </Box>
+              )}
+            </Card>
+          </Fade>
+        )}
+      </Box>
+
+      {/* Sticky input + grading */}
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          px: 2,
+          pb: 2,
+          pt: 1,
+          backgroundColor: "background.paper",
+          zIndex: 10,
+        }}
+      >
+        <TextField
+          inputRef={inputRef}
+          fullWidth
+          placeholder="Type your answer"
+          value={answer}
+          disabled={result !== null}
+          onChange={(e) => setAnswer(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && answer.trim() && result === null)
+              submitAnswer();
+          }}
+          sx={{ "& .MuiInputBase-root": { height: 48, px: 2 } }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={submitAnswer}
+                  disabled={!answer.trim() || result !== null}
+                >
+                  <ArrowForwardIosIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+        {result && (
+          <Fade in>
+            <Box sx={{ display: "flex", mt: 1 }}>
+              {GRADE_OPTIONS.map(({ quality, label }) => (
+                <Box
+                  key={quality}
+                  onClick={() => submitGrade(quality)}
                   sx={{
                     flex: 1,
-                    display: "flex",
-                    bgcolor: cardColor,
-                    transition: "background-color 0.3s, height 0.3s",
-                    boxShadow: 4,
-                    borderRadius: 3,
+                    textAlign: "center",
+                    py: 1.5,
+                    cursor: "pointer",
                   }}
                 >
-                  <CardContent
-                    sx={{
-                      flex: 1,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      textAlign: "center",
-                      px: 3,
-                    }}
+                  <Typography
+                    sx={{ color: GRADE_COLORS[quality], fontWeight: 500 }}
                   >
-                    <Typography variant="h4" fontWeight={600}>
-                      {currentCard.text.join(", ")}
-                    </Typography>
-                    {result && (
-                      <Box sx={{ mt: 2 }}>
-                        <Box
-                          sx={{
-                            height: "1px",
-                            width: "40%",
-                            mx: "auto",
-                            mb: 1,
-                            bgcolor: "divider",
-                          }}
-                        />
-                        <Typography variant="body2" color="text.secondary">
-                          {result.correctVariants.join(", ")}
-                        </Typography>
-                      </Box>
-                    )}
-                  </CardContent>
-                </Card>
-              </Box>
-            </Fade>
-          </Box>
-
-          {/* Input + grading */}
-          <Box
-            sx={{
-              px: 2,
-              position: "sticky",
-              bottom: 0,
-              backgroundColor: "background.paper",
-              zIndex: 10,
-              pt: 1,
-              pb: 1,
-            }}
-          >
-            <TextField
-              inputRef={inputRef}
-              fullWidth
-              placeholder="Type your answer"
-              value={answer}
-              disabled={result !== null}
-              onChange={(e) => setAnswer(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && answer.trim() && result === null)
-                  submitAnswer();
-              }}
-              sx={{
-                "& .MuiInputBase-root": { height: 48, minHeight: 48, px: 2 },
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={submitAnswer}
-                      disabled={!answer.trim() || result !== null}
-                    >
-                      <ArrowForwardIosIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            {result && (
-              <Fade in>
-                <Box sx={{ display: "flex", mt: 1 }}>
-                  {GRADE_OPTIONS.map(({ quality, label }) => (
-                    <Box
-                      key={quality}
-                      onClick={() => submitGrade(quality)}
-                      sx={{
-                        flex: 1,
-                        textAlign: "center",
-                        py: 1.5,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <Typography
-                        sx={{ color: GRADE_COLORS[quality], fontWeight: 500 }}
-                      >
-                        {label}
-                      </Typography>
-                    </Box>
-                  ))}
+                    {label}
+                  </Typography>
                 </Box>
-              </Fade>
-            )}
-          </Box>
-        </>
-      )}
+              ))}
+            </Box>
+          </Fade>
+        )}
+      </Box>
     </Box>
   );
 }
