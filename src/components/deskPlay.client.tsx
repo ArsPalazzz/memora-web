@@ -444,7 +444,6 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   TextField,
@@ -500,10 +499,12 @@ export default function PlayDeskPage() {
   const [result, setResult] = useState<AnswerResult | null>(null);
   const [cardLoading, setCardLoading] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(null);
+  const [viewportHeight, setViewportHeight] = useState<number>(
+    window.innerHeight
+  );
 
   const inputRef = useRef<HTMLInputElement>(null);
   const startedRef = useRef(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const nextCardMutation = useNextCard();
   const answerMutation = useAnswerCard();
@@ -543,33 +544,28 @@ export default function PlayDeskPage() {
     });
   }, []);
 
-  // Фокус на input при новой карточке
+  // Авто-фокус на input
   useEffect(() => {
     if (result === null) {
       requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [result]);
 
-  // Отслеживание клавиатуры
+  // Отслеживание изменения viewport при открытии клавиатуры
   useEffect(() => {
-    const handler = () => {
-      if (window.visualViewport) {
-        const kbHeight = window.innerHeight - window.visualViewport.height;
-        setKeyboardHeight(kbHeight > 0 ? kbHeight : 0);
-      }
+    const handleResize = () => {
+      setViewportHeight(window.visualViewport?.height || window.innerHeight);
     };
-    window.visualViewport?.addEventListener("resize", handler);
-    return () => window.visualViewport?.removeEventListener("resize", handler);
+    window.visualViewport?.addEventListener("resize", handleResize);
+    return () =>
+      window.visualViewport?.removeEventListener("resize", handleResize);
   }, []);
 
   const submitAnswer = () => {
     if (!sessionId || !answer.trim()) return;
-
     answerMutation.mutate(
       { sessionId, answer },
-      {
-        onSuccess: (res) => setResult(res),
-      }
+      { onSuccess: (res) => setResult(res) }
     );
   };
 
@@ -587,24 +583,19 @@ export default function PlayDeskPage() {
     if (!sessionId) return;
     gradeMutation.mutate(
       { sessionId, quality },
-      {
-        onSuccess: () => nextCard(),
-      }
+      { onSuccess: () => nextCard() }
     );
   };
 
   const nextCard = () => {
     if (!sessionId) return;
-
     if (result?.finished) {
       router.push(`/desk/${deskSub}`);
       return;
     }
-
     setAnswer("");
     setResult(null);
     setCardLoading(true);
-
     nextCardMutation.mutate(sessionId, {
       onSuccess: (res) => {
         setCurrentCard(res);
@@ -617,7 +608,6 @@ export default function PlayDeskPage() {
   useEffect(() => {
     return () => {
       if (!sessionId || result?.finished || !token) return;
-
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/games/finish`, {
         method: "POST",
         headers: {
@@ -642,12 +632,12 @@ export default function PlayDeskPage() {
   return (
     <Box
       sx={{
-        height: "100vh",
+        height: viewportHeight,
         display: "flex",
         flexDirection: "column",
+        position: "relative",
         pb: 2,
         pt: 2,
-        position: "relative",
       }}
     >
       {currentCard && (
@@ -660,7 +650,6 @@ export default function PlayDeskPage() {
                 display: "flex",
                 px: 2,
                 transition: "all 0.3s",
-                marginBottom: keyboardHeight, // под клавиатуру
               }}
             >
               <Card
@@ -687,7 +676,6 @@ export default function PlayDeskPage() {
                   <Typography variant="h4" fontWeight={600}>
                     {currentCard.text.join(", ")}
                   </Typography>
-
                   {result && (
                     <Box sx={{ mt: 2 }}>
                       <Box
@@ -709,12 +697,16 @@ export default function PlayDeskPage() {
             </Box>
           </Fade>
 
-          {/* Input */}
+          {/* Input + grading */}
           <Box
             sx={{
               px: 2,
-              mb: 2,
-              position: "relative",
+              position: "sticky",
+              bottom: 0,
+              backgroundColor: "background.paper",
+              zIndex: 10,
+              pt: 1,
+              pb: 1,
             }}
           >
             <TextField
@@ -729,11 +721,7 @@ export default function PlayDeskPage() {
                   submitAnswer();
               }}
               sx={{
-                "& .MuiInputBase-root": {
-                  height: 48,
-                  minHeight: 48,
-                  px: 2,
-                },
+                "& .MuiInputBase-root": { height: 48, minHeight: 48, px: 2 },
               }}
               InputProps={{
                 endAdornment: (
@@ -750,39 +738,27 @@ export default function PlayDeskPage() {
               }}
             />
 
-            {/* Grading UI поверх input */}
             {result && (
               <Fade in>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    bottom: 56, // чуть выше клавиатуры
-                    px: 2,
-                    bgcolor: "background.paper",
-                  }}
-                >
-                  <Box sx={{ display: "flex" }}>
-                    {GRADE_OPTIONS.map(({ quality, label }) => (
-                      <Box
-                        key={quality}
-                        onClick={() => submitGrade(quality)}
-                        sx={{
-                          flex: 1,
-                          textAlign: "center",
-                          py: 1.5,
-                          cursor: "pointer",
-                        }}
+                <Box sx={{ display: "flex", mt: 1 }}>
+                  {GRADE_OPTIONS.map(({ quality, label }) => (
+                    <Box
+                      key={quality}
+                      onClick={() => submitGrade(quality)}
+                      sx={{
+                        flex: 1,
+                        textAlign: "center",
+                        py: 1.5,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Typography
+                        sx={{ color: GRADE_COLORS[quality], fontWeight: 500 }}
                       >
-                        <Typography
-                          sx={{ color: GRADE_COLORS[quality], fontWeight: 500 }}
-                        >
-                          {label}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
+                        {label}
+                      </Typography>
+                    </Box>
+                  ))}
                 </Box>
               </Fade>
             )}
