@@ -36,7 +36,7 @@ export default function LoginClient() {
     },
     onSuccess: (data) => {
       setAccessToken(data.accessToken);
-      router.push(ROUTES.HOME + "?prefetch=true");
+      router.push(ROUTES.HOME);
     },
     onError: (err) => {
       console.warn(err);

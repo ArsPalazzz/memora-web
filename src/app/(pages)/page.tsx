@@ -14,7 +14,6 @@ export default async function RootPage() {
         Cookie: (await headers()).get("cookie") || "",
       },
     });
-    console.log(response);
 
     if (response.ok) {
       redirectPath = ROUTES.HOME;

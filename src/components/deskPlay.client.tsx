@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader } from "./ui/Loader";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
 import { NextCardResponse } from "@/services/games/games.types";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -24,6 +24,7 @@ import {
   gradeCardRequest,
   startDeskSessionRequest,
 } from "@/services/games/games";
+import { USER_DAILY } from "@/routes/react-query";
 
 type AnswerResult = {
   isCorrect: boolean;
@@ -58,6 +59,8 @@ export default function PlayDeskPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<AnswerResult | null>(null);
+
+  const queryClient = useQueryClient();
 
   const [currentCard, setCurrentCard] = useState<NextCardResponse | null>(null);
   const [cardLoading, setCardLoading] = useState<boolean>(false);
@@ -162,6 +165,8 @@ export default function PlayDeskPage() {
   useEffect(() => {
     return () => {
       if (!sessionId || result?.finished || !token) return;
+
+      queryClient.invalidateQueries({ queryKey: [USER_DAILY] });
 
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/games/finish`, {
         method: "POST",

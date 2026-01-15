@@ -15,11 +15,12 @@ import {
 } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader } from "@/components/ui/Loader";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
 import { NextCardResponse } from "@/services/games/games.types";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { gradeCardRequest, getNextCardRequest } from "@/services/games/games";
+import { USER_DAILY } from "@/routes/react-query";
 
 type AnswerResult = {
   isCorrect: boolean;
@@ -59,6 +60,8 @@ export default function ReviewPlayClient() {
 
   const [token, setToken] = useState<string | null>(null);
   const startedRef = useRef(false);
+
+  const queryClient = useQueryClient();
 
   const nextCardMutation = useNextCard();
   const answerMutation = useAnswerCard();
@@ -158,6 +161,8 @@ export default function ReviewPlayClient() {
   useEffect(() => {
     return () => {
       if (!sessionId || result?.finished || !token) return;
+
+      queryClient.invalidateQueries({ queryKey: [USER_DAILY] });
 
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/games/finish`, {
         method: "POST",

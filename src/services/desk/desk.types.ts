@@ -5,7 +5,11 @@ export interface FetchDesksResponse {
   sub: string;
   title: string;
   description: string;
-  created_at: string;
+  totalCards: number;
+  newCards: number;
+  dueCards: number;
+  learningCards: number;
+  masteredCards: number;
 }
 
 export interface DeskSettings {

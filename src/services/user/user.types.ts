@@ -17,3 +17,9 @@ export interface GetMyProfileResponse {
   email: string;
   created_at: string;
 }
+
+export interface GetUserDailyResponse {
+  currentStreak: number;
+  dailyGoal: number;
+  cardsReviewed: number;
+}
