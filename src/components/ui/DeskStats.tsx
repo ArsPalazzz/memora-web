@@ -109,7 +109,6 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
                 cy="50%"
                 innerRadius={25}
                 outerRadius={40}
-                paddingAngle={2}
                 dataKey="value"
               >
                 {pieData.map((entry, index) => (
