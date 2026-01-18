@@ -110,10 +110,29 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
                 innerRadius={25}
                 outerRadius={40}
                 dataKey="value"
+                stroke="none"
               >
                 {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
+
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r={40}
+                  fill="none"
+                  stroke="#e0e0e0"
+                  strokeWidth="1"
+                />
+
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r={25}
+                  fill="none"
+                  stroke="#e0e0e0"
+                  strokeWidth="1"
+                />
               </Pie>
             </PieChart>
           </ResponsiveContainer>
