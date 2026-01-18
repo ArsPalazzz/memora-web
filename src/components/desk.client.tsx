@@ -288,6 +288,8 @@ export default function DeskClient() {
 
   const cardOrientation =
     desk &&
+    desk.settings &&
+    desk.settings.card_orientation &&
     desk.settings.card_orientation.charAt(0).toUpperCase() +
       desk.settings.card_orientation.slice(1);
 

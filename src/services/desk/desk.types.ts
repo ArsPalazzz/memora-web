@@ -36,6 +36,26 @@ export interface FetchDeskResponse {
     due_today: number;
     mastered_cards: number;
     avg_ease_factor: number;
+    weeklyStats: {
+      current: {
+        mon: number;
+        tue: number;
+        wed: number;
+        thu: number;
+        fri: number;
+        sat: number;
+        sun: number;
+      };
+      previous: {
+        mon: number;
+        tue: number;
+        wed: number;
+        thu: number;
+        fri: number;
+        sat: number;
+        sun: number;
+      };
+    };
   };
 }
 

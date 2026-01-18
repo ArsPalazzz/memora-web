@@ -1,6 +1,8 @@
 "use client";
 
-import { Box, Typography, Stack } from "@mui/material";
+import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import { Box, Typography, Stack, IconButton } from "@mui/material";
+import { useState } from "react";
 import {
   PieChart,
   Pie,
@@ -18,10 +20,32 @@ interface DeskStatsProps {
     due_today: number;
     mastered_cards: number;
     avg_ease_factor: number;
+    weeklyStats: {
+      current: {
+        mon: number;
+        tue: number;
+        wed: number;
+        thu: number;
+        fri: number;
+        sat: number;
+        sun: number;
+      };
+      previous: {
+        mon: number;
+        tue: number;
+        wed: number;
+        thu: number;
+        fri: number;
+        sat: number;
+        sun: number;
+      };
+    };
   };
 }
 
 export function AnkiStyleStats({ stats }: DeskStatsProps) {
+  const [week, setWeek] = useState<"current" | "previous">("current");
+
   const pieData = [
     { name: "Due", value: stats.due_today, color: "#ff6b6b" },
     { name: "New", value: stats.new_cards, color: "#4ecdc4" },
@@ -39,15 +63,17 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
     { name: "Mastered", value: stats.mastered_cards, color: "#96ceb4" },
   ];
 
-  const barData = [
-    { day: "M", count: stats.due_today },
-    { day: "T", count: Math.floor(stats.due_today * 0.7) },
-    { day: "W", count: Math.floor(stats.due_today * 0.5) },
-    { day: "T", count: Math.floor(stats.due_today * 0.3) },
-    { day: "F", count: Math.floor(stats.due_today * 0.4) },
-    { day: "S", count: Math.floor(stats.due_today * 0.2) },
-    { day: "S", count: Math.floor(stats.due_today * 0.1) },
-  ];
+  const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
+
+  const barData = days.map((day, index) => ({
+    day: dayLabels[index],
+    count:
+      stats.weeklyStats[week][day as keyof typeof stats.weeklyStats.current],
+  }));
+
+  const handlePrevWeek = () => setWeek("previous");
+  const handleNextWeek = () => setWeek("current");
 
   return (
     <Box
@@ -125,11 +151,11 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
         </Box>
       </Stack>
 
-      <Box sx={{ mt: 2, height: 50 }}>
+      <Box sx={{ mt: 2, height: 90 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={barData}
-            margin={{ top: 5, right: 0, left: 0, bottom: 5 }}
+            margin={{ top: 13, right: 0, left: 0, bottom: 5 }}
           >
             <XAxis
               dataKey="day"
@@ -142,6 +168,12 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
               radius={[2, 2, 0, 0]}
               fill="#5961d3"
               fillOpacity={0.6}
+              label={{
+                position: "top",
+                formatter: (value) => (value === 0 ? "" : value),
+                fontSize: 9,
+                fill: "#666",
+              }}
             />
           </BarChart>
         </ResponsiveContainer>
@@ -159,6 +191,29 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
             {stats.due_today}
           </Typography>
         </Typography>
+
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <IconButton
+            size="small"
+            onClick={handlePrevWeek}
+            disabled={week !== "current"}
+            sx={{ color: week !== "current" ? "disabled" : "default" }}
+          >
+            <ArrowBackIos fontSize="small" />
+          </IconButton>
+          <Typography variant="caption" fontWeight={600}>
+            {week === "current" ? "This Week" : "Previous Week"}
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={handleNextWeek}
+            disabled={week === "current"}
+            sx={{ color: week === "current" ? "disabled" : "default" }}
+          >
+            <ArrowForwardIos fontSize="small" />
+          </IconButton>
+        </Stack>
+
         <Typography variant="caption" color="text.secondary">
           Ease:{" "}
           <Typography component="span" fontWeight={600}>
