@@ -11,6 +11,7 @@ import {
   GetCardsToPlayResponse,
   UpdateCardParams,
   UpdateDeskParams,
+  UpdateDeskSettingsParams,
   UpdateFeedSettingsParams,
 } from "./desk.types";
 import { api, handleApiRequest } from "@/lib/axios";
@@ -25,6 +26,7 @@ import {
   FETCH_DESKS_SHORT_API,
   UPDATE_CARD_API,
   UPDATE_DESK_API,
+  UPDATE_DESK_SETTINGS_API,
   UPDATE_FEED_SETTINGS_API,
 } from "@/routes/api";
 
@@ -108,6 +110,17 @@ export async function createCardRequest(
 }
 
 export async function updateDeskSettingsRequest(
+  payload: UpdateDeskSettingsParams,
+  token: string
+): Promise<{ updated: boolean }> {
+  return handleApiRequest(
+    api.put(UPDATE_DESK_SETTINGS_API(payload.desk_sub), payload.settings, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function updateFeedSettingsRequest(
   payload: UpdateFeedSettingsParams,
   token: string
 ): Promise<{ updated: boolean }> {

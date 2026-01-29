@@ -46,7 +46,7 @@ import React from "react";
 import { useThemeContext } from "@/context/ThemeContext";
 import ThemeTogglerModal from "./modals/FeedSettings/ThemeTogglermodal";
 import { FeedSettings } from "@/services/desk/desk.types";
-import { updateDeskSettingsRequest } from "@/services/desk/desk";
+import { updateFeedSettingsRequest } from "@/services/desk/desk";
 
 export default function ProfileClient() {
   const router = useRouter();
@@ -113,7 +113,7 @@ export default function ProfileClient() {
 
   const updateDeskSettingsMutation = useMutation({
     mutationFn: (payload: { data: FeedSettings; token: string }) => {
-      return call(() => updateDeskSettingsRequest(payload.data, payload.token));
+      return call(() => updateFeedSettingsRequest(payload.data, payload.token));
     },
     onSuccess: () => {
       notifySuccess(`Feed settings updated successfully`);
