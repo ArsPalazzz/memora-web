@@ -1,12 +1,24 @@
-import { Box, Button, DialogActions, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  DialogActions,
+  FormControlLabel,
+  FormHelperText,
+  TextField,
+} from "@mui/material";
 import { CreateDeskFormProps } from "./CreateDesk.types";
+import { Controller, useFormState } from "react-hook-form";
 
 const CreateDesk = ({
   onSubmit,
   register,
   errors,
   onClose,
+  control,
 }: CreateDeskFormProps) => {
+  const { isValid, isSubmitting } = useFormState({ control });
+
   return (
     <Box
       component="form"
@@ -29,9 +41,38 @@ const CreateDesk = ({
         fullWidth
       />
 
+      <Box sx={{ mt: 1 }}>
+        <Controller
+          name="isPublic"
+          control={control}
+          defaultValue={true}
+          render={({ field }) => (
+            <>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    {...field}
+                    checked={field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                  />
+                }
+                label="Public desk"
+              />
+              <FormHelperText sx={{ ml: 0, mt: 0.5 }}>
+                Cards will be displayed in the Feed mode
+              </FormHelperText>
+            </>
+          )}
+        />
+      </Box>
+
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button type="submit" variant="contained">
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={!isValid || isSubmitting}
+        >
           Create
         </Button>
       </DialogActions>

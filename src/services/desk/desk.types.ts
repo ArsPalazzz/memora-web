@@ -12,8 +12,17 @@ export interface FetchDesksResponse {
   masteredCards: number;
 }
 
+export interface FetchDesksShortResponse {
+  sub: string;
+  title: string;
+}
+
 export interface DeskSettings {
   cards_per_session: number;
+  card_orientation: CARD_ORIENTATION;
+}
+
+export interface FeedSettings {
   card_orientation: CARD_ORIENTATION;
 }
 
@@ -73,6 +82,7 @@ export interface CreateDeskParams {
   sub: string;
   title: string;
   description: string;
+  isPublic: boolean;
 }
 
 export interface CreateCardParams {
@@ -84,6 +94,10 @@ export interface CreateCardParams {
 export interface UpdateDeskSettingsParams {
   desk_sub: string;
   settings: DeskSettings;
+}
+
+export interface UpdateFeedSettingsParams {
+  card_orientation: CARD_ORIENTATION;
 }
 
 export interface UpdateDeskParams {
@@ -111,6 +125,7 @@ export interface CreateDeskResult {
   sub: string;
   title: string;
   description: string;
+  public: boolean;
   created_at: string;
 }
 

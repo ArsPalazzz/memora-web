@@ -11,6 +11,18 @@ export function useProtectedRequest() {
     requestFn: (token: string) => Promise<T>,
     requiresAuth = true
   ): Promise<T> => {
+    if (requiresAuth && !accessToken) {
+      try {
+        const { accessToken: newToken } = await refreshRequest();
+        setAccessToken(newToken);
+        return await requestFn(newToken);
+      } catch (error) {
+        setAccessToken(null);
+        router.replace(ROUTES.LOGIN);
+        return Promise.reject(error);
+      }
+    }
+
     try {
       return await requestFn(accessToken!);
     } catch (err: unknown) {

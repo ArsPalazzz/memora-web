@@ -7,10 +7,11 @@ import {
   DeleteCardParams,
   FetchDeskResponse,
   FetchDesksResponse,
+  FetchDesksShortResponse,
   GetCardsToPlayResponse,
   UpdateCardParams,
   UpdateDeskParams,
-  UpdateDeskSettingsParams,
+  UpdateFeedSettingsParams,
 } from "./desk.types";
 import { api, handleApiRequest } from "@/lib/axios";
 import {
@@ -21,9 +22,10 @@ import {
   FETCH_CARDS_TO_PLAY_API,
   FETCH_DESK_API,
   FETCH_DESKS_API,
+  FETCH_DESKS_SHORT_API,
   UPDATE_CARD_API,
   UPDATE_DESK_API,
-  UPDATE_DESK_SETTINGS_API,
+  UPDATE_FEED_SETTINGS_API,
 } from "@/routes/api";
 
 export async function fetchMyDesksRequest(
@@ -31,6 +33,16 @@ export async function fetchMyDesksRequest(
 ): Promise<FetchDesksResponse[]> {
   return handleApiRequest(
     api.get(FETCH_DESKS_API, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function fetchMyDesksShortRequest(
+  token: string
+): Promise<FetchDesksShortResponse[]> {
+  return handleApiRequest(
+    api.get(FETCH_DESKS_SHORT_API, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );
@@ -62,6 +74,17 @@ export async function getCardsToPlayRequest(
   );
 }
 
+export async function addCardToDeskFeedRequest(
+  token: string,
+  payload: { cardSub: string; deskSubs: string[] }
+): Promise<FetchDesksShortResponse[]> {
+  return handleApiRequest(
+    api.post("/games/add-to-desk", payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
 export async function createDeskRequest(
   payload: CreateDeskParams,
   token: string
@@ -85,11 +108,11 @@ export async function createCardRequest(
 }
 
 export async function updateDeskSettingsRequest(
-  payload: UpdateDeskSettingsParams,
+  payload: UpdateFeedSettingsParams,
   token: string
 ): Promise<{ updated: boolean }> {
   return handleApiRequest(
-    api.put(UPDATE_DESK_SETTINGS_API(payload.desk_sub), payload.settings, {
+    api.put(UPDATE_FEED_SETTINGS_API, payload, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

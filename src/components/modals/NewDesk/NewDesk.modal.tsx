@@ -9,7 +9,7 @@ import { NewDeskModalProps } from "./NewDesk.types";
 import CreateDesk from "@/components/forms/CreateDesk/CreateDesk.form";
 
 export default function NewDeskModal(props: NewDeskModalProps) {
-  const { open, onClose, onSubmit, errors, register } = props;
+  const { open, onClose, onSubmit, errors, register, control } = props;
 
   const theme = useTheme();
 
@@ -34,6 +34,7 @@ export default function NewDeskModal(props: NewDeskModalProps) {
           onSubmit={onSubmit}
           errors={errors}
           register={register}
+          control={control}
         />
       </DialogContent>
     </Dialog>

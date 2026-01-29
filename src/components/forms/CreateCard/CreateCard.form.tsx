@@ -1,6 +1,6 @@
 import { Box, Button, Chip, CircularProgress, TextField } from "@mui/material";
 import { CreateCardFormProps } from "./CreateCard.types";
-import { useFieldArray } from "react-hook-form";
+import { useFieldArray, useFormState } from "react-hook-form";
 import { useEffect, useState } from "react";
 
 const CreateCard = ({
@@ -26,6 +26,8 @@ const CreateCard = ({
     control,
     name: "back",
   });
+
+  const { isValid } = useFormState({ control });
 
   const [frontInput, setFrontInput] = useState("");
   const [backInput, setBackInput] = useState("");
@@ -57,13 +59,19 @@ const CreateCard = ({
     setBackInput("");
   }, []);
 
+  const hasAtLeastOneFrontItem = frontFields.length > 0;
+  const hasAtLeastOneBackItem = backFields.length > 0;
+
+  const isFormValid =
+    hasAtLeastOneFrontItem && hasAtLeastOneBackItem && isValid;
+
   return (
     <Box
       component="form"
       onSubmit={onSubmit}
       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
     >
-      <Box>
+      <Box mt={1}>
         <TextField
           label="Front Side"
           value={frontInput}
@@ -108,7 +116,7 @@ const CreateCard = ({
       <Button
         type="submit"
         variant="contained"
-        disabled={isSubmitting}
+        disabled={!isFormValid || isSubmitting}
         startIcon={isSubmitting && <CircularProgress size={20} />}
       >
         {isSubmitting ? "Creating..." : "Create"}

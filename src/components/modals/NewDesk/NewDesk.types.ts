@@ -1,4 +1,4 @@
-import { FieldErrors, UseFormRegister } from "react-hook-form";
+import { Control, FieldErrors, UseFormRegister } from "react-hook-form";
 import { CreateDeskValues } from "@/schemas/createDesk.schema";
 
 export interface NewDeskModalProps {
@@ -7,4 +7,5 @@ export interface NewDeskModalProps {
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   errors: FieldErrors<CreateDeskValues>;
   register: UseFormRegister<CreateDeskValues>;
+  control: Control<CreateDeskValues>;
 }

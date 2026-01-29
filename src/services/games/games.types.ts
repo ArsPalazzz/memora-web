@@ -16,3 +16,20 @@ export type AnswerResult = {
 export type StartReviewSessionResult = {
   sessionId: string;
 };
+
+export type GetFeedNextCardResult = {
+  cards: {
+    sub: string;
+    text: string[];
+    backVariants: string[];
+    imageUuid: string;
+    deskTitle: string;
+    deskSub: string;
+    globalStats: {
+      shown: number;
+      liked: number;
+      answered: number;
+    };
+    examples: string[];
+  }[];
+};

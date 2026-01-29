@@ -10,8 +10,14 @@ import {
   Card,
   alpha,
   Divider,
+  ListItemButton,
+  List,
+  ListItemIcon,
+  ListItemText,
+  Grid,
 } from "@mui/material";
 import { useAuth } from "../utils/auth";
+import ScreenRotationIcon from "@mui/icons-material/ScreenRotation";
 import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -19,7 +25,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import NotificationsOffIcon from "@mui/icons-material/NotificationsOff";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MY_PROFILE } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader, Loader } from "@/components/ui/Loader";
@@ -30,17 +36,28 @@ import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/context/AuthContext";
 import { notifyError, notifySuccess } from "@/utils/notification";
 import Header from "@/components/layout/Header";
-import ThemeToggle from "./ui/Buttons/ThemeToggler";
 import { useFCM } from "@/hooks/useFCM";
 import { motion } from "framer-motion";
 import WithBottomNav from "./layout/WithBottomNav";
+import { useState } from "react";
+import FeedSettingsCardOrientationModal from "./modals/FeedSettings/FeedSettingsCardOrientation.modal";
+import { CARD_ORIENTATION } from "@/services/desk/desk.const";
+import React from "react";
+import { useThemeContext } from "@/context/ThemeContext";
+import ThemeTogglerModal from "./modals/FeedSettings/ThemeTogglermodal";
+import { FeedSettings } from "@/services/desk/desk.types";
+import { updateDeskSettingsRequest } from "@/services/desk/desk";
 
 export default function ProfileClient() {
   const router = useRouter();
   const { authenticated } = useAuth();
-  const { setAccessToken } = useAuthContext();
+  const { setAccessToken, accessToken } = useAuthContext();
   const { call } = useProtectedRequest();
   const theme = useTheme();
+
+  const [openSheet, setOpenSheet] = useState<null | string>(null);
+  const { mode } = useThemeContext();
+  const queryClient = useQueryClient();
 
   const {
     token: messageToken,
@@ -53,7 +70,7 @@ export default function ProfileClient() {
     showNotificationPrompt,
   } = useFCM();
 
-  const { data: profile, isLoading: isProfileLoading } = useQuery({
+  const { data: profileInfo, isLoading: isProfileLoading } = useQuery({
     queryKey: [MY_PROFILE],
     queryFn: async () => call((token) => getMyProfileRequest(token)),
   });
@@ -69,6 +86,49 @@ export default function ProfileClient() {
       notifyError(err.message);
     },
   });
+
+  const cardOrientation =
+    profileInfo &&
+    profileInfo.settings &&
+    profileInfo.settings.card_orientation &&
+    profileInfo.settings.card_orientation.charAt(0).toUpperCase() +
+      profileInfo.settings.card_orientation.slice(1);
+
+  const settingsItems = [
+    {
+      key: "cardOrientation",
+      icon: <ScreenRotationIcon sx={{ color: "primary.main", fontSize: 20 }} />,
+      title: "Card orientation (Feed)",
+      subtitle: "How cards should be displayed",
+      value: cardOrientation,
+    },
+    {
+      key: "themeColor",
+      icon: <SettingsIcon sx={{ color: "primary.main", fontSize: 20 }} />,
+      title: "Theme color",
+      subtitle: "Main theme of application",
+      value: mode?.[0]?.toUpperCase() + mode?.slice(1),
+    },
+  ];
+
+  const updateDeskSettingsMutation = useMutation({
+    mutationFn: (payload: { data: FeedSettings; token: string }) => {
+      return call(() => updateDeskSettingsRequest(payload.data, payload.token));
+    },
+    onSuccess: () => {
+      notifySuccess(`Feed settings updated successfully`);
+
+      queryClient.invalidateQueries({ queryKey: [MY_PROFILE] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const onUpdateFeedSettingsSubmit = (data: FeedSettings) => {
+    updateDeskSettingsMutation.mutate({ data, token: accessToken! });
+  };
 
   const handleNotifications = async () => {
     if (messageToken) {
@@ -207,14 +267,14 @@ export default function ProfileClient() {
                     )}`,
                   }}
                 >
-                  {profile?.nickname?.[0]?.toUpperCase() || "U"}
+                  {profileInfo?.profile.nickname?.[0]?.toUpperCase() || "U"}
                 </Box>
                 <Box>
                   <Typography variant="h6" fontWeight={700}>
-                    {profile?.nickname || "User"}
+                    {profileInfo?.profile.nickname || "User"}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Member since {profile?.created_at.split("T")[0]}
+                    Member since {profileInfo?.profile.created_at.split("T")[0]}
                   </Typography>
                 </Box>
               </Stack>
@@ -249,7 +309,7 @@ export default function ProfileClient() {
                       Nickname
                     </Typography>
                     <Typography variant="body1" fontWeight={500}>
-                      {profile?.nickname}
+                      {profileInfo?.profile.nickname}
                     </Typography>
                   </Box>
                 </Stack>
@@ -263,7 +323,7 @@ export default function ProfileClient() {
                       Email
                     </Typography>
                     <Typography variant="body1" fontWeight={500}>
-                      {profile?.email}
+                      {profileInfo?.profile.email}
                     </Typography>
                   </Box>
                 </Stack>
@@ -279,7 +339,7 @@ export default function ProfileClient() {
                       Registered
                     </Typography>
                     <Typography variant="body1" fontWeight={500}>
-                      {profile?.created_at.split("T")[0]}
+                      {profileInfo?.profile.created_at.split("T")[0]}
                     </Typography>
                   </Box>
                 </Stack>
@@ -293,83 +353,118 @@ export default function ProfileClient() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-          <Card
-            sx={{
-              mb: 3,
-              borderRadius: 3,
-              bgcolor: "background.paper",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.05)",
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                Settings
-              </Typography>
+          <Grid size={{ xs: 12 }}>
+            <Card
+              sx={{
+                mb: 3,
+                borderRadius: 3,
+                bgcolor: "background.paper",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.05)",
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+                  Settings
+                </Typography>
 
-              <Stack spacing={2}>
-                <Box
+                <List
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    mb: 1,
+                    width: "100%",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    pt: 2,
                   }}
                 >
-                  <Stack direction="row" alignItems="center" spacing={2}>
-                    {messageToken ? (
-                      <NotificationsActiveIcon
-                        sx={{ color: "primary.main", fontSize: 20 }}
-                      />
-                    ) : (
-                      <NotificationsOffIcon
-                        sx={{ color: "primary.main", fontSize: 20 }}
-                      />
-                    )}
-                    <Typography variant="body1">Push Notifications</Typography>
-                  </Stack>
-                  <Button
-                    variant={messageToken ? "outlined" : "contained"}
-                    size="small"
-                    onClick={handleNotifications}
-                    disabled={notificationsLoading}
-                    startIcon={
-                      notificationsLoading ? null : messageToken ? (
-                        <NotificationsOffIcon />
-                      ) : (
-                        <NotificationsIcon />
-                      )
-                    }
-                    sx={{ minWidth: 120, height: 32 }}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      pb: 2,
+                    }}
                   >
-                    {notificationsLoading ? (
-                      <Loader size={23} />
-                    ) : messageToken ? (
-                      "Disable"
-                    ) : (
-                      "Enable"
-                    )}
-                  </Button>
-                </Box>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      {messageToken ? (
+                        <NotificationsActiveIcon
+                          sx={{ color: "primary.main", fontSize: 20 }}
+                        />
+                      ) : (
+                        <NotificationsOffIcon
+                          sx={{ color: "primary.main", fontSize: 20 }}
+                        />
+                      )}
 
-                <Divider />
+                      <ListItemText
+                        primary="Push Notifications"
+                        secondary="Get notifications to revise cards"
+                        primaryTypographyProps={{ fontWeight: 600 }}
+                      />
+                    </Stack>
+                    <Button
+                      variant={messageToken ? "outlined" : "contained"}
+                      size="small"
+                      onClick={handleNotifications}
+                      disabled={notificationsLoading}
+                      startIcon={
+                        notificationsLoading ? null : messageToken ? (
+                          <NotificationsOffIcon />
+                        ) : (
+                          <NotificationsIcon />
+                        )
+                      }
+                      sx={{ minWidth: 100, height: 32 }}
+                    >
+                      {notificationsLoading ? (
+                        <Loader size={23} />
+                      ) : messageToken ? (
+                        "Disable"
+                      ) : (
+                        "Enable"
+                      )}
+                    </Button>
+                  </Box>
 
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <Stack direction="row" alignItems="center" spacing={2}>
-                    <SettingsIcon
-                      sx={{ color: "primary.main", fontSize: 20 }}
-                    />
-                    <Typography variant="body1">Theme</Typography>
-                  </Stack>
-                  <ThemeToggle />
-                </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
+                  <Divider component="li" />
+
+                  {settingsItems.map((item, index) => (
+                    <React.Fragment key={item.key}>
+                      <ListItemButton
+                        onClick={() => setOpenSheet(item.key)}
+                        sx={{
+                          pl: 0,
+                          py: 2,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 2,
+                          "&:hover": { bgcolor: "inherit" },
+                        }}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <ListItemIcon sx={{ minWidth: 40 }}>
+                            {item.icon}
+                          </ListItemIcon>
+
+                          <ListItemText
+                            primary={item.title}
+                            secondary={item.subtitle}
+                            primaryTypographyProps={{ fontWeight: 600 }}
+                          />
+                        </Box>
+
+                        <Typography color="text.secondary" fontWeight={600}>
+                          {item.value}
+                        </Typography>
+                      </ListItemButton>
+
+                      {index !== 1 && <Divider component="li" />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
         </motion.div>
 
         <motion.div
@@ -416,6 +511,22 @@ export default function ProfileClient() {
           </Card>
         </motion.div>
       </Box>
+
+      {profileInfo && openSheet === "cardOrientation" && (
+        <FeedSettingsCardOrientationModal
+          setOpenSheet={setOpenSheet}
+          currentValue={profileInfo?.settings.card_orientation}
+          onClose={(value: CARD_ORIENTATION) => {
+            if (value === profileInfo.settings.card_orientation) return;
+
+            onUpdateFeedSettingsSubmit({ card_orientation: value });
+          }}
+        />
+      )}
+
+      {profileInfo && openSheet === "themeColor" && (
+        <ThemeTogglerModal onClose={() => setOpenSheet(null)} />
+      )}
     </WithBottomNav>
   );
 }

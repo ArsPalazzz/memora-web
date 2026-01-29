@@ -53,8 +53,10 @@ export default function HomeClient() {
     register,
     reset,
     formState: { errors },
+    control,
   } = useForm<CreateDeskValues>({
     resolver: zodResolver(createDeskSchema),
+    defaultValues: { isPublic: true },
     mode: "onChange",
   });
 
@@ -172,6 +174,7 @@ export default function HomeClient() {
           errors={errors}
           register={register}
           onSubmit={handleSubmit(onSubmit)}
+          control={control}
         />
       )}
     </WithBottomNav>

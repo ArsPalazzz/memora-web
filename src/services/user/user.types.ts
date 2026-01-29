@@ -1,3 +1,5 @@
+import { CARD_ORIENTATION } from "../desk/desk.const";
+
 export interface SignUpParams {
   email: string;
   password: string;
@@ -12,10 +14,15 @@ export interface SignUpResponse {
 }
 
 export interface GetMyProfileResponse {
-  sub: string;
-  nickname: string;
-  email: string;
-  created_at: string;
+  profile: {
+    sub: string;
+    nickname: string;
+    email: string;
+    created_at: string;
+  };
+  settings: {
+    card_orientation: CARD_ORIENTATION;
+  };
 }
 
 export interface GetUserDailyResponse {

@@ -6,6 +6,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ROUTES } from "@/routes/next";
+import ExploreIcon from "@mui/icons-material/Explore";
 
 export default function BottomNav() {
   const router = useRouter();
@@ -19,6 +20,10 @@ export default function BottomNav() {
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
     router.push(newValue);
+  };
+
+  const handleFeedClick = () => {
+    router.push(ROUTES.FEED);
   };
 
   return (
@@ -52,6 +57,14 @@ export default function BottomNav() {
           value={ROUTES.HOME}
           icon={<HomeIcon />}
         />
+
+        <BottomNavigationAction
+          label="Discover"
+          value={ROUTES.FEED}
+          icon={<ExploreIcon />}
+          onClick={handleFeedClick}
+        />
+
         <BottomNavigationAction
           label="Profile"
           value={ROUTES.PROFILE}

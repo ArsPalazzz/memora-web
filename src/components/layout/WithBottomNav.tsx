@@ -15,13 +15,22 @@ export default function WithBottomNav({ children }: WithBottomNavProps) {
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        pb: {
-          xs: "calc(56px + env(safe-area-inset-bottom, 0px))",
-          md: 7,
-        },
       }}
     >
-      {children}
+      <Box
+        sx={{
+          flex: 1,
+          overflow: "auto",
+          display: "flex",
+          flexDirection: "column",
+          pb: {
+            xs: "56px",
+            md: 7,
+          },
+        }}
+      >
+        {children}
+      </Box>
       <BottomNav />
     </Box>
   );
