@@ -1,6 +1,7 @@
 export const USER_DAILY = "user-daily";
 
 export const USER_DESKS = "user-desks";
+export const ARCHIVED_DESKS = "archived-desks";
 export const USER_DESKS_SHORT = "user-desks-short";
 export const USER_DESK = "user-desk";
 

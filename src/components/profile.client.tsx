@@ -47,6 +47,7 @@ import { useThemeContext } from "@/context/ThemeContext";
 import ThemeTogglerModal from "./modals/FeedSettings/ThemeTogglermodal";
 import { FeedSettings } from "@/services/desk/desk.types";
 import { updateFeedSettingsRequest } from "@/services/desk/desk";
+import ArchiveIcon from "@mui/icons-material/Archive";
 
 export default function ProfileClient() {
   const router = useRouter();
@@ -461,6 +462,59 @@ export default function ProfileClient() {
                       {index !== 1 && <Divider component="li" />}
                     </React.Fragment>
                   ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+        >
+          <Grid size={{ xs: 12 }}>
+            <Card
+              sx={{
+                mb: 3,
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" fontWeight={600}>
+                  Hidden
+                </Typography>
+
+                <List
+                  sx={{
+                    width: "100%",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    pt: 2,
+                  }}
+                >
+                  <ListItemButton
+                    onClick={() => router.push("/desk/archived")}
+                    sx={{
+                      pl: 0,
+                      "&:hover": { bgcolor: "inherit" },
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <ListItemIcon sx={{ minWidth: 40 }}>
+                        <ArchiveIcon
+                          sx={{ color: "primary.main", fontSize: 20 }}
+                        />
+                      </ListItemIcon>
+
+                      <ListItemText
+                        primary="Archived desks"
+                        secondary="Desks you archived"
+                        primaryTypographyProps={{ fontWeight: 600 }}
+                      />
+                    </Box>
+                  </ListItemButton>
                 </List>
               </CardContent>
             </Card>

@@ -203,7 +203,7 @@ export default function FeedPage() {
 
     await markShownOnce(nextCard.sub);
 
-    if (nextIndex === cards.length - 1) {
+    if (nextIndex === cards.length - 4) {
       const data = await call((token) =>
         getFeedNextCardRequest({ sessionId }, token)
       );

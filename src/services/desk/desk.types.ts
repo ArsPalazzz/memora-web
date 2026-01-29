@@ -12,6 +12,17 @@ export interface FetchDesksResponse {
   masteredCards: number;
 }
 
+export interface FetchArchivedDesksResponse {
+  sub: string;
+  title: string;
+  description: string;
+  totalCards: number;
+  newCards: number;
+  dueCards: number;
+  learningCards: number;
+  masteredCards: number;
+}
+
 export interface FetchDesksShortResponse {
   sub: string;
   title: string;
@@ -66,6 +77,14 @@ export interface FetchDeskResponse {
       };
     };
   };
+}
+
+export interface FetchDeskCardsResponse {
+  sub: string;
+  createdAt: string;
+  frontVariants: string[];
+  backVariants: string[];
+  examples: string[];
 }
 
 export interface GetCardsToPlayResponse {

@@ -24,6 +24,7 @@ import { USER_DESK, USER_DESKS } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import ScreenRotationIcon from "@mui/icons-material/ScreenRotation";
 import SettingsIcon from "@mui/icons-material/Settings";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import {
   archiveDeskRequest,
   createCardRequest,
@@ -33,13 +34,14 @@ import {
   updateDeskRequest,
   updateDeskSettingsRequest,
 } from "@/services/desk/desk";
-import BottomNav from "./layout/BottomNav";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import NewCardModal from "./modals/NewCard/NewCard.modal";
+import ArchiveIcon from "@mui/icons-material/Archive";
 import { useForm } from "react-hook-form";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
   createCardSchema,
   CreateCardValues,
@@ -375,7 +377,7 @@ export default function DeskClient() {
                   <MenuItem
                     sx={{
                       display: "flex",
-                      gap: 0.5,
+                      gap: 1,
                       alignItems: "center",
                     }}
                     onClick={() => {
@@ -390,7 +392,7 @@ export default function DeskClient() {
                   <MenuItem
                     sx={{
                       display: "flex",
-                      gap: 0.5,
+                      gap: 1,
                       alignItems: "center",
                     }}
                     onClick={() => {
@@ -398,14 +400,14 @@ export default function DeskClient() {
                       setUpdateDeskModal(true);
                     }}
                   >
-                    <EditIcon sx={{ fontSize: 20 }} />
+                    <EditIcon sx={{ fontSize: 18 }} />
                     <Typography>Edit desk</Typography>
                   </MenuItem>
 
                   <MenuItem
                     sx={{
                       display: "flex",
-                      gap: 0.5,
+                      gap: 1,
                       alignItems: "center",
                       color: "red",
                     }}
@@ -414,7 +416,7 @@ export default function DeskClient() {
                       setDeleteDeskModal(true);
                     }}
                   >
-                    <DeleteIcon sx={{ fontSize: 20 }} />
+                    <ArchiveIcon sx={{ fontSize: 18 }} />
                     <Typography>Archive desk</Typography>
                   </MenuItem>
                 </Menu>
@@ -464,10 +466,25 @@ export default function DeskClient() {
                       </Grid>
                     )}
 
-                    <Grid size={{ xs: 12 }}>
+                    <Grid
+                      size={{ xs: 12 }}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignContent: "center",
+                      }}
+                    >
                       <Typography variant="h6" fontWeight={600}>
                         Cards
                       </Typography>
+
+                      {!!desk.cards.length && (
+                        <KeyboardArrowRightIcon
+                          fontSize="large"
+                          sx={{ cursor: "pointer" }}
+                          onClick={() => router.push(`${desk.sub}/cards`)}
+                        />
+                      )}
                     </Grid>
 
                     <Grid size={{ xs: 12 }}>
@@ -599,6 +616,32 @@ export default function DeskClient() {
                             </Typography>
                           </Card>
                         ))}
+
+                        {desk.stats.total_cards > desk.cards.length && (
+                          <Box
+                            key="empty"
+                            sx={{
+                              flex: "0 0 44vw",
+                              maxWidth: "44vw",
+                              height: "44vw",
+                              scrollSnapAlign: "start",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              px: 2,
+                              py: 3,
+                              textAlign: "center",
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`${desk.sub}/cards`);
+                            }}
+                          >
+                            <IconButton size="large">
+                              <ArrowForwardIcon fontSize="large" />
+                            </IconButton>
+                          </Box>
+                        )}
                       </Box>
                     </Grid>
 

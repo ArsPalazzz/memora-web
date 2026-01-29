@@ -5,6 +5,8 @@ import {
   CreateDeskParams,
   CreateDeskResult,
   DeleteCardParams,
+  FetchArchivedDesksResponse,
+  FetchDeskCardsResponse,
   FetchDeskResponse,
   FetchDesksResponse,
   FetchDesksShortResponse,
@@ -20,10 +22,13 @@ import {
   CREATE_CARD_API,
   CREATE_DESK_API,
   DELETE_CARD_API,
+  FETCH_ARCHIVED_DESKS_API,
   FETCH_CARDS_TO_PLAY_API,
   FETCH_DESK_API,
+  FETCH_DESK_CARDS_API,
   FETCH_DESKS_API,
   FETCH_DESKS_SHORT_API,
+  RESTORE_DESK_API,
   UPDATE_CARD_API,
   UPDATE_DESK_API,
   UPDATE_DESK_SETTINGS_API,
@@ -35,6 +40,16 @@ export async function fetchMyDesksRequest(
 ): Promise<FetchDesksResponse[]> {
   return handleApiRequest(
     api.get(FETCH_DESKS_API, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function fetchMyArchivedDesksRequest(
+  token: string
+): Promise<FetchArchivedDesksResponse[]> {
+  return handleApiRequest(
+    api.get(FETCH_ARCHIVED_DESKS_API, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );
@@ -56,6 +71,17 @@ export async function fetchDeskRequest(
 ): Promise<FetchDeskResponse> {
   return handleApiRequest(
     api.get(FETCH_DESK_API(sub), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function fetchDeskCardsRequest(
+  sub: string,
+  token: string
+): Promise<FetchDeskCardsResponse[]> {
+  return handleApiRequest(
+    api.get(FETCH_DESK_CARDS_API(sub), {
       headers: { Authorization: `Bearer ${token}` },
     })
   );
@@ -172,5 +198,20 @@ export async function archiveDeskRequest(
     api.delete(ARCHIVE_DESK_API(payload.desk_sub), {
       headers: { Authorization: `Bearer ${token}` },
     })
+  );
+}
+
+export async function restoreDeskRequest(
+  payload: ArchiveDeskParams,
+  token: string
+) {
+  return handleApiRequest(
+    api.put(
+      RESTORE_DESK_API(payload.desk_sub),
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
   );
 }
