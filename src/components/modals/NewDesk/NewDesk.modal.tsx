@@ -27,7 +27,7 @@ export default function NewDeskModal(props: NewDeskModalProps) {
         },
       }}
     >
-      <DialogTitle>Create New Desk</DialogTitle>
+      <DialogTitle>Create New Deck</DialogTitle>
       <DialogContent>
         <CreateDesk
           onClose={onClose}

@@ -27,7 +27,7 @@ export default function EditDeskModal(props: EditDeskModalProps) {
         },
       }}
     >
-      <DialogTitle>Edit Desk</DialogTitle>
+      <DialogTitle>Edit Deck</DialogTitle>
       <DialogContent>
         <EditDesk
           onClose={onClose}

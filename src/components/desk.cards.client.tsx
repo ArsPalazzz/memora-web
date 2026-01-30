@@ -134,7 +134,7 @@ export default function DeskCardsClient() {
             position: "relative",
           }}
         >
-          <Header title="Desk Cards" onBack={() => router.back()} />
+          <Header title="Deck Cards" onBack={() => router.back()} />
           <Box
             sx={{
               flex: 1,

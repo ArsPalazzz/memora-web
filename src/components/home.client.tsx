@@ -91,7 +91,7 @@ export default function HomeClient() {
     onSuccess: (payload: CreateDeskResult) => {
       reset();
       setOpenDeskModal(false);
-      notifySuccess(`Desk '${payload.title}' created successfully`);
+      notifySuccess(`Deck '${payload.title}' created successfully`);
 
       queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
     },
@@ -182,7 +182,7 @@ export default function HomeClient() {
         }}
       >
         <Header
-          title={activeTab === 0 ? "Desks" : "Folders"}
+          title={activeTab === 0 ? "Decks" : "Folders"}
           RightButton={<RightButton />}
         />
 
@@ -214,7 +214,7 @@ export default function HomeClient() {
                 {!desks?.length && (
                   <EmptyState
                     onCreate={() => setOpenDeskModal(true)}
-                    title="No desks yet"
+                    title="No decks yet"
                     description="Start your learning journey by creating your first deck of flashcards"
                     icon={
                       <LibraryBooksIcon
@@ -274,7 +274,7 @@ export default function HomeClient() {
                   <EmptyState
                     onCreate={() => setOpenFolderModal(true)}
                     title="No folders yet"
-                    description="Organize your desks into folders for better management"
+                    description="Organize your decks into folders for better management"
                     icon={
                       <FolderIcon
                         sx={{ fontSize: 80, color: "grey.400", mb: 2 }}

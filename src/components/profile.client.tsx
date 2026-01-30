@@ -509,8 +509,8 @@ export default function ProfileClient() {
                       </ListItemIcon>
 
                       <ListItemText
-                        primary="Archived desks"
-                        secondary="Desks you archived"
+                        primary="Archived decks"
+                        secondary="Decks you archived"
                         primaryTypographyProps={{ fontWeight: 600 }}
                       />
                     </Box>

@@ -785,7 +785,7 @@ export default function FeedPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Add to Desks</DialogTitle>
+        <DialogTitle>Add to Decks</DialogTitle>
         <DialogContent>
           {isDesksLoading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
@@ -793,7 +793,7 @@ export default function FeedPage() {
             </Box>
           ) : myDesks?.length === 0 ? (
             <Typography color="text.secondary" sx={{ py: 2 }}>
-              You don&apos;t have any desks yet. Create one first!
+              You don&apos;t have any decks yet. Create one first!
             </Typography>
           ) : (
             <List sx={{ pt: 2 }}>

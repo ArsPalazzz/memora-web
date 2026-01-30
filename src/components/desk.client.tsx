@@ -213,7 +213,7 @@ export default function DeskClient() {
       return call(() => updateDeskSettingsRequest(data, payload.token));
     },
     onSuccess: () => {
-      notifySuccess(`Desk settings updated successfully`);
+      notifySuccess(`Deck settings updated successfully`);
 
       queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
     },
@@ -232,7 +232,7 @@ export default function DeskClient() {
     onSuccess: () => {
       resetUpdateDesk();
       setUpdateDeskModal(false);
-      notifySuccess(`Desk updated successfully`);
+      notifySuccess(`Deck updated successfully`);
 
       queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
       queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
@@ -278,7 +278,7 @@ export default function DeskClient() {
 
       router.replace(ROUTES.HOME);
 
-      notifySuccess(`Desk archived successfully`);
+      notifySuccess(`Deck archived successfully`);
 
       queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
       queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
@@ -371,7 +371,7 @@ export default function DeskClient() {
           }}
         >
           <Header
-            title="Desks"
+            title="Decks"
             onBack={() => router.push(ROUTES.HOME)}
             RightButton={
               <>

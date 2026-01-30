@@ -37,7 +37,7 @@ export default function ArchivedDesksClient() {
       return call(() => restoreDeskRequest(payload.data, payload.token));
     },
     onSuccess: () => {
-      notifySuccess(`Desk restored successfully`);
+      notifySuccess(`Deck restored successfully`);
 
       queryClient.invalidateQueries({ queryKey: [ARCHIVED_DESKS] });
       queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
@@ -60,7 +60,7 @@ export default function ArchivedDesksClient() {
     <WithBottomNav>
       <Box sx={{ position: "relative" }}>
         <Header
-          title="Archived Desks"
+          title="Archived Decks"
           onBack={() => router.push(ROUTES.PROFILE)}
         />
 
@@ -126,7 +126,7 @@ const ArchiveEmptyState = () => (
       Archive is empty
     </Typography>
     <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 400 }}>
-      Archived desks will appear here. Archive desks you don&apos;t need right
+      Archived decks will appear here. Archive decks you don&apos;t need right
       now to keep your workspace clean
     </Typography>
   </Box>

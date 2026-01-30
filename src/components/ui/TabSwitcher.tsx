@@ -18,7 +18,7 @@ export const TabsSwitcher = ({ activeTab, onChange }: TabsSwitcherProps) => {
       >
         <Tab
           icon={<GridViewIcon />}
-          label="Desks"
+          label="Decks"
           sx={{
             textTransform: "none",
             fontWeight: 600,

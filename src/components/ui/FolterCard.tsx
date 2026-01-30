@@ -24,7 +24,7 @@ export const FolderCard = ({
         <Box sx={{ flex: 1 }}>
           <Typography variant="h6">{folder.title}</Typography>
           <Typography variant="body2" color="text.secondary">
-            {folder.deskCount} desks
+            {folder.deskCount} decks
           </Typography>
         </Box>
         <IconButton onClick={onMenuClick}>

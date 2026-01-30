@@ -31,6 +31,7 @@ const CreateDesk = ({
         error={!!errors.title}
         helperText={errors.title?.message}
         fullWidth
+        sx={{ mt: 1 }}
       />
 
       <TextField
@@ -58,7 +59,7 @@ const CreateDesk = ({
                     onChange={(e) => field.onChange(e.target.checked)}
                   />
                 }
-                label="Public desk"
+                label="Public deck"
               />
               <FormHelperText sx={{ ml: 0, mt: 0.5 }}>
                 Cards will be displayed in the Feed mode

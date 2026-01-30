@@ -13,10 +13,10 @@ export default function DeleteDeskModal(props: DeleteDeskModalProps) {
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Archive Desk</DialogTitle>
+      <DialogTitle>Archive Deck</DialogTitle>
       <DialogContent>
         <Typography>
-          Are you sure you want to archive this desk? It will be hidden but you
+          Are you sure you want to archive this deck? It will be hidden but you
           can make it visible again at any time
         </Typography>
       </DialogContent>
