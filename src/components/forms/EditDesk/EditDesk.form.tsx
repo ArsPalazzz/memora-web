@@ -27,6 +27,8 @@ const EditDesk = ({
         error={!!errors.description}
         helperText={errors.description?.message}
         fullWidth
+        multiline
+        rows={3}
       />
 
       <DialogActions>

@@ -29,6 +29,7 @@ import {
   archiveDeskRequest,
   createCardRequest,
   deleteCardRequest,
+  fetchCardRequest,
   fetchDeskRequest,
   updateCardRequest,
   updateDeskRequest,
@@ -175,12 +176,29 @@ export default function DeskClient() {
 
       return call(() => createCardRequest(data, payload.token));
     },
-    onSuccess: () => {
+    onSuccess: (card: { sub: string }) => {
       resetCreateCard();
-      setCreateCardModal(false);
       notifySuccess(`Card created successfully`);
 
       queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
+
+      if (!accessToken) return;
+
+      const pollInterval = setInterval(async () => {
+        const updatedCard = await fetchCardRequest(card.sub, accessToken);
+        if (updatedCard.examples.length > 0) {
+          clearInterval(pollInterval);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          queryClient.setQueryData([USER_DESK, sub], (old: any) => ({
+            ...old,
+            cards: old.cards.map((c: { sub: string }) =>
+              c.sub === card.sub ? { ...c, examples: updatedCard.examples } : c
+            ),
+          }));
+        }
+      }, 4000);
+
+      setTimeout(() => clearInterval(pollInterval), 32000);
     },
     onError: (err) => {
       console.warn(err);
@@ -747,8 +765,8 @@ export default function DeskClient() {
         <NewCardModal
           open={createCardModal}
           onClose={() => {
-            setCreateCardModal(false);
             resetCreateCard();
+            setCreateCardModal(false);
           }}
           errors={errorsCreateCard}
           control={controlCreateCard}

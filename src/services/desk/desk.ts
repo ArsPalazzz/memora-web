@@ -6,10 +6,12 @@ import {
   CreateDeskResult,
   DeleteCardParams,
   FetchArchivedDesksResponse,
+  FetchCardResponse,
   FetchDeskCardsResponse,
   FetchDeskResponse,
   FetchDesksResponse,
   FetchDesksShortResponse,
+  FolderTree,
   GetCardsToPlayResponse,
   UpdateCardParams,
   UpdateDeskParams,
@@ -23,6 +25,7 @@ import {
   CREATE_DESK_API,
   DELETE_CARD_API,
   FETCH_ARCHIVED_DESKS_API,
+  FETCH_CARD_API,
   FETCH_CARDS_TO_PLAY_API,
   FETCH_DESK_API,
   FETCH_DESK_CARDS_API,
@@ -75,6 +78,42 @@ export async function fetchDeskRequest(
     })
   );
 }
+
+export async function fetchCardRequest(
+  sub: string,
+  token: string
+): Promise<FetchCardResponse> {
+  return handleApiRequest(
+    api.get(FETCH_CARD_API(sub), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export const getFoldersRequest = async (
+  token: string
+): Promise<FolderTree[]> => {
+  return handleApiRequest(
+    api.get("/folders", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+};
+
+export const createFolderRequest = async (
+  data: {
+    title: string;
+    description: string;
+    parent_folder_sub?: string | null;
+  },
+  token: string
+): Promise<void> => {
+  return handleApiRequest(
+    api.post("/folders", data, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+};
 
 export async function fetchDeskCardsRequest(
   sub: string,

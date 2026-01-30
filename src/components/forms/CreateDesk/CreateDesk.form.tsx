@@ -38,6 +38,8 @@ const CreateDesk = ({
         {...register("description")}
         error={!!errors.description}
         helperText={errors.description?.message}
+        multiline
+        rows={3}
         fullWidth
       />
 

@@ -79,6 +79,29 @@ export interface FetchDeskResponse {
   };
 }
 
+export interface FetchCardResponse {
+  sub: string;
+  created_at: string;
+  front_variants: string[];
+  back_variants: string[];
+  examples: string[];
+}
+
+export interface Folder {
+  sub: string;
+  title: string;
+  description: string;
+  parentFolderSub: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deskCount: number;
+  childCount: number;
+}
+
+export interface FolderTree extends Folder {
+  children: FolderTree[];
+}
+
 export interface FetchDeskCardsResponse {
   sub: string;
   createdAt: string;
