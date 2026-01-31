@@ -11,7 +11,7 @@ import {
   getFoldersRequest,
 } from "../services/desk/desk";
 import AddIcon from "@mui/icons-material/Add";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import NewDeskModal from "@/components/modals/NewDesk/NewDesk.modal";
 import {
@@ -21,13 +21,13 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { notifyError, notifySuccess } from "@/utils/notification";
 import { useAuthContext } from "@/context/AuthContext";
-import { USER_DAILY, USER_DESKS, USER_FOLDERS } from "@/routes/react-query";
+import { USER_DAILY, USER_DESKS, ROOT_FOLDERS } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
-import { FullPageLoader } from "@/components/ui/Loader";
+import { FullPageLoader, Loader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import { v4 as uuidV4 } from "uuid";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import WithBottomNav from "./layout/WithBottomNav";
 import { motion } from "framer-motion";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
@@ -48,10 +48,33 @@ export default function HomeClient() {
 
   const [openDeskModal, setOpenDeskModal] = useState(false);
   const [openFolderModal, setOpenFolderModal] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
-  const [folderMenuAnchor, setFolderMenuAnchor] = useState<null | HTMLElement>(
-    null
-  );
+
+  const handleTabChange = (newTab: number) => {
+    setActiveTab(newTab);
+  };
+
+  const searchParams = useSearchParams();
+
+  const urlTab = searchParams.get("tab");
+  const initialTab = urlTab === "folders" ? 1 : 0;
+
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    const currentTabParam = params.get("tab");
+
+    if (
+      !currentTabParam ||
+      (activeTab === 0 && currentTabParam === "folders")
+    ) {
+      return router.replace(`?tab=desks`, { scroll: false });
+    }
+
+    if (activeTab === 1 && currentTabParam === "desks") {
+      return router.replace(`?tab=folders`, { scroll: false });
+    }
+  }, [activeTab, router, searchParams]);
 
   const { data: daily } = useQuery({
     queryKey: [USER_DAILY],
@@ -64,7 +87,7 @@ export default function HomeClient() {
   });
 
   const { data: folders, isLoading: isFoldersLoading } = useQuery({
-    queryKey: [USER_FOLDERS],
+    queryKey: [ROOT_FOLDERS],
     queryFn: async () => call((token) => getFoldersRequest(token)),
     enabled: activeTab === 1,
   });
@@ -84,7 +107,7 @@ export default function HomeClient() {
   const createDeskMutation = useMutation({
     mutationFn: (payload: { data: CreateDeskValues; token: string }) => {
       const sub = uuidV4();
-      const data = { sub, ...payload.data };
+      const data = { sub, ...payload.data, folder_sub: null };
 
       return call(() => createDeskRequest(data, payload.token));
     },
@@ -117,7 +140,7 @@ export default function HomeClient() {
     onSuccess: () => {
       setOpenFolderModal(false);
       notifySuccess("Folder created successfully");
-      queryClient.invalidateQueries({ queryKey: [USER_FOLDERS] });
+      queryClient.invalidateQueries({ queryKey: [ROOT_FOLDERS] });
     },
     onError: (err) => {
       console.warn(err);
@@ -138,18 +161,6 @@ export default function HomeClient() {
     if (ratio > 0.3) return "error";
     if (ratio > 0.1) return "warning";
     return "success";
-  };
-
-  const handleFolderMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setFolderMenuAnchor(event.currentTarget);
-  };
-
-  const handleFolderMenuClose = () => {
-    setFolderMenuAnchor(null);
-  };
-
-  const handleCreateSubfolder = (parentFolderSub?: string) => {
-    handleFolderMenuClose();
   };
 
   if (isDesksLoading) return <FullPageLoader />;
@@ -179,6 +190,11 @@ export default function HomeClient() {
           display: "flex",
           flexDirection: "column",
           height: "100vh",
+          overflow:
+            (activeTab === 0 && desks && !desks.length) ||
+            (activeTab === 1 && folders && !folders.length)
+              ? "hidden"
+              : "inherit",
         }}
       >
         <Header
@@ -189,9 +205,9 @@ export default function HomeClient() {
         <Box
           sx={{
             flex: 1,
-            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
+            mb: desks?.length || folders?.length ? 2 : 0,
           }}
         >
           <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
@@ -205,10 +221,19 @@ export default function HomeClient() {
               </Box>
             )}
 
-            <TabsSwitcher activeTab={activeTab} onChange={setActiveTab} />
+            <TabsSwitcher activeTab={activeTab} onChange={handleTabChange} />
           </Box>
 
-          <Box sx={{ flex: 1, overflowY: "auto", px: 2, pb: 2 }}>
+          <Box
+            sx={{
+              flex: 1,
+              px: 2,
+              pb: 2,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+            }}
+          >
             {activeTab === 0 ? (
               <>
                 {!desks?.length && (
@@ -268,7 +293,7 @@ export default function HomeClient() {
               </>
             ) : (
               <>
-                {isFoldersLoading && <FullPageLoader />}
+                {isFoldersLoading && <Loader />}
 
                 {(!folders || folders.length === 0) && (
                   <EmptyState
@@ -302,7 +327,6 @@ export default function HomeClient() {
                               onClick={() =>
                                 router.push(`/folder/${folder.sub}`)
                               }
-                              onMenuClick={(e) => handleFolderMenuClick(e)}
                             />
                           </motion.div>
                         </Grid>
@@ -398,7 +422,7 @@ const EmptyState = ({
 }) => (
   <Box
     sx={{
-      height: "100%",
+      flex: 1,
       minHeight: "300px",
       display: "flex",
       flexDirection: "column",

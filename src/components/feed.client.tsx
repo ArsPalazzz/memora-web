@@ -104,7 +104,6 @@ export default function FeedPage() {
   const [showGrades, setShowGrades] = useState(false);
   const [addToDeskDialog, setAddToDeskDialog] = useState(false);
   const [selectedDesks, setSelectedDesks] = useState<string[]>([]);
-  // const [userDesks, setUserDesks] = useState<UserDesk[]>([]);
   const [selectedDesk, setSelectedDesk] = useState<string>("");
   const [snackbar, setSnackbar] = useState({
     open: false,

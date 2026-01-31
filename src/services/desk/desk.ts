@@ -11,12 +11,13 @@ import {
   FetchDeskResponse,
   FetchDesksResponse,
   FetchDesksShortResponse,
-  FolderTree,
   GetCardsToPlayResponse,
+  RootFolder,
   UpdateCardParams,
   UpdateDeskParams,
   UpdateDeskSettingsParams,
   UpdateFeedSettingsParams,
+  UpdateReviewSettingsParams,
 } from "./desk.types";
 import { api, handleApiRequest } from "@/lib/axios";
 import {
@@ -36,6 +37,7 @@ import {
   UPDATE_DESK_API,
   UPDATE_DESK_SETTINGS_API,
   UPDATE_FEED_SETTINGS_API,
+  UPDATE_REVIEW_SETTINGS_API,
 } from "@/routes/api";
 
 export async function fetchMyDesksRequest(
@@ -92,7 +94,7 @@ export async function fetchCardRequest(
 
 export const getFoldersRequest = async (
   token: string
-): Promise<FolderTree[]> => {
+): Promise<RootFolder[]> => {
   return handleApiRequest(
     api.get("/folders", {
       headers: { Authorization: `Bearer ${token}` },
@@ -141,6 +143,53 @@ export async function getCardsToPlayRequest(
   );
 }
 
+export const getFolderContentsRequest = (
+  folderSub: string,
+  token: string
+): Promise<
+  {
+    sub: string;
+    title: string;
+    description: string;
+    parentFolderSub: string | null;
+    createdAt: string;
+    type: "folder" | "desk";
+    status: string;
+    totalCards: number | null;
+    newCards: number | null;
+    dueCards: number | null;
+    learningCards: number | null;
+    masteredCards: number | null;
+    deskCount: number;
+    folderCount: number;
+  }[]
+> => {
+  return handleApiRequest(
+    api.get(`/folders/${folderSub}/contents`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+};
+
+export const getFolderInfoRequest = (
+  folderSub: string,
+  token: string
+): Promise<{
+  sub: string;
+  title: string;
+  description: string;
+  parentFolderSub: string | null;
+  createdAt: string;
+  deskCount: number;
+  childCount: number;
+}> => {
+  return handleApiRequest(
+    api.get(`/folders/${folderSub}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+};
+
 export async function addCardToDeskFeedRequest(
   token: string,
   payload: { cardSub: string; deskSubs: string[] }
@@ -180,6 +229,17 @@ export async function updateDeskSettingsRequest(
 ): Promise<{ updated: boolean }> {
   return handleApiRequest(
     api.put(UPDATE_DESK_SETTINGS_API(payload.desk_sub), payload.settings, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function updateReviewSettingsRequest(
+  payload: UpdateReviewSettingsParams,
+  token: string
+) {
+  return handleApiRequest(
+    api.put(UPDATE_REVIEW_SETTINGS_API, payload, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

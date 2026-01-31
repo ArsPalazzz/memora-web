@@ -22,6 +22,9 @@ export interface GetMyProfileResponse {
   };
   settings: {
     card_orientation: CARD_ORIENTATION;
+    reviewSettings: {
+      cards_per_session: number;
+    };
   };
 }
 

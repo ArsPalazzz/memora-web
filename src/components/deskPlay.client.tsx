@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   TextField,
@@ -13,6 +12,7 @@ import {
   useTheme,
   InputAdornment,
   IconButton,
+  LinearProgress,
 } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader } from "./ui/Loader";
@@ -200,8 +200,42 @@ export default function PlayDeskPage() {
       }}
     >
       {currentCard && (
+        <Box sx={{ px: 3, mb: 2 }}>
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              {currentCard.progress.current} / {currentCard.progress.total}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {Math.round(
+                (currentCard.progress.current / currentCard.progress.total) *
+                  100
+              )}
+              %
+            </Typography>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={
+              (currentCard.progress.current / currentCard.progress.total) * 100
+            }
+            sx={{
+              height: 9,
+              borderRadius: 8,
+              backgroundColor: "grey.200",
+              "& .MuiLinearProgress-bar": {
+                backgroundColor: "primary.main",
+                borderRadius: 4,
+              },
+            }}
+          />
+        </Box>
+      )}
+
+      {currentCard && (
         <>
-          <Fade in key={currentCard.sub}>
+          <Fade in key={currentCard.card.sub}>
             <Box sx={{ flex: 1, display: "flex", px: 2 }}>
               <Card
                 sx={{
@@ -225,31 +259,33 @@ export default function PlayDeskPage() {
                   }}
                 >
                   <Typography variant="h4" fontWeight={600}>
-                    {currentCard.text.join(", ")}
+                    {currentCard.card.text.join(", ")}
                   </Typography>
 
-                  <Box sx={{ height: 48, width: "100%", mt: 2 }}>
-                    <Fade in={result !== null}>
-                      <Box>
-                        <Box
-                          sx={{
-                            height: "1px",
-                            width: "40%",
-                            mx: "auto",
-                            mb: 1,
-                            bgcolor: "divider",
-                          }}
-                        />
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: "0.95rem" }}
-                        >
-                          {result?.correctVariants.join(", ")}
-                        </Typography>
-                      </Box>
-                    </Fade>
-                  </Box>
+                  {result !== null && (
+                    <Box sx={{ height: 48, width: "100%", mt: 2 }}>
+                      <Fade in={result !== null}>
+                        <Box>
+                          <Box
+                            sx={{
+                              height: "1px",
+                              width: "40%",
+                              mx: "auto",
+                              mb: 1,
+                              bgcolor: "divider",
+                            }}
+                          />
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: "0.95rem" }}
+                          >
+                            {result?.correctVariants.join(", ")}
+                          </Typography>
+                        </Box>
+                      </Fade>
+                    </Box>
+                  )}
                 </CardContent>
               </Card>
             </Box>

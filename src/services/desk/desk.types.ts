@@ -87,19 +87,12 @@ export interface FetchCardResponse {
   examples: string[];
 }
 
-export interface Folder {
+export interface RootFolder {
   sub: string;
   title: string;
   description: string;
-  parentFolderSub: string | null;
-  createdAt: Date;
-  updatedAt: Date;
   deskCount: number;
-  childCount: number;
-}
-
-export interface FolderTree extends Folder {
-  children: FolderTree[];
+  folderCount: number;
 }
 
 export interface FetchDeskCardsResponse {
@@ -125,6 +118,7 @@ export interface CreateDeskParams {
   title: string;
   description: string;
   isPublic: boolean;
+  folder_sub: string | null;
 }
 
 export interface CreateCardParams {
@@ -136,6 +130,10 @@ export interface CreateCardParams {
 export interface UpdateDeskSettingsParams {
   desk_sub: string;
   settings: DeskSettings;
+}
+
+export interface UpdateReviewSettingsParams {
+  cards_per_session: number;
 }
 
 export interface UpdateFeedSettingsParams {

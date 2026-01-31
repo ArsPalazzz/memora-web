@@ -160,19 +160,65 @@ export default function DeskCardsClient() {
                 <Box sx={{ pt: 2, px: 2 }}>
                   <Box
                     sx={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: 1,
+                      display: {
+                        xs: "grid",
+                        md: "flex",
+                      },
+                      gridTemplateColumns: {
+                        xs: "1fr 1fr",
+                      },
+                      gap: {
+                        xs: 1,
+                        md: 2,
+                      },
                       width: "100%",
+
+                      flexWrap: {
+                        xs: "nowrap",
+                        md: "wrap",
+                      },
+                      justifyContent: "stretch",
+                      overflowX: {
+                        xs: "visible",
+                        md: "hidden",
+                      },
                     }}
                   >
                     {cards?.map((card, index) => (
                       <Card
                         key={card.sub}
                         sx={{
-                          gridColumn: (index % 2) + 1,
-                          gridRow: Math.floor(index / 2) + 1,
-                          height: "44vw",
+                          gridColumn: {
+                            xs: (index % 2) + 1,
+                            md: "unset",
+                          },
+                          gridRow: {
+                            xs: Math.floor(index / 2) + 1,
+                            md: "unset",
+                          },
+                          flex: {
+                            xs: "0 0 auto",
+                            md: "0 0 calc(33.333% - 16px)",
+                            lg: "0 0 calc(25% - 16px)",
+                          },
+                          width: {
+                            xs: "100%",
+                            md: "auto",
+                          },
+                          maxWidth: {
+                            xs: "none",
+                            md: "200px",
+                            lg: "220px",
+                          },
+                          minWidth: {
+                            md: "180px",
+                          },
+                          height: {
+                            xs: "44vw",
+                            sm: "40vw",
+                            md: "200px",
+                            lg: "220px",
+                          },
                           boxShadow: 3,
                           display: "flex",
                           flexDirection: "column",
@@ -180,6 +226,7 @@ export default function DeskCardsClient() {
                           justifyContent: "center",
                           px: 2,
                           py: 3,
+                          mb: 1,
                           textAlign: "center",
                           transition: "0.25s ease",
                           position: "relative",

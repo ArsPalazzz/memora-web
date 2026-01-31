@@ -372,7 +372,7 @@ export default function DeskClient() {
         >
           <Header
             title="Decks"
-            onBack={() => router.push(ROUTES.HOME)}
+            onBack={() => router.back()}
             RightButton={
               <>
                 <IconButton onClick={(e) => handleMenuOpen(e)}>
@@ -532,7 +532,6 @@ export default function DeskClient() {
                         sx={{
                           display: "flex",
                           gap: 0.5,
-                          overflowX: "auto",
                           overflowY: "hidden",
                           py: 1,
                           pb: 2,
@@ -542,15 +541,39 @@ export default function DeskClient() {
                           boxSizing: "border-box",
                           "&::-webkit-scrollbar": { display: "none" },
                           overscrollBehaviorX: "contain",
+
+                          flexWrap: {
+                            xs: "nowrap",
+                            md: "wrap",
+                          },
+                          overflowX: {
+                            xs: "auto",
+                            md: "hidden",
+                          },
                         }}
                       >
                         {desk.cards?.map((card) => (
                           <Card
                             key={card.sub}
                             sx={{
-                              flex: "0 0 44vw",
-                              maxWidth: "44vw",
-                              height: "44vw",
+                              flex: {
+                                xs: "0 0 44vw",
+                                sm: "0 0 40vw",
+                                md: "0 0 calc(33.333% - 8px)",
+                                lg: "0 0 calc(25% - 8px)",
+                              },
+                              maxWidth: {
+                                xs: "44vw",
+                                sm: "40vw",
+                                md: "200px",
+                                lg: "220px",
+                              },
+                              height: {
+                                xs: "44vw",
+                                sm: "40vw",
+                                md: "200px",
+                                lg: "220px",
+                              },
                               scrollSnapAlign: "start",
                               boxShadow: 3,
                               display: "flex",

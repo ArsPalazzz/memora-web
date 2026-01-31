@@ -46,8 +46,12 @@ import React from "react";
 import { useThemeContext } from "@/context/ThemeContext";
 import ThemeTogglerModal from "./modals/FeedSettings/ThemeTogglermodal";
 import { FeedSettings } from "@/services/desk/desk.types";
-import { updateFeedSettingsRequest } from "@/services/desk/desk";
+import {
+  updateFeedSettingsRequest,
+  updateReviewSettingsRequest,
+} from "@/services/desk/desk";
 import ArchiveIcon from "@mui/icons-material/Archive";
+import ReviewSettingsCardsPerSessionModal from "./modals/ReviewSettings/ReviewSettingsCardsPerSession.modal";
 
 export default function ProfileClient() {
   const router = useRouter();
@@ -95,14 +99,13 @@ export default function ProfileClient() {
     profileInfo.settings.card_orientation.charAt(0).toUpperCase() +
       profileInfo.settings.card_orientation.slice(1);
 
+  const cardsPerSession =
+    profileInfo &&
+    profileInfo.settings &&
+    profileInfo.settings.reviewSettings &&
+    profileInfo.settings.reviewSettings.cards_per_session;
+
   const settingsItems = [
-    {
-      key: "cardOrientation",
-      icon: <ScreenRotationIcon sx={{ color: "primary.main", fontSize: 20 }} />,
-      title: "Card orientation (Feed)",
-      subtitle: "How cards should be displayed",
-      value: cardOrientation,
-    },
     {
       key: "themeColor",
       icon: <SettingsIcon sx={{ color: "primary.main", fontSize: 20 }} />,
@@ -111,6 +114,50 @@ export default function ProfileClient() {
       value: mode?.[0]?.toUpperCase() + mode?.slice(1),
     },
   ];
+
+  const feedItems = [
+    {
+      key: "cardOrientation",
+      icon: <ScreenRotationIcon sx={{ color: "primary.main", fontSize: 20 }} />,
+      title: "Card orientation",
+      subtitle: "How cards should be displayed",
+      value: cardOrientation,
+    },
+  ];
+
+  const reviewItems = [
+    {
+      key: "cardsPerSession",
+      icon: <SettingsIcon sx={{ color: "primary.main", fontSize: 20 }} />,
+      title: "Cards per session",
+      subtitle: "How many cards to show in review",
+      value: cardsPerSession,
+    },
+  ];
+
+  const updateReviewSettingsMutation = useMutation({
+    mutationFn: (payload: {
+      data: { cards_per_session: number };
+      token: string;
+    }) => {
+      return call(() =>
+        updateReviewSettingsRequest(payload.data, payload.token)
+      );
+    },
+    onSuccess: () => {
+      notifySuccess(`Review settings updated successfully`);
+
+      queryClient.invalidateQueries({ queryKey: [MY_PROFILE] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const onUpdateReviewSubmit = (data: { cards_per_session: number }) => {
+    updateReviewSettingsMutation.mutate({ data, token: accessToken! });
+  };
 
   const updateDeskSettingsMutation = useMutation({
     mutationFn: (payload: { data: FeedSettings; token: string }) => {
@@ -271,7 +318,14 @@ export default function ProfileClient() {
                   {profileInfo?.profile.nickname?.[0]?.toUpperCase() || "U"}
                 </Box>
                 <Box>
-                  <Typography variant="h6" fontWeight={700}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={700}
+                    sx={{
+                      wordBreak: "break-word",
+                      overflowWrap: "break-word",
+                    }}
+                  >
                     {profileInfo?.profile.nickname || "User"}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -365,6 +419,142 @@ export default function ProfileClient() {
               }}
             >
               <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" fontWeight={600}>
+                  Feed
+                </Typography>
+
+                <List
+                  sx={{
+                    width: "100%",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                  }}
+                >
+                  {feedItems.map((item) => (
+                    <React.Fragment key={item.key}>
+                      <ListItemButton
+                        onClick={() => setOpenSheet(item.key)}
+                        sx={{
+                          pl: 0,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 2,
+                          "&:hover": { bgcolor: "inherit" },
+                          pb: 0,
+                        }}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <ListItemIcon sx={{ minWidth: 40 }}>
+                            {item.icon}
+                          </ListItemIcon>
+
+                          <ListItemText
+                            primary={item.title}
+                            secondary={item.subtitle}
+                            primaryTypographyProps={{ fontWeight: 600 }}
+                          />
+                        </Box>
+
+                        <Typography color="text.secondary" fontWeight={600}>
+                          {item.value}
+                        </Typography>
+                      </ListItemButton>
+                    </React.Fragment>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
+        >
+          <Grid size={{ xs: 12 }}>
+            <Card
+              sx={{
+                mb: 3,
+                borderRadius: 3,
+                bgcolor: "background.paper",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.05)",
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" fontWeight={600}>
+                  Review
+                </Typography>
+
+                <List
+                  sx={{
+                    width: "100%",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    pb: 0,
+                  }}
+                >
+                  {reviewItems.map((item, index) => (
+                    <React.Fragment key={item.key}>
+                      <ListItemButton
+                        onClick={() => setOpenSheet(item.key)}
+                        sx={{
+                          pl: 0,
+                          py: 2,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 2,
+                          "&:hover": { bgcolor: "inherit" },
+                          pb: 0,
+                        }}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <ListItemIcon sx={{ minWidth: 40 }}>
+                            {item.icon}
+                          </ListItemIcon>
+
+                          <ListItemText
+                            primary={item.title}
+                            secondary={item.subtitle}
+                            primaryTypographyProps={{ fontWeight: 600 }}
+                          />
+                        </Box>
+
+                        <Typography color="text.secondary" fontWeight={600}>
+                          {item.value}
+                        </Typography>
+                      </ListItemButton>
+
+                      {index !== settingsItems.length - 1 && (
+                        <Divider component="li" />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.5 }}
+        >
+          <Grid size={{ xs: 12 }}>
+            <Card
+              sx={{
+                mb: 3,
+                borderRadius: 3,
+                bgcolor: "background.paper",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.05)",
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
                   Settings
                 </Typography>
@@ -375,6 +565,7 @@ export default function ProfileClient() {
                     borderRadius: 2,
                     overflow: "hidden",
                     pt: 2,
+                    pb: 0,
                   }}
                 >
                   <Box
@@ -383,6 +574,7 @@ export default function ProfileClient() {
                       alignItems: "center",
                       justifyContent: "space-between",
                       pb: 2,
+                      gap: 1,
                     }}
                   >
                     <Stack direction="row" alignItems="center" spacing={2}>
@@ -440,6 +632,7 @@ export default function ProfileClient() {
                           alignItems: "center",
                           gap: 2,
                           "&:hover": { bgcolor: "inherit" },
+                          pb: 0,
                         }}
                       >
                         <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -459,7 +652,9 @@ export default function ProfileClient() {
                         </Typography>
                       </ListItemButton>
 
-                      {index !== 1 && <Divider component="li" />}
+                      {index !== settingsItems.length - 1 && (
+                        <Divider component="li" />
+                      )}
                     </React.Fragment>
                   ))}
                 </List>
@@ -471,7 +666,7 @@ export default function ProfileClient() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
+          transition={{ duration: 0.3, delay: 0.5 }}
         >
           <Grid size={{ xs: 12 }}>
             <Card
@@ -524,7 +719,7 @@ export default function ProfileClient() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
+          transition={{ duration: 0.3, delay: 0.6 }}
         >
           <Card
             sx={{
@@ -574,6 +769,21 @@ export default function ProfileClient() {
             if (value === profileInfo.settings.card_orientation) return;
 
             onUpdateFeedSettingsSubmit({ card_orientation: value });
+          }}
+        />
+      )}
+
+      {profileInfo && openSheet === "cardsPerSession" && (
+        <ReviewSettingsCardsPerSessionModal
+          setOpenSheet={setOpenSheet}
+          currentValue={profileInfo?.settings.reviewSettings.cards_per_session}
+          onClose={(value: number) => {
+            const perSession =
+              profileInfo?.settings.reviewSettings.cards_per_session;
+
+            if (value === perSession) return;
+
+            onUpdateReviewSubmit({ cards_per_session: value });
           }}
         />
       )}

@@ -3,8 +3,14 @@ export type StartSessionResponse = {
 };
 
 export type NextCardResponse = {
-  sub: string;
-  text: string[];
+  card: {
+    sub: string;
+    text: string[];
+  };
+  progress: {
+    current: number;
+    total: number;
+  };
 };
 
 export type AnswerResult = {
