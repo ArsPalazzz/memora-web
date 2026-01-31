@@ -24,7 +24,7 @@ export const DeskCard = ({
   <Card
     variant="outlined"
     sx={{
-      height: "100%",
+      height: "153px",
       transition: "0.3s",
       cursor: "pointer",
       "&:hover": {

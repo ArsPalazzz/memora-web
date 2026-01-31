@@ -245,6 +245,7 @@ export default function FolderClient() {
               overflowY: "auto",
               px: 2,
               pb: 2,
+              pt: 1,
             }}
           >
             {!sortedContents?.length ? (
