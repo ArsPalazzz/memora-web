@@ -106,6 +106,16 @@ export default function DeskClient() {
 
   const router = useRouter();
 
+  const handleBack = () => {
+    const previousUrl = document.referrer || "";
+
+    if (previousUrl.endsWith("/play") || previousUrl.includes("/play?")) {
+      router.push(ROUTES.HOME);
+    } else {
+      router.back();
+    }
+  };
+
   const {
     handleSubmit: handleSubmitCreateCard,
     register: registerCreateCard,
@@ -372,7 +382,7 @@ export default function DeskClient() {
         >
           <Header
             title="Decks"
-            onBack={() => router.back()}
+            onBack={handleBack}
             RightButton={
               <>
                 <IconButton onClick={(e) => handleMenuOpen(e)}>
