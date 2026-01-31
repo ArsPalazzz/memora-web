@@ -50,9 +50,11 @@ export const DeskCard = ({
           sx={{
             lineHeight: 1.2,
             display: "-webkit-box",
-            WebkitLineClamp: 2,
+            WebkitLineClamp: 1,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
           }}
         >
           {desk.title}
