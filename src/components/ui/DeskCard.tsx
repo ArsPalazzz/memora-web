@@ -42,23 +42,23 @@ export const DeskCard = ({
           justifyContent: "space-between",
           alignItems: "flex-start",
           mb: 1,
+          gap: 1,
         }}
       >
-        <Typography
-          variant="h6"
-          fontWeight={600}
-          sx={{
-            lineHeight: 1.2,
-            display: "-webkit-box",
-            WebkitLineClamp: 1,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {desk.title}
-        </Typography>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography
+            variant="h6"
+            fontWeight={600}
+            sx={{
+              lineHeight: 1.2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {desk.title}
+          </Typography>
+        </Box>
 
         <Chip
           label={`${stats.dueCards} due`}
