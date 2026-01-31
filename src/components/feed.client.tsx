@@ -40,6 +40,8 @@ import {
   answerCardRequest,
   gradeCardRequest,
   shownCardRequest,
+  answerCardFeedRequest,
+  gradeCardFeedRequest,
 } from "@/services/games/games";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { USER_DESKS_SHORT } from "@/routes/react-query";
@@ -71,19 +73,21 @@ interface FeedCard {
   examples: string[];
 }
 
-const GRADE_OPTIONS = [
-  { quality: 0, label: "Again" },
-  { quality: 1, label: "Hard" },
-  { quality: 2, label: "Good" },
-  { quality: 3, label: "Easy" },
-];
-
-const GRADE_COLORS: { [key: number]: string } = {
-  0: "#f44336",
-  1: "#ff9800",
-  2: "#4caf50",
-  3: "#2196f3",
+const GRADE_COLORS: Record<number, string> = {
+  0: "#e53935",
+  1: "#fb8c00",
+  2: "#fbc02d",
+  3: "#43a047",
+  4: "#2e7d32",
 };
+
+const GRADE_OPTIONS = [
+  { quality: 0, label: "Forgot" },
+  { quality: 1, label: "Hard" },
+  { quality: 2, label: "Okay" },
+  { quality: 3, label: "Good" },
+  { quality: 4, label: "Easy" },
+] as const;
 
 export default function FeedPage() {
   const router = useRouter();
@@ -283,10 +287,11 @@ export default function FeedPage() {
 
     try {
       const response = await call((token) =>
-        answerCardRequest(
+        answerCardFeedRequest(
           {
             sessionId,
             answer: userAnswer,
+            cardSub: currentCard.sub,
           },
           token
         )
@@ -312,10 +317,11 @@ export default function FeedPage() {
 
     try {
       await call((token) =>
-        gradeCardRequest(
+        gradeCardFeedRequest(
           {
             sessionId,
             quality,
+            cardSub: currentCard.sub,
           },
           token
         )
@@ -323,6 +329,7 @@ export default function FeedPage() {
 
       setShowGrades(false);
       setIsGradingRequired(false);
+      setShowTranslation(false);
       setTimeout(() => {
         goToNextCard();
       }, 300);
@@ -600,13 +607,21 @@ export default function FeedPage() {
                       pt: 8,
                     }}
                   >
-                    <Typography variant="h3" fontWeight={600} gutterBottom>
+                    <Typography
+                      variant="h3"
+                      fontWeight={600}
+                      gutterBottom
+                      sx={{
+                        userSelect: "none",
+                        pointerEvents: "none",
+                      }}
+                    >
                       {card.text.join(", ")}
                     </Typography>
                     {isCurrent && (showAnswer || showTranslation) && (
                       <Collapse
                         in={showAnswer || showTranslation}
-                        sx={{ width: "100%" }}
+                        sx={{ width: "100%", userSelect: "none" }}
                       >
                         <Box
                           sx={{
@@ -620,7 +635,11 @@ export default function FeedPage() {
                         <Typography
                           variant="h5"
                           color="text.secondary"
-                          sx={{ mt: 2 }}
+                          sx={{
+                            mt: 2,
+                            userSelect: "none",
+                            pointerEvents: "none",
+                          }}
                         >
                           {showTranslation && !showAnswer
                             ? card.backVariants.join(", ")

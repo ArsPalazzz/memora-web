@@ -295,7 +295,7 @@ export default function HomeClient() {
               <>
                 {isFoldersLoading && <Loader />}
 
-                {(!folders || folders.length === 0) && (
+                {(!folders || folders.length === 0) && !isFoldersLoading && (
                   <EmptyState
                     onCreate={() => setOpenFolderModal(true)}
                     title="No folders yet"
@@ -310,74 +310,25 @@ export default function HomeClient() {
                 )}
 
                 {folders && folders.length > 0 && (
-                  <>
-                    <Grid container spacing={2}>
-                      {folders.map((folder, index) => (
-                        <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={folder.sub}>
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              duration: 0.3,
-                              delay: Number(`0.${index + 1}`),
-                            }}
-                          >
-                            <FolderCard
-                              folder={folder}
-                              onClick={() =>
-                                router.push(`/folder/${folder.sub}`)
-                              }
-                            />
-                          </motion.div>
-                        </Grid>
-                      ))}
-                    </Grid>
-
-                    <Grid container spacing={2}>
-                      {desks &&
-                        desks.map((desk, index) => {
-                          const stats = {
-                            learningCards: desk.learningCards,
-                            dueCards: desk.dueCards,
-                            newCards: desk.newCards,
-                            masteredCards: desk.masteredCards,
-                          };
-
-                          const priorityColor = getPriorityColor(
-                            stats.dueCards,
-                            stats.dueCards +
-                              stats.learningCards +
-                              stats.masteredCards +
-                              stats.newCards
-                          );
-
-                          return (
-                            <Grid
-                              size={{ xs: 12, sm: 6, lg: 4 }}
-                              key={desk.sub}
-                            >
-                              <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                  duration: 0.3,
-                                  delay: Number(`0.${index + 1}`),
-                                }}
-                              >
-                                <DeskCard
-                                  desk={desk}
-                                  stats={stats}
-                                  priorityColor={priorityColor}
-                                  onClick={() =>
-                                    router.push(`desk/${desk.sub}`)
-                                  }
-                                />
-                              </motion.div>
-                            </Grid>
-                          );
-                        })}
-                    </Grid>
-                  </>
+                  <Grid container spacing={2}>
+                    {folders.map((folder, index) => (
+                      <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={folder.sub}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            duration: 0.3,
+                            delay: Number(`0.${index + 1}`),
+                          }}
+                        >
+                          <FolderCard
+                            folder={folder}
+                            onClick={() => router.push(`/folder/${folder.sub}`)}
+                          />
+                        </motion.div>
+                      </Grid>
+                    ))}
+                  </Grid>
                 )}
               </>
             )}

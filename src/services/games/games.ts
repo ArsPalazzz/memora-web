@@ -45,6 +45,19 @@ export async function answerCardRequest(
   );
 }
 
+export async function answerCardFeedRequest(
+  payload: { sessionId: string; answer: string; cardSub: string },
+  token: string
+): Promise<AnswerResult> {
+  const { cardSub, ...rest } = payload;
+
+  return handleApiRequest(
+    api.post(`/games/answer-feed/${cardSub}`, rest, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
 export async function answerInGameSessionRequest(
   payload: { sessionId: string; answer: string },
   token: string
@@ -62,6 +75,19 @@ export async function gradeCardRequest(
 ): Promise<AnswerResult> {
   return handleApiRequest(
     api.post("/games/grade", payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function gradeCardFeedRequest(
+  payload: { sessionId: string; quality: number; cardSub: string },
+  token: string
+): Promise<AnswerResult> {
+  const { cardSub, ...rest } = payload;
+
+  return handleApiRequest(
+    api.post(`/games/grade-feed/${cardSub}`, rest, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );
