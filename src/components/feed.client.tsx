@@ -119,6 +119,8 @@ export default function FeedPage() {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isGradingRequired, setIsGradingRequired] = useState(false);
 
+  const cardsLengthRef = useRef(cards.length);
+
   const [showTranslation, setShowTranslation] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
 
@@ -194,6 +196,10 @@ export default function FeedPage() {
     );
   };
 
+  useEffect(() => {
+    cardsLengthRef.current = cards.length;
+  }, [cards.length]);
+
   const goToNextCard = async () => {
     if (!sessionId) return;
 
@@ -206,13 +212,17 @@ export default function FeedPage() {
 
     await markShownOnce(nextCard.sub);
 
-    if (nextIndex === cards.length - 4) {
+    if (nextIndex === cardsLengthRef.current - 4) {
       const data = await call((token) =>
         getFeedNextCardRequest({ sessionId }, token)
       );
 
       if (data?.cards?.[0]) {
-        setCards((prev) => [...prev, data.cards[0]]);
+        setCards((prev) => {
+          const newCards = [...prev, data.cards[0]];
+          cardsLengthRef.current = newCards.length;
+          return newCards;
+        });
       }
     }
   };
