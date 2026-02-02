@@ -348,7 +348,7 @@ export default function FeedPage() {
     }
   };
 
-  const SWIPE_THRESHOLD = 200;
+  const SWIPE_THRESHOLD = 140;
 
   const progress = Math.min(Math.max(-swipeOffset / SWIPE_THRESHOLD, 0), 1);
 
