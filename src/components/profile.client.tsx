@@ -34,7 +34,6 @@ import { logoutRequest } from "@/services/auth/auth";
 import { ROUTES } from "@/routes/next";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/context/AuthContext";
-import { notifyError, notifySuccess } from "@/utils/notification";
 import Header from "@/components/layout/Header";
 import { useFCM } from "@/hooks/useFCM";
 import { motion } from "framer-motion";
@@ -52,6 +51,7 @@ import {
 } from "@/services/desk/desk";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import ReviewSettingsCardsPerSessionModal from "./modals/ReviewSettings/ReviewSettingsCardsPerSession.modal";
+import { useNotification } from "@/context/NotificationContext";
 
 export default function ProfileClient() {
   const router = useRouter();
@@ -63,6 +63,7 @@ export default function ProfileClient() {
   const [openSheet, setOpenSheet] = useState<null | string>(null);
   const { mode } = useThemeContext();
   const queryClient = useQueryClient();
+  const { notifySuccess, notifyError } = useNotification();
 
   const {
     token: messageToken,

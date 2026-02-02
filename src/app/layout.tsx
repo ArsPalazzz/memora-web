@@ -4,6 +4,7 @@ import "./globals.css";
 import { InnerThemeProvider } from "@/components/InnerThemeProvider";
 import OrientationLock from "@/components/orientation-lock.client";
 import { FCMInitializer } from "@/components/FCMInitializer";
+import { NotificationProvider } from "@/context/NotificationContext";
 
 export const metadata = {
   title: "Memora App",
@@ -28,7 +29,9 @@ export default function RootLayout({
           <InnerThemeProvider>
             <ClientProviders>
               <FCMInitializer />
-              <OrientationLock>{children}</OrientationLock>
+              <OrientationLock>
+                <NotificationProvider>{children}</NotificationProvider>
+              </OrientationLock>
             </ClientProviders>
           </InnerThemeProvider>
         </ThemeProviderClient>

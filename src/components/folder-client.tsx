@@ -7,7 +7,6 @@ import AddIcon from "@mui/icons-material/Add";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { notifyError, notifySuccess } from "@/utils/notification";
 import { useAuthContext } from "@/context/AuthContext";
 import {
   FOLDER_CONTENTS,
@@ -38,6 +37,7 @@ import {
 import { SortSelector } from "@/components/ui/SortSelector";
 import { FolderCard } from "./ui/FolterCard";
 import { useFolderSortSettings } from "@/hooks/useFolderSort";
+import { useNotification } from "@/context/NotificationContext";
 
 export default function FolderClient() {
   const params = useParams() as { id: string };
@@ -46,6 +46,7 @@ export default function FolderClient() {
   const { accessToken } = useAuthContext();
   const queryClient = useQueryClient();
   const { call } = useProtectedRequest();
+  const { notifySuccess, notifyError } = useNotification();
 
   const [openDeskModal, setOpenDeskModal] = useState(false);
   const [openFolderModal, setOpenFolderModal] = useState(false);
@@ -308,6 +309,7 @@ export default function FolderClient() {
           register={register}
           onSubmit={handleSubmit(onSubmitDesk)}
           control={control}
+          isPending={createDeskMutation.isPending}
         />
       )}
 
@@ -316,6 +318,7 @@ export default function FolderClient() {
           open={openFolderModal}
           onClose={() => setOpenFolderModal(false)}
           onSubmit={onSubmitFolder}
+          isPending={createFolderMutation.isPending}
         />
       )}
     </WithBottomNav>

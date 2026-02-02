@@ -19,7 +19,6 @@ import {
   CreateDeskValues,
 } from "@/schemas/createDesk.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { notifyError, notifySuccess } from "@/utils/notification";
 import { useAuthContext } from "@/context/AuthContext";
 import { USER_DAILY, USER_DESKS, ROOT_FOLDERS } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
@@ -38,6 +37,7 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import { FolderCard } from "./ui/FolterCard";
 import NewFolderModal from "./modals/NewFolder/NewFolder.modal";
 import { TabsSwitcher } from "./ui/TabSwitcher";
+import { useNotification } from "@/context/NotificationContext";
 
 export default function HomeClient() {
   const { authenticated } = useAuth();
@@ -103,6 +103,8 @@ export default function HomeClient() {
     defaultValues: { isPublic: true },
     mode: "onChange",
   });
+
+  const { notifySuccess, notifyError } = useNotification();
 
   const createDeskMutation = useMutation({
     mutationFn: (payload: { data: CreateDeskValues; token: string }) => {
@@ -344,6 +346,7 @@ export default function HomeClient() {
           register={register}
           onSubmit={handleSubmit(onSubmitDesk)}
           control={control}
+          isPending={createDeskMutation.isPending}
         />
       )}
 
@@ -352,6 +355,7 @@ export default function HomeClient() {
           open={openFolderModal}
           onClose={() => setOpenFolderModal(false)}
           onSubmit={onSubmitFolder}
+          isPending={createFolderMutation.isPending}
         />
       )}
     </WithBottomNav>

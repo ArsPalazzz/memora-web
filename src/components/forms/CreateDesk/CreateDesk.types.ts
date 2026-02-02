@@ -7,4 +7,5 @@ export interface CreateDeskFormProps {
   errors: FieldErrors<CreateDeskValues>;
   onClose: () => void;
   control: Control<CreateDeskValues>;
+  isPending: boolean;
 }

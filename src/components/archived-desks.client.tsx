@@ -7,7 +7,6 @@ import {
   fetchMyArchivedDesksRequest,
   restoreDeskRequest,
 } from "../services/desk/desk";
-import { notifyError, notifySuccess } from "@/utils/notification";
 import { useAuthContext } from "@/context/AuthContext";
 import { ARCHIVED_DESKS, USER_DESKS } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
@@ -19,6 +18,7 @@ import { motion } from "framer-motion";
 import { ROUTES } from "@/routes/next";
 import { ArchivedDeskCard } from "./ui/ArchivedDeskCard";
 import ArchiveIcon from "@mui/icons-material/Archive";
+import { useNotification } from "@/context/NotificationContext";
 
 export default function ArchivedDesksClient() {
   const { authenticated } = useAuth();
@@ -26,6 +26,7 @@ export default function ArchivedDesksClient() {
   const queryClient = useQueryClient();
   const { call } = useProtectedRequest();
   const router = useRouter();
+  const { notifySuccess, notifyError } = useNotification();
 
   const { data: desks, isLoading: isDesksLoading } = useQuery({
     queryKey: [ARCHIVED_DESKS],

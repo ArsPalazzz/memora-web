@@ -49,7 +49,6 @@ import {
 } from "@/schemas/createCard.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthContext } from "@/context/AuthContext";
-import { notifyError, notifySuccess } from "@/utils/notification";
 import React from "react";
 import DeskSettingsCardsPerSessionModal from "./modals/DeskSettings/DeskSettingsCardsPerSession.modal";
 import { DeskSettings } from "@/services/desk/desk.types";
@@ -69,6 +68,7 @@ import {
 } from "@/schemas/updateCard.schema";
 import { AnkiStyleStats } from "./ui/DeskStats";
 import WithBottomNav from "./layout/WithBottomNav";
+import { useNotification } from "@/context/NotificationContext";
 
 const BOTTOM_NAV_HEIGHT = 36 + 4 * 10;
 const PLAY_BUTTON_HEIGHT = 64;
@@ -174,6 +174,8 @@ export default function DeskClient() {
   const onUpdateSettingsSubmit = (data: DeskSettings) => {
     updateDeskSettingsMutation.mutate({ data, token: accessToken! });
   };
+
+  const { notifySuccess, notifyError } = useNotification();
 
   const createCardMutation = useMutation({
     mutationFn: (payload: { data: CreateCardValues; token: string }) => {

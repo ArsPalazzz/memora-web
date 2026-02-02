@@ -12,12 +12,14 @@ interface NewFolderModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: { title: string; description: string }) => void;
+  isPending: boolean;
 }
 
 export default function NewFolderModal({
   open,
   onClose,
   onSubmit,
+  isPending,
 }: NewFolderModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -53,7 +55,7 @@ export default function NewFolderModal({
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={!title.trim() || !description.trim()}
+            disabled={!title.trim() || !description.trim() || isPending}
             sx={{ mt: 2 }}
           >
             Create Folder

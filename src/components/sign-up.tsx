@@ -8,16 +8,17 @@ import { useMutation } from "@tanstack/react-query";
 import { ROUTES } from "@/routes/next";
 import { SignUpFormValues, signUpSchema } from "@/schemas/signup.schema";
 import SignUpForm from "@/components/forms/SignUpForm/SignUpForm";
-import { notifyError, notifySuccess } from "@/utils/notification";
 import { signUpRequest } from "@/services/user/user";
 import { useProtectedRequest } from "@/utils/protected";
 import { motion } from "framer-motion";
 import Particles from "@/components/ui/Particles";
+import { useNotification } from "@/context/NotificationContext";
 
 export default function SignUpClient() {
   const router = useRouter();
   const { call } = useProtectedRequest();
   const theme = useTheme();
+  const { notifySuccess, notifyError } = useNotification();
 
   const {
     register,

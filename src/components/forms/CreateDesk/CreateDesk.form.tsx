@@ -16,6 +16,7 @@ const CreateDesk = ({
   errors,
   onClose,
   control,
+  isPending,
 }: CreateDeskFormProps) => {
   const { isValid, isSubmitting } = useFormState({ control });
 
@@ -74,7 +75,7 @@ const CreateDesk = ({
         <Button
           type="submit"
           variant="contained"
-          disabled={!isValid || isSubmitting}
+          disabled={!isValid || isSubmitting || isPending}
         >
           Create
         </Button>

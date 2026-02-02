@@ -8,4 +8,5 @@ export interface NewDeskModalProps {
   errors: FieldErrors<CreateDeskValues>;
   register: UseFormRegister<CreateDeskValues>;
   control: Control<CreateDeskValues>;
+  isPending: boolean;
 }

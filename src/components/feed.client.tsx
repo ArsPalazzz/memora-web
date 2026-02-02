@@ -37,8 +37,6 @@ import {
 import {
   startFeedSessionRequest,
   getFeedNextCardRequest,
-  answerCardRequest,
-  gradeCardRequest,
   shownCardRequest,
   answerCardFeedRequest,
   gradeCardFeedRequest,
@@ -54,9 +52,9 @@ import Header from "./layout/Header";
 import { ROUTES } from "@/routes/next";
 import { useSwipeable } from "react-swipeable";
 import CardExamplesModal from "./modals/CardExamples/CardExamples.modal";
-import { notifyError, notifySuccess } from "@/utils/notification";
 import { useAuthContext } from "@/context/AuthContext";
 import { motion } from "framer-motion";
+import { useNotification } from "@/context/NotificationContext";
 
 interface FeedCard {
   sub: string;
@@ -100,6 +98,9 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [showAnswer, setShowAnswer] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
+  const [addedToDesks, setAddedToDesks] = useState<{
+    [cardSub: string]: string[];
+  }>({});
   const [result, setResult] = useState<{
     isCorrect: boolean;
     correctVariants: string[];
@@ -352,6 +353,8 @@ export default function FeedPage() {
 
   const progress = Math.min(Math.max(-swipeOffset / SWIPE_THRESHOLD, 0), 1);
 
+  const { notifySuccess, notifyError } = useNotification();
+
   const addCardToDeskMutation = useMutation({
     mutationFn: (payload: {
       data: { cardSub: string; deskSubs: string[] };
@@ -359,7 +362,15 @@ export default function FeedPage() {
     }) => {
       return call(() => addCardToDeskFeedRequest(payload.token, payload.data));
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      setAddedToDesks((prev) => ({
+        ...prev,
+        [variables.data.cardSub]: [
+          ...(prev[variables.data.cardSub] || []),
+          ...variables.data.deskSubs,
+        ],
+      }));
+
       setAddToDeskDialog(false);
       setSelectedDesk("");
       notifySuccess(`Card added successfully`);
@@ -586,7 +597,9 @@ export default function FeedPage() {
                       >
                         <IconButton
                           onClick={() => {
-                            setSelectedDesks([]);
+                            const alreadyAdded =
+                              addedToDesks[currentCard.sub] || [];
+                            setSelectedDesks(alreadyAdded);
                             setAddToDeskDialog(true);
                           }}
                           sx={{
@@ -825,35 +838,69 @@ export default function FeedPage() {
             </Typography>
           ) : (
             <List sx={{ pt: 2 }}>
-              {myDesks?.map((desk) => (
-                <ListItem
-                  key={desk.sub}
-                  disablePadding
-                  onClick={() => {
-                    setSelectedDesks((prev) =>
-                      prev.includes(desk.sub)
-                        ? prev.filter((sub) => sub !== desk.sub)
-                        : [...prev, desk.sub]
-                    );
-                  }}
-                  sx={{
-                    cursor: "pointer",
-                    "&:hover": { bgcolor: "action.hover" },
-                    borderRadius: 1,
-                    mb: 1,
-                  }}
-                >
-                  <ListItemIcon>
-                    <Checkbox
-                      edge="start"
-                      checked={selectedDesks.includes(desk.sub)}
-                      tabIndex={-1}
-                      disableRipple
+              {myDesks?.map((desk) => {
+                const alreadyAdded =
+                  addedToDesks[currentCard.sub]?.includes(desk.sub) || false;
+                const isSelected = selectedDesks.includes(desk.sub);
+
+                return (
+                  <ListItem
+                    key={desk.sub}
+                    disablePadding
+                    onClick={() => {
+                      if (alreadyAdded) return;
+
+                      setSelectedDesks((prev) =>
+                        prev.includes(desk.sub)
+                          ? prev.filter((sub) => sub !== desk.sub)
+                          : [...prev, desk.sub]
+                      );
+                    }}
+                    sx={{
+                      cursor: alreadyAdded ? "default" : "pointer",
+                      "&:hover": {
+                        bgcolor: alreadyAdded ? "transparent" : "action.hover",
+                      },
+                      borderRadius: 1,
+                      mb: 1,
+                      opacity: alreadyAdded ? 0.6 : 1,
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Checkbox
+                        edge="start"
+                        checked={alreadyAdded || isSelected}
+                        tabIndex={-1}
+                        disableRipple
+                        disabled={alreadyAdded}
+                        sx={{
+                          "&.Mui-checked": {
+                            color: alreadyAdded ? "grey.500" : "primary.main",
+                          },
+                        }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          {desk.title}
+                          {alreadyAdded && (
+                            <Typography
+                              variant="caption"
+                              color="success.main"
+                              sx={{ ml: 1 }}
+                            >
+                              ✓ Added
+                            </Typography>
+                          )}
+                        </Box>
+                      }
                     />
-                  </ListItemIcon>
-                  <ListItemText primary={desk.title} />
-                </ListItem>
-              ))}
+                  </ListItem>
+                );
+              })}
             </List>
           )}
         </DialogContent>
@@ -864,16 +911,30 @@ export default function FeedPage() {
               if (!accessToken || !currentCard || selectedDesks.length === 0)
                 return;
 
+              const alreadyAdded = addedToDesks[currentCard.sub] || [];
+              const newDesksToAdd = selectedDesks.filter(
+                (deskSub) => !alreadyAdded.includes(deskSub)
+              );
+
+              if (newDesksToAdd.length === 0) {
+                notifyError("Card is already added to selected decks");
+                return;
+              }
+
               await addCardToDeskMutation.mutateAsync({
                 data: {
                   cardSub: currentCard.sub,
-                  deskSubs: selectedDesks,
+                  deskSubs: newDesksToAdd,
                 },
                 token: accessToken,
               });
             }}
             disabled={
-              selectedDesks.length === 0 || addCardToDeskMutation.isPending
+              selectedDesks.length === 0 ||
+              addCardToDeskMutation.isPending ||
+              selectedDesks.every((deskSub) =>
+                (addedToDesks[currentCard.sub] || []).includes(deskSub)
+              )
             }
             variant="contained"
           >
