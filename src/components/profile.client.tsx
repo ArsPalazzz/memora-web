@@ -275,7 +275,7 @@ export default function ProfileClient() {
 
       <Header title="Profile" />
 
-      <Box sx={{ overflowY: "auto", px: 2, py: 3 }}>
+      <Box sx={{ overflowY: "auto", px: 2, py: 3, pb: 6 }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

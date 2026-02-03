@@ -8,7 +8,8 @@ import {
   Typography,
 } from "@mui/material";
 import Confetti from "react-confetti";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export const DailyStreakCard = ({
   streak,
@@ -19,7 +20,31 @@ any) => {
   const isGoalCompleted = cardsReviewedToday >= dailyGoal;
   const progress = Math.min(cardsReviewedToday / dailyGoal, 1);
 
-  const [celebrate, setCelebrate] = useState(false);
+  const [activeConfettis, setActiveConfettis] = useState<string[]>([]);
+  const clickTimesRef = useRef<number[]>([]);
+
+  const handleClick = () => {
+    if (!isGoalCompleted) return;
+
+    const now = Date.now();
+    if (clickTimesRef.current.length > 0) {
+      const lastClick = clickTimesRef.current[clickTimesRef.current.length - 1];
+      if (now - lastClick < 200) return;
+    }
+
+    clickTimesRef.current.push(now);
+    if (clickTimesRef.current.length > 10) {
+      clickTimesRef.current.shift();
+    }
+
+    const confettiId = uuidv4();
+
+    setActiveConfettis((prev) => [...prev, confettiId]);
+
+    setTimeout(() => {
+      setActiveConfettis((prev) => prev.filter((id) => id !== confettiId));
+    }, 3000);
+  };
 
   return (
     <Card
@@ -36,12 +61,7 @@ any) => {
         transform: isGoalCompleted ? "translateY(-2px)" : "none",
         transition: "all 0.3s",
       }}
-      onClick={() => {
-        if (!isGoalCompleted) return;
-
-        setCelebrate(true);
-        setTimeout(() => setCelebrate(false), 3000);
-      }}
+      onClick={handleClick}
     >
       {isGoalCompleted && (
         <Box
@@ -187,14 +207,15 @@ any) => {
           </Box>
         </Box>
 
-        {celebrate && (
+        {activeConfettis.map((id) => (
           <Confetti
+            key={id}
             numberOfPieces={200}
-            gravity={0.2}
+            gravity={0.4}
             initialVelocityY={500}
             tweenDuration={300}
           />
-        )}
+        ))}
       </CardContent>
     </Card>
   );

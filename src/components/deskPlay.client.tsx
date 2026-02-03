@@ -140,7 +140,16 @@ export default function PlayDeskPage() {
     if (!sessionId) return;
 
     if (result?.finished) {
-      router.push(`/desk/${deskSub}`);
+      const currentState = window.history.state;
+
+      window.history.back();
+
+      window.history.replaceState(currentState, "", `/desk/${deskSub}`);
+
+      setTimeout(() => {
+        router.replace(`/desk/${deskSub}`);
+      }, 0);
+
       return;
     }
 
