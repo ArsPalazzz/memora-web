@@ -346,7 +346,11 @@ export default function PlayDeskPage() {
                       >
                         <ArrowForwardIosIcon
                           fontSize="small"
-                          color={answer.trim() ? "primary" : "disabled"}
+                          color={
+                            answer.trim() || answerMutation.isPending
+                              ? "primary"
+                              : "disabled"
+                          }
                         />
                       </IconButton>
                     </InputAdornment>
