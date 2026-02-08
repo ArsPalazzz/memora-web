@@ -17,6 +17,7 @@ import {
   Menu,
   MenuItem,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import Header from "./layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -207,6 +208,8 @@ export default function DeskClient() {
       notifyError(err.message);
     },
   });
+
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const updateDeskSettingsMutation = useMutation({
     mutationFn: (payload: { data: DeskSettings; token: string }) => {
@@ -776,10 +779,22 @@ export default function DeskClient() {
                 }}
                 onClick={() => {
                   if (!desk?.cards.length) return;
+
+                  setIsNavigating(true);
                   router.push(`/desk/${sub}/play`);
                 }}
               >
-                Play
+                {isNavigating ? (
+                  <CircularProgress
+                    size={24}
+                    thickness={4}
+                    sx={{
+                      color: "white",
+                    }}
+                  />
+                ) : (
+                  "Play"
+                )}
               </Card>
             </Box>
           )}

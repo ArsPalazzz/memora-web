@@ -342,7 +342,7 @@ export default function PlayDeskPage() {
                       <IconButton
                         size="small"
                         onClick={submitAnswer}
-                        disabled={!answer.trim()}
+                        disabled={!answer.trim() || answerMutation.isPending}
                       >
                         <ArrowForwardIosIcon
                           fontSize="small"
@@ -365,17 +365,25 @@ export default function PlayDeskPage() {
                   {GRADE_OPTIONS.map(({ quality, label }) => (
                     <Box
                       key={quality}
-                      onClick={() => submitGrade(quality)}
+                      onClick={() => {
+                        if (gradeMutation.isPending) return;
+                        submitGrade(quality);
+                      }}
                       sx={{
                         flex: 1,
-                        cursor: "pointer",
+                        cursor: gradeMutation.isPending
+                          ? "not-allowed"
+                          : "pointer",
                         textAlign: "center",
                         py: 1.5,
                         position: "relative",
                         transition: "background-color 0.2s",
                         "&:hover": {
-                          bgcolor: "action.hover",
+                          bgcolor: gradeMutation.isPending
+                            ? "transparent"
+                            : "action.hover",
                         },
+                        opacity: gradeMutation.isPending ? 0.6 : 1,
                       }}
                     >
                       <Box
@@ -385,7 +393,9 @@ export default function PlayDeskPage() {
                           left: 0,
                           right: 0,
                           height: 4,
-                          bgcolor: GRADE_COLORS[quality],
+                          bgcolor: gradeMutation.isPending
+                            ? "#9e9e9e"
+                            : GRADE_COLORS[quality],
                         }}
                       />
 
@@ -395,7 +405,9 @@ export default function PlayDeskPage() {
                         sx={{
                           fontSize: "1.05rem",
                           userSelect: "none",
-                          color: GRADE_COLORS[quality],
+                          color: gradeMutation.isPending
+                            ? "#9e9e9e"
+                            : GRADE_COLORS[quality],
                         }}
                       >
                         {label}

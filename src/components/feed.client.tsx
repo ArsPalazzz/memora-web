@@ -242,6 +242,10 @@ export default function FeedPage() {
         return;
       }
 
+      if (e.dir === "Up" && currentIndex === cards.length - 1) {
+        return;
+      }
+
       if (e.dir === "Up" || e.dir === "Down") {
         setIsSwiping(true);
         setSwipeOffset(e.deltaY);
@@ -252,6 +256,11 @@ export default function FeedPage() {
       setIsSwiping(false);
 
       if (e.dir === "Down" && currentIndex === 0) {
+        setSwipeOffset(0);
+        return;
+      }
+
+      if (e.dir === "Up" && currentIndex === cards.length - 1) {
         setSwipeOffset(0);
         return;
       }
@@ -290,6 +299,7 @@ export default function FeedPage() {
   });
 
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [isGradingPending, setGradingPending] = useState(false);
 
   const handleSubmitAnswer = async () => {
     if (!sessionId || !userAnswer.trim() || !currentCard) return;
@@ -324,7 +334,9 @@ export default function FeedPage() {
   };
 
   const handleGrade = async (quality: number) => {
-    if (!sessionId || !currentCard) return;
+    if (!sessionId || !currentCard || isGradingPending) return;
+
+    setGradingPending(true);
 
     try {
       await call((token) =>
@@ -347,6 +359,8 @@ export default function FeedPage() {
     } catch (error) {
       console.error("Grade failed:", error);
     }
+
+    setGradingPending(false);
   };
 
   const SWIPE_THRESHOLD = 140;
@@ -766,17 +780,23 @@ export default function FeedPage() {
                 {GRADE_OPTIONS.map(({ quality, label }) => (
                   <Box
                     key={quality}
-                    onClick={() => handleGrade(quality)}
+                    onClick={() => {
+                      if (isGradingPending) return;
+                      handleGrade(quality);
+                    }}
                     sx={{
                       flex: 1,
-                      cursor: "pointer",
+                      cursor: isGradingPending ? "not-allowed" : "pointer",
                       textAlign: "center",
                       py: 1.5,
                       position: "relative",
                       transition: "background-color 0.2s",
                       "&:hover": {
-                        bgcolor: "action.hover",
+                        bgcolor: isGradingPending
+                          ? "transparent"
+                          : "action.hover",
                       },
+                      opacity: isGradingPending ? 0.6 : 1,
                     }}
                   >
                     <Box
@@ -786,7 +806,9 @@ export default function FeedPage() {
                         left: 0,
                         right: 0,
                         height: 4,
-                        bgcolor: GRADE_COLORS[quality],
+                        bgcolor: isGradingPending
+                          ? "#9e9e9e"
+                          : GRADE_COLORS[quality],
                       }}
                     />
 
@@ -796,7 +818,9 @@ export default function FeedPage() {
                       sx={{
                         fontSize: "1.05rem",
                         userSelect: "none",
-                        color: GRADE_COLORS[quality],
+                        color: isGradingPending
+                          ? "#9e9e9e"
+                          : GRADE_COLORS[quality],
                       }}
                     >
                       {label}
