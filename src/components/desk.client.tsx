@@ -786,7 +786,7 @@ export default function DeskClient() {
               >
                 {isNavigating ? (
                   <CircularProgress
-                    size={24}
+                    size={20}
                     thickness={4}
                     sx={{
                       color: "white",

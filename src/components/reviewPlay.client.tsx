@@ -335,7 +335,7 @@ export default function ReviewPlayClient() {
                         <ArrowForwardIosIcon
                           fontSize="small"
                           color={
-                            answer.trim() || !answerMutation.isPending
+                            answer.trim() && !answerMutation.isPending
                               ? "primary"
                               : "disabled"
                           }
