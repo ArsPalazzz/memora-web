@@ -47,7 +47,18 @@ import { useFCM } from "@/hooks/useFCM";
 // Компонент-обертка для условного использования FCM
 function FCMComponent() {
   // Хук будет вызван только на клиенте
-  useFCM();
+  useEffect(() => {
+    const initializeFCM = async () => {
+      try {
+        const { useFCM } = await import("@/hooks/useFCM");
+        // Просто импортируем, хук сам отработает
+      } catch (error) {
+        console.error("FCM initialization error:", error);
+      }
+    };
+
+    initializeFCM();
+  }, []);
 
   // Этот компонент ничего не рендерит
   return null;
@@ -60,13 +71,20 @@ export function FCMInitializer() {
   useEffect(() => {
     setIsMounted(true);
 
-    // Проверяем, нужно ли загружать FCM
     if (typeof navigator !== "undefined") {
       const userAgent = navigator.userAgent.toLowerCase();
       const isIOS = /iphone|ipad|ipod/.test(userAgent);
+      const isTelegram = userAgent.includes("telegram");
+      const isWhatsApp = userAgent.includes("whatsapp");
+      const isFacebook =
+        userAgent.includes("fbav") || userAgent.includes("facebook");
+      const isInstagram = userAgent.includes("instagram");
 
-      // Загружаем FCM только на не-iOS устройствах
-      if (!isIOS) {
+      // Загружаем FCM только на не-iOS и не в браузерах мессенджеров
+      const shouldSkip =
+        isIOS || isTelegram || isWhatsApp || isFacebook || isInstagram;
+
+      if (!shouldSkip) {
         setShouldLoadFCM(true);
       }
     }
