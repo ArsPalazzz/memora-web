@@ -1,9 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/utils/auth";
-import { FullPageLoader, Loader } from "./ui/Loader";
+import { CardPreviewSkeleton, Loader } from "./ui/Loader";
 import {
   Box,
   Card,
@@ -21,7 +22,7 @@ import {
 } from "@mui/material";
 import Header from "./layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { USER_DESK, USER_DESKS } from "@/routes/react-query";
+import { USER_CARDS, USER_DESK, USER_DESKS } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import ScreenRotationIcon from "@mui/icons-material/ScreenRotation";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -40,7 +41,6 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import NewCardModal from "./modals/NewCard/NewCard.modal";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import { useForm } from "react-hook-form";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -51,25 +51,39 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthContext } from "@/context/AuthContext";
 import React from "react";
-import DeskSettingsCardsPerSessionModal from "./modals/DeskSettings/DeskSettingsCardsPerSession.modal";
 import { DeskSettings } from "@/services/desk/desk.types";
-import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettingsCardOrientation.modal";
 import { CARD_ORIENTATION } from "@/services/desk/desk.const";
 import {
   updateDeskSchema,
   UpdateDeskValues,
 } from "@/schemas/updateDesk.schema";
-import EditDeskModal from "./modals/EditDesk/EditDesk.modal";
-import DeleteDeskModal from "./modals/DeleteDesk/DeleteDesk.modal";
 import { ROUTES } from "@/routes/next";
-import EditCardModal from "./modals/EditCard/EditCard.modal";
 import {
   updateCardSchema,
   UpdateCardValues,
 } from "@/schemas/updateCard.schema";
-import { AnkiStyleStats } from "./ui/DeskStats";
 import WithBottomNav from "./layout/WithBottomNav";
 import { useNotification } from "@/context/NotificationContext";
+
+const AnkiStyleStats = dynamic(
+  () => import("./ui/DeskStats").then((m) => ({ default: m.AnkiStyleStats })),
+  { ssr: false, loading: () => <Loader size={24} /> }
+);
+
+const NewCardModal = dynamic(() => import("./modals/NewCard/NewCard.modal"));
+const EditDeskModal = dynamic(() => import("./modals/EditDesk/EditDesk.modal"));
+const DeleteDeskModal = dynamic(
+  () => import("./modals/DeleteDesk/DeleteDesk.modal")
+);
+const EditCardModal = dynamic(
+  () => import("./modals/EditCard/EditCard.modal")
+);
+const DeskSettingsCardsPerSessionModal = dynamic(
+  () => import("./modals/DeskSettings/DeskSettingsCardsPerSession.modal")
+);
+const DeskSettingsCardOrientationModal = dynamic(
+  () => import("./modals/DeskSettings/DeskSettingsCardOrientation.modal")
+);
 
 const BOTTOM_NAV_HEIGHT = 36 + 4 * 10;
 const PLAY_BUTTON_HEIGHT = 64;
@@ -363,8 +377,17 @@ export default function DeskClient() {
     }
   }, [desk, updateCardModalSub, resetUpdateCard]);
 
-  if (loading) return <FullPageLoader />;
+  useEffect(() => {
+    if (desk?.cards?.length) {
+      queryClient.setQueryData([USER_CARDS, sub], desk.cards);
+    }
+  }, [desk?.cards, sub, queryClient]);
 
+  useEffect(() => {
+    router.prefetch(`/desk/${sub}/play`);
+  }, [sub, router]);
+
+  if (!authenticated && loading) return null;
   if (!authenticated) return null;
 
   return (
@@ -465,7 +488,21 @@ export default function DeskClient() {
                 alignItems: isDeskLoading ? "center" : undefined,
               }}
             >
-              {isDeskLoading && <Loader />}
+              {isDeskLoading && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 0.5,
+                    px: 2,
+                    pt: 2,
+                    overflowX: "auto",
+                  }}
+                >
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <CardPreviewSkeleton key={i} />
+                  ))}
+                </Box>
+              )}
 
               {desk && (
                 <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>

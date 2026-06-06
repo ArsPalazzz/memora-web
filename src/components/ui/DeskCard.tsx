@@ -14,12 +14,14 @@ export const DeskCard = ({
   stats,
   priorityColor,
   onClick,
+  onMouseEnter,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   desk: any;
   stats: DeskStats;
   priorityColor: string;
   onClick: () => void;
+  onMouseEnter?: () => void;
 }) => (
   <Card
     variant="outlined"
@@ -34,6 +36,7 @@ export const DeskCard = ({
       },
     }}
     onClick={onClick}
+    onMouseEnter={onMouseEnter}
   >
     <CardContent>
       <Box

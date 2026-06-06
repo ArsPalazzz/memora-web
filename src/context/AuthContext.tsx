@@ -1,15 +1,21 @@
 "use client";
 
 import { refreshRequest } from "@/services/auth/auth";
-// import { processOfflineQueue } from "@/services/indexedDB";
-import { useProtectedRequest } from "@/utils/protected";
 import {
   createContext,
+  useCallback,
   useContext,
   useState,
   ReactNode,
   useEffect,
 } from "react";
+
+const TOKEN_KEY = "access_token";
+
+function readStoredToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem(TOKEN_KEY);
+}
 
 interface AuthContextType {
   accessToken: string | null;
@@ -24,20 +30,22 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const { call } = useProtectedRequest();
+  const [accessToken, setAccessTokenState] = useState<string | null>(
+    readStoredToken
+  );
+
+  const setAccessToken = useCallback((token: string | null) => {
+    setAccessTokenState(token);
+    if (typeof window === "undefined") return;
+    if (token) sessionStorage.setItem(TOKEN_KEY, token);
+    else sessionStorage.removeItem(TOKEN_KEY);
+  }, []);
 
   useEffect(() => {
-    const refreshSession = async () => {
-      try {
-        call(refreshRequest);
-      } catch {
-        setAccessToken(null);
-      }
-    };
-
-    refreshSession();
-  }, []);
+    refreshRequest()
+      .then(({ accessToken: token }) => setAccessToken(token))
+      .catch(() => setAccessToken(null));
+  }, [setAccessToken]);
 
   const logout = async () => {
     await fetch("/api/auth/logout", {
@@ -46,10 +54,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setAccessToken(null);
   };
-
-  // window.addEventListener("online", () => {
-  //   processOfflineQueue(accessToken);
-  // });
 
   return (
     <AuthContext.Provider value={{ accessToken, setAccessToken, logout }}>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/utils/auth";
-import { FullPageLoader, Loader } from "./ui/Loader";
+import { Loader } from "./ui/Loader";
 import { Box, Card, IconButton, Typography } from "@mui/material";
 import Header from "./layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -42,6 +42,7 @@ export default function DeskCardsClient() {
     queryKey: [USER_CARDS, sub],
     enabled: !!sub,
     queryFn: async () => call((token) => fetchDeskCardsRequest(sub, token)),
+    placeholderData: () => queryClient.getQueryData([USER_CARDS, sub]),
   });
 
   const [updateCardModalSub, setUpdateCardModalSub] = useState("");
@@ -124,8 +125,7 @@ export default function DeskCardsClient() {
     }
   }, [cards, updateCardModalSub, resetUpdateCard]);
 
-  if (loading) return <FullPageLoader />;
-
+  if (!authenticated && loading) return null;
   if (!authenticated) return null;
 
   return (

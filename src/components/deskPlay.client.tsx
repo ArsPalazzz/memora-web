@@ -13,9 +13,9 @@ import {
   InputAdornment,
   IconButton,
   LinearProgress,
+  Skeleton,
 } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
-import { FullPageLoader } from "./ui/Loader";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
 import { NextCardResponse } from "@/services/games/games.types";
@@ -189,7 +189,23 @@ export default function PlayDeskPage() {
     };
   }, []);
 
-  if (cardLoading && !currentCard) return <FullPageLoader />;
+  if (cardLoading && !currentCard) {
+    return (
+      <Box
+        sx={{
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          px: 3,
+          pt: 2,
+        }}
+      >
+        <Skeleton variant="text" width="40%" height={20} sx={{ mb: 2 }} />
+        <Skeleton variant="rounded" sx={{ flex: 1, borderRadius: 3 }} />
+        <Skeleton variant="rounded" height={48} sx={{ mt: 2, borderRadius: 2 }} />
+      </Box>
+    );
+  }
 
   const cardColor =
     result === null

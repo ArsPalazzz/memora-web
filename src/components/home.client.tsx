@@ -7,6 +7,7 @@ import FolderIcon from "@mui/icons-material/Folder";
 import {
   createDeskRequest,
   createFolderRequest,
+  fetchDeskRequest,
   fetchMyDesksRequest,
   getFoldersRequest,
 } from "../services/desk/desk";
@@ -20,15 +21,23 @@ import {
 } from "@/schemas/createDesk.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthContext } from "@/context/AuthContext";
-import { USER_DAILY, USER_DESKS, ROOT_FOLDERS } from "@/routes/react-query";
+import {
+  USER_DAILY,
+  USER_DESKS,
+  USER_DESK,
+  ROOT_FOLDERS,
+} from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
-import { FullPageLoader, Loader } from "@/components/ui/Loader";
+import {
+  DailyStreakSkeleton,
+  DeskCardSkeleton,
+  Loader,
+} from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import { v4 as uuidV4 } from "uuid";
 import { useRouter, useSearchParams } from "next/navigation";
 import WithBottomNav from "./layout/WithBottomNav";
-import { motion } from "framer-motion";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import { getUserDailyRequest } from "@/services/user/user";
 import { DeskCard } from "./ui/DeskCard";
@@ -165,7 +174,20 @@ export default function HomeClient() {
     return "success";
   };
 
-  if (isDesksLoading) return <FullPageLoader />;
+  const navigateToDesk = (deskSub: string) => {
+    queryClient.prefetchQuery({
+      queryKey: [USER_DESK, deskSub],
+      queryFn: () => call((token) => fetchDeskRequest(deskSub, token)),
+    });
+    router.push(`desk/${deskSub}`);
+  };
+
+  const prefetchDesk = (deskSub: string) => {
+    queryClient.prefetchQuery({
+      queryKey: [USER_DESK, deskSub],
+      queryFn: () => call((token) => fetchDeskRequest(deskSub, token)),
+    });
+  };
 
   if (!authenticated) return null;
 
@@ -213,13 +235,17 @@ export default function HomeClient() {
           }}
         >
           <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
-            {daily && (
+            {daily ? (
               <Box sx={{ mb: 3 }}>
                 <DailyStreakCard
                   streak={daily.currentStreak}
                   cardsReviewedToday={daily.cardsReviewed}
                   dailyGoal={daily.dailyGoal}
                 />
+              </Box>
+            ) : (
+              <Box sx={{ mb: 3 }}>
+                <DailyStreakSkeleton />
               </Box>
             )}
 
@@ -238,7 +264,17 @@ export default function HomeClient() {
           >
             {activeTab === 0 ? (
               <>
-                {!desks?.length && (
+                {isDesksLoading && (
+                  <Grid container spacing={2}>
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={i}>
+                        <DeskCardSkeleton />
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+
+                {!isDesksLoading && !desks?.length && (
                   <EmptyState
                     onCreate={() => setOpenDeskModal(true)}
                     title="No decks yet"
@@ -252,9 +288,9 @@ export default function HomeClient() {
                   />
                 )}
 
-                {desks && desks.length > 0 && (
+                {!isDesksLoading && desks && desks.length > 0 && (
                   <Grid container spacing={2}>
-                    {desks.map((desk, index) => {
+                    {desks.map((desk) => {
                       const stats = {
                         learningCards: desk.learningCards,
                         dueCards: desk.dueCards,
@@ -272,21 +308,13 @@ export default function HomeClient() {
 
                       return (
                         <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={desk.sub}>
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              duration: 0.3,
-                              delay: Number(`0.${index + 1}`),
-                            }}
-                          >
-                            <DeskCard
-                              desk={desk}
-                              stats={stats}
-                              priorityColor={priorityColor}
-                              onClick={() => router.push(`desk/${desk.sub}`)}
-                            />
-                          </motion.div>
+                          <DeskCard
+                            desk={desk}
+                            stats={stats}
+                            priorityColor={priorityColor}
+                            onMouseEnter={() => prefetchDesk(desk.sub)}
+                            onClick={() => navigateToDesk(desk.sub)}
+                          />
                         </Grid>
                       );
                     })}
