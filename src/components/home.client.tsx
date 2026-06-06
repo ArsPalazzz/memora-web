@@ -38,6 +38,7 @@ import Header from "@/components/layout/Header";
 import { v4 as uuidV4 } from "uuid";
 import { useRouter, useSearchParams } from "next/navigation";
 import WithBottomNav from "./layout/WithBottomNav";
+import { motion } from "framer-motion";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import { getUserDailyRequest } from "@/services/user/user";
 import { DeskCard } from "./ui/DeskCard";
@@ -290,7 +291,7 @@ export default function HomeClient() {
 
                 {!isDesksLoading && desks && desks.length > 0 && (
                   <Grid container spacing={2}>
-                    {desks.map((desk) => {
+                    {desks.map((desk, index) => {
                       const stats = {
                         learningCards: desk.learningCards,
                         dueCards: desk.dueCards,
@@ -308,13 +309,22 @@ export default function HomeClient() {
 
                       return (
                         <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={desk.sub}>
-                          <DeskCard
-                            desk={desk}
-                            stats={stats}
-                            priorityColor={priorityColor}
-                            onMouseEnter={() => prefetchDesk(desk.sub)}
-                            onClick={() => navigateToDesk(desk.sub)}
-                          />
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                              duration: 0.3,
+                              delay: Number(`0.${index + 1}`),
+                            }}
+                          >
+                            <DeskCard
+                              desk={desk}
+                              stats={stats}
+                              priorityColor={priorityColor}
+                              onMouseEnter={() => prefetchDesk(desk.sub)}
+                              onClick={() => navigateToDesk(desk.sub)}
+                            />
+                          </motion.div>
                         </Grid>
                       );
                     })}
