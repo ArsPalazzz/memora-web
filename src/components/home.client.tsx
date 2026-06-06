@@ -30,8 +30,6 @@ import {
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
 import {
-  DailyStreakSkeleton,
-  DeskCardSkeleton,
   FullPageLoader,
   Loader,
 } from "@/components/ui/Loader";
