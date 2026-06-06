@@ -64,6 +64,12 @@ import {
 import WithBottomNav from "./layout/WithBottomNav";
 import { useNotification } from "@/context/NotificationContext";
 import { AnkiStyleStats } from "./ui/DeskStats";
+import NewCardModal from "./modals/NewCard/NewCard.modal";
+import EditDeskModal from "./modals/EditDesk/EditDesk.modal";
+import DeleteDeskModal from "./modals/DeleteDesk/DeleteDesk.modal";
+import DeskSettingsCardsPerSessionModal from "./modals/DeskSettings/DeskSettingsCardsPerSession.modal";
+import EditCardModal from "./modals/EditCard/EditCard.modal";
+import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettingsCardOrientation.modal";
 
 const BOTTOM_NAV_HEIGHT = 36 + 4 * 10;
 const PLAY_BUTTON_HEIGHT = 64;
