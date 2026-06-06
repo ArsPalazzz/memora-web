@@ -63,6 +63,7 @@ import {
 } from "@/schemas/updateCard.schema";
 import WithBottomNav from "./layout/WithBottomNav";
 import { useNotification } from "@/context/NotificationContext";
+import { AnkiStyleStats } from "./ui/DeskStats";
 
 const BOTTOM_NAV_HEIGHT = 36 + 4 * 10;
 const PLAY_BUTTON_HEIGHT = 64;
