@@ -25,6 +25,7 @@ import {
   startDeskSessionRequest,
 } from "@/services/games/games";
 import { USER_DAILY } from "@/routes/react-query";
+import { FullPageLoader } from "./ui/Loader";
 
 type AnswerResult = {
   isCorrect: boolean;
@@ -189,23 +190,7 @@ export default function PlayDeskPage() {
     };
   }, []);
 
-  if (cardLoading && !currentCard) {
-    return (
-      <Box
-        sx={{
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          px: 3,
-          pt: 2,
-        }}
-      >
-        <Skeleton variant="text" width="40%" height={20} sx={{ mb: 2 }} />
-        <Skeleton variant="rounded" sx={{ flex: 1, borderRadius: 3 }} />
-        <Skeleton variant="rounded" height={48} sx={{ mt: 2, borderRadius: 2 }} />
-      </Box>
-    );
-  }
+  if (cardLoading && !currentCard) return <FullPageLoader />;
 
   const cardColor =
     result === null

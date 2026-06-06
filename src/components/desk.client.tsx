@@ -1,10 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/utils/auth";
-import { CardPreviewSkeleton, Loader } from "./ui/Loader";
+import { FullPageLoader, Loader } from "./ui/Loader";
 import {
   Box,
   Card,
@@ -64,26 +63,6 @@ import {
 } from "@/schemas/updateCard.schema";
 import WithBottomNav from "./layout/WithBottomNav";
 import { useNotification } from "@/context/NotificationContext";
-
-const AnkiStyleStats = dynamic(
-  () => import("./ui/DeskStats").then((m) => ({ default: m.AnkiStyleStats })),
-  { ssr: false, loading: () => <Loader size={24} /> }
-);
-
-const NewCardModal = dynamic(() => import("./modals/NewCard/NewCard.modal"));
-const EditDeskModal = dynamic(() => import("./modals/EditDesk/EditDesk.modal"));
-const DeleteDeskModal = dynamic(
-  () => import("./modals/DeleteDesk/DeleteDesk.modal")
-);
-const EditCardModal = dynamic(
-  () => import("./modals/EditCard/EditCard.modal")
-);
-const DeskSettingsCardsPerSessionModal = dynamic(
-  () => import("./modals/DeskSettings/DeskSettingsCardsPerSession.modal")
-);
-const DeskSettingsCardOrientationModal = dynamic(
-  () => import("./modals/DeskSettings/DeskSettingsCardOrientation.modal")
-);
 
 const BOTTOM_NAV_HEIGHT = 36 + 4 * 10;
 const PLAY_BUTTON_HEIGHT = 64;
@@ -377,17 +356,7 @@ export default function DeskClient() {
     }
   }, [desk, updateCardModalSub, resetUpdateCard]);
 
-  useEffect(() => {
-    if (desk?.cards?.length) {
-      queryClient.setQueryData([USER_CARDS, sub], desk.cards);
-    }
-  }, [desk?.cards, sub, queryClient]);
-
-  useEffect(() => {
-    router.prefetch(`/desk/${sub}/play`);
-  }, [sub, router]);
-
-  if (!authenticated && loading) return null;
+  if (loading) return <FullPageLoader />;
   if (!authenticated) return null;
 
   return (
@@ -488,21 +457,7 @@ export default function DeskClient() {
                 alignItems: isDeskLoading ? "center" : undefined,
               }}
             >
-              {isDeskLoading && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    gap: 0.5,
-                    px: 2,
-                    pt: 2,
-                    overflowX: "auto",
-                  }}
-                >
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <CardPreviewSkeleton key={i} />
-                  ))}
-                </Box>
-              )}
+              {isDeskLoading && <Loader />}
 
               {desk && (
                 <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>

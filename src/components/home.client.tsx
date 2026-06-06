@@ -32,6 +32,7 @@ import { useProtectedRequest } from "@/utils/protected";
 import {
   DailyStreakSkeleton,
   DeskCardSkeleton,
+  FullPageLoader,
   Loader,
 } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
@@ -175,20 +176,7 @@ export default function HomeClient() {
     return "success";
   };
 
-  const navigateToDesk = (deskSub: string) => {
-    queryClient.prefetchQuery({
-      queryKey: [USER_DESK, deskSub],
-      queryFn: () => call((token) => fetchDeskRequest(deskSub, token)),
-    });
-    router.push(`desk/${deskSub}`);
-  };
-
-  const prefetchDesk = (deskSub: string) => {
-    queryClient.prefetchQuery({
-      queryKey: [USER_DESK, deskSub],
-      queryFn: () => call((token) => fetchDeskRequest(deskSub, token)),
-    });
-  };
+  if (isDesksLoading) return <FullPageLoader />;
 
   if (!authenticated) return null;
 
@@ -236,17 +224,13 @@ export default function HomeClient() {
           }}
         >
           <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
-            {daily ? (
+            {daily && (
               <Box sx={{ mb: 3 }}>
                 <DailyStreakCard
                   streak={daily.currentStreak}
                   cardsReviewedToday={daily.cardsReviewed}
                   dailyGoal={daily.dailyGoal}
                 />
-              </Box>
-            ) : (
-              <Box sx={{ mb: 3 }}>
-                <DailyStreakSkeleton />
               </Box>
             )}
 
@@ -265,17 +249,7 @@ export default function HomeClient() {
           >
             {activeTab === 0 ? (
               <>
-                {isDesksLoading && (
-                  <Grid container spacing={2}>
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={i}>
-                        <DeskCardSkeleton />
-                      </Grid>
-                    ))}
-                  </Grid>
-                )}
-
-                {!isDesksLoading && !desks?.length && (
+                {!desks?.length && (
                   <EmptyState
                     onCreate={() => setOpenDeskModal(true)}
                     title="No decks yet"
@@ -289,7 +263,7 @@ export default function HomeClient() {
                   />
                 )}
 
-                {!isDesksLoading && desks && desks.length > 0 && (
+                {desks && desks.length > 0 && (
                   <Grid container spacing={2}>
                     {desks.map((desk, index) => {
                       const stats = {
@@ -321,8 +295,7 @@ export default function HomeClient() {
                               desk={desk}
                               stats={stats}
                               priorityColor={priorityColor}
-                              onMouseEnter={() => prefetchDesk(desk.sub)}
-                              onClick={() => navigateToDesk(desk.sub)}
+                              onClick={() => router.push(`desk/${desk.sub}`)}
                             />
                           </motion.div>
                         </Grid>

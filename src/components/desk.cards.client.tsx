@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/utils/auth";
-import { Loader } from "./ui/Loader";
+import { FullPageLoader, Loader } from "./ui/Loader";
 import { Box, Card, IconButton, Typography } from "@mui/material";
 import Header from "./layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -125,7 +125,7 @@ export default function DeskCardsClient() {
     }
   }, [cards, updateCardModalSub, resetUpdateCard]);
 
-  if (!authenticated && loading) return null;
+  if (loading) return <FullPageLoader />;
   if (!authenticated) return null;
 
   return (
