@@ -26,6 +26,17 @@ export const Loader = ({ size }: { size?: number }) => {
   );
 };
 
+export const DeskCardSkeleton = () => (
+  <Card variant="outlined" sx={{ height: "153px" }}>
+    <CardContent>
+      <Skeleton variant="text" width="55%" height={28} />
+      <Skeleton variant="text" width="85%" sx={{ mt: 1 }} />
+      <Skeleton variant="rounded" height={8} sx={{ mt: 2.5 }} />
+      <Skeleton variant="text" width="75%" sx={{ mt: 1 }} />
+    </CardContent>
+  </Card>
+);
+
 export const FullPageLoader = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [dots, setDots] = useState(1);

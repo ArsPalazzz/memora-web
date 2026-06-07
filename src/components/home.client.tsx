@@ -29,10 +29,7 @@ import {
 } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
-import {
-  FullPageLoader,
-  Loader,
-} from "@/components/ui/Loader";
+import { DeskCardSkeleton, Loader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import { v4 as uuidV4 } from "uuid";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -93,7 +90,16 @@ export default function HomeClient() {
   const { data: desks, isLoading: isDesksLoading } = useQuery({
     queryKey: [USER_DESKS],
     queryFn: async () => call((token) => fetchMyDesksRequest(token)),
+    staleTime: 5 * 60_000,
   });
+
+  const prefetchDesk = (sub: string) => {
+    void queryClient.prefetchQuery({
+      queryKey: [USER_DESK, sub],
+      queryFn: async () => call((token) => fetchDeskRequest(sub, token)),
+      staleTime: 5 * 60_000,
+    });
+  };
 
   const { data: folders, isLoading: isFoldersLoading } = useQuery({
     queryKey: [ROOT_FOLDERS],
@@ -174,8 +180,6 @@ export default function HomeClient() {
     return "success";
   };
 
-  if (isDesksLoading) return <FullPageLoader />;
-
   if (!authenticated) return null;
 
   const RightButton = () => {
@@ -247,7 +251,17 @@ export default function HomeClient() {
           >
             {activeTab === 0 ? (
               <>
-                {!desks?.length && (
+                {isDesksLoading && !desks && (
+                  <Grid container spacing={2}>
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={index}>
+                        <DeskCardSkeleton />
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+
+                {!isDesksLoading && desks && !desks.length && (
                   <EmptyState
                     onCreate={() => setOpenDeskModal(true)}
                     title="No decks yet"
@@ -293,6 +307,7 @@ export default function HomeClient() {
                               desk={desk}
                               stats={stats}
                               priorityColor={priorityColor}
+                              onPointerDown={() => prefetchDesk(desk.sub)}
                               onClick={() => router.push(`desk/${desk.sub}`)}
                             />
                           </motion.div>

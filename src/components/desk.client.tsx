@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/utils/auth";
-import { FullPageLoader, Loader } from "./ui/Loader";
+import { Loader } from "./ui/Loader";
+import { getDeskPlaceholder } from "@/utils/desk-placeholder";
 import {
   Box,
   Card,
@@ -83,10 +84,16 @@ export default function DeskClient() {
 
   const sub = params.id;
 
-  const { data: desk, isLoading: isDeskLoading } = useQuery({
+  const {
+    data: desk,
+    isLoading: isDeskLoading,
+    isPlaceholderData,
+  } = useQuery({
     queryKey: [USER_DESK, sub],
     enabled: !!sub,
     queryFn: async () => call((token) => fetchDeskRequest(sub, token)),
+    staleTime: 5 * 60_000,
+    placeholderData: () => getDeskPlaceholder(queryClient, sub),
   });
 
   const [anchorMenu, setAnchorMenu] = useState<Element | null>(null);
@@ -363,8 +370,7 @@ export default function DeskClient() {
     }
   }, [desk, updateCardModalSub, resetUpdateCard]);
 
-  if (loading) return <FullPageLoader />;
-  if (!authenticated) return null;
+  if (!loading && !authenticated) return null;
 
   return (
     <>
@@ -460,11 +466,11 @@ export default function DeskClient() {
                 paddingBottom: `${
                   BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16
                 }px`,
-                display: isDeskLoading ? "flex" : undefined,
-                alignItems: isDeskLoading ? "center" : undefined,
+                display: !desk && (loading || isDeskLoading) ? "flex" : undefined,
+                alignItems: !desk && (loading || isDeskLoading) ? "center" : undefined,
               }}
             >
-              {isDeskLoading && <Loader />}
+              {!desk && (loading || isDeskLoading) && <Loader />}
 
               {desk && (
                 <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>
@@ -482,7 +488,7 @@ export default function DeskClient() {
                       </Typography>
                     </Grid>
 
-                    {!!desk.cards.length && (
+                    {(!!desk.cards.length || desk.stats.total_cards > 0) && (
                       <Grid size={{ xs: 12 }}>
                         <AnkiStyleStats stats={desk.stats} />
                       </Grid>
@@ -510,7 +516,13 @@ export default function DeskClient() {
                     </Grid>
 
                     <Grid size={{ xs: 12 }}>
-                      {!desk.cards?.length && (
+                      {isPlaceholderData && (
+                        <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+                          <CircularProgress size={28} />
+                        </Box>
+                      )}
+
+                      {!isPlaceholderData && !desk.cards?.length && (
                         <Typography sx={{ display: "inline" }}>
                           You don&apos;t have any cards yet.{" "}
                           <Typography
@@ -531,6 +543,7 @@ export default function DeskClient() {
                         </Typography>
                       )}
 
+                      {!isPlaceholderData && (
                       <Box
                         ref={scrollRef}
                         sx={{
@@ -688,8 +701,11 @@ export default function DeskClient() {
                           </Box>
                         )}
                       </Box>
+                      )}
                     </Grid>
 
+                    {!isPlaceholderData && (
+                    <>
                     <Grid size={{ xs: 12 }} mb={1}>
                       <Typography variant="h6" fontWeight={600}>
                         Settings
@@ -744,6 +760,8 @@ export default function DeskClient() {
                         ))}
                       </List>
                     </Grid>
+                    </>
+                    )}
                   </Box>
                 </Grid>
               )}
