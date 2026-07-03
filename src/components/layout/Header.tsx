@@ -31,7 +31,7 @@ export default function Header({
     >
       <Box sx={{ display: "flex", alignItems: "center" }}>
         {onBack && (
-          <IconButton onClick={onBack}>
+          <IconButton onClick={onBack} sx={{ pointerEvents: "auto" }}>
             <ArrowBackIcon sx={{ color: "white", fontSize: 30 }} />
           </IconButton>
         )}

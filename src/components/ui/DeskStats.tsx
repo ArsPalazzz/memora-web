@@ -1,7 +1,7 @@
 
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { Box, Typography, Stack, IconButton, Skeleton } from "@mui/material";
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import {
   PieChart,
   Pie,
@@ -45,6 +45,7 @@ interface DeskStatsProps {
 const chartContainerSx = {
   pointerEvents: "none" as const,
   userSelect: "none" as const,
+  overflow: "hidden" as const,
 };
 
 export function AnkiStyleStats({ stats }: DeskStatsProps) {
@@ -52,7 +53,9 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
   const [chartsReady, setChartsReady] = useState(false);
 
   useEffect(() => {
-    const id = requestAnimationFrame(() => setChartsReady(true));
+    const id = requestAnimationFrame(() => {
+      startTransition(() => setChartsReady(true));
+    });
     return () => cancelAnimationFrame(id);
   }, []);
 
@@ -124,7 +127,6 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
                 outerRadius={40}
                 dataKey="value"
                 stroke="none"
-                isAnimationActive={false}
               >
                 {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -204,7 +206,6 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
               radius={[2, 2, 0, 0]}
               fill="#5961d3"
               fillOpacity={0.6}
-              isAnimationActive={false}
               label={{
                 position: "top",
                 formatter: (value) => (value === 0 ? "" : value),
