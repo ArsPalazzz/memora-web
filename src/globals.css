@@ -42,3 +42,11 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Recharts SVG can capture touches on iOS PWA despite parent pointer-events */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-layer,
+.recharts-responsive-container {
+  pointer-events: none !important;
+}

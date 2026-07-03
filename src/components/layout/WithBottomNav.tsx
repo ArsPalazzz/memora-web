@@ -22,6 +22,7 @@ export default function WithBottomNav({ children }: WithBottomNavProps) {
           overflow: "auto",
           display: "flex",
           flexDirection: "column",
+          WebkitOverflowScrolling: "touch",
           pb: {
             xs: "56px",
             md: 7,

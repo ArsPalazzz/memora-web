@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/auth";
 import { Loader } from "./ui/Loader";
@@ -63,13 +63,17 @@ import {
 } from "@/schemas/updateCard.schema";
 import WithBottomNav from "./layout/WithBottomNav";
 import { useNotification } from "@/context/NotificationContext";
-import { AnkiStyleStats } from "./ui/DeskStats";
+import { DeskStatsSkeleton } from "./ui/DeskStats";
 import NewCardModal from "./modals/NewCard/NewCard.modal";
 import EditDeskModal from "./modals/EditDesk/EditDesk.modal";
 import DeleteDeskModal from "./modals/DeleteDesk/DeleteDesk.modal";
 import DeskSettingsCardsPerSessionModal from "./modals/DeskSettings/DeskSettingsCardsPerSession.modal";
 import EditCardModal from "./modals/EditCard/EditCard.modal";
 import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettingsCardOrientation.modal";
+
+const AnkiStyleStats = lazy(() =>
+  import("./ui/DeskStats").then((mod) => ({ default: mod.AnkiStyleStats }))
+);
 
 const BOTTOM_NAV_HEIGHT = 36 + 4 * 10;
 const PLAY_BUTTON_HEIGHT = 64;
@@ -452,23 +456,14 @@ export default function DeskClient() {
           />
           <Box
             sx={{
-              flex: 1,
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
+              paddingBottom: `${
+                BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16
+              }px`,
+              display: !desk && (loading || isDeskLoading) ? "flex" : undefined,
+              alignItems: !desk && (loading || isDeskLoading) ? "center" : undefined,
+              minHeight: !desk && (loading || isDeskLoading) ? "40vh" : undefined,
             }}
           >
-            <Box
-              sx={{
-                flex: 1,
-                overflowY: "auto",
-                paddingBottom: `${
-                  BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16
-                }px`,
-                display: !desk && (loading || isDeskLoading) ? "flex" : undefined,
-                alignItems: !desk && (loading || isDeskLoading) ? "center" : undefined,
-              }}
-            >
               {!desk && (loading || isDeskLoading) && <Loader />}
 
               {desk && (
@@ -489,7 +484,9 @@ export default function DeskClient() {
 
                     {(!!desk.cards.length || desk.stats.total_cards > 0) && (
                       <Grid size={{ xs: 12 }}>
-                        <AnkiStyleStats stats={desk.stats} />
+                        <Suspense fallback={<DeskStatsSkeleton />}>
+                          <AnkiStyleStats stats={desk.stats} />
+                        </Suspense>
                       </Grid>
                     )}
 
@@ -764,7 +761,6 @@ export default function DeskClient() {
                   </Box>
                 </Grid>
               )}
-            </Box>
           </Box>
 
           {desk && !!desk.cards.length && (

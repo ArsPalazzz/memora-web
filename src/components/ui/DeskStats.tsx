@@ -46,18 +46,66 @@ const chartContainerSx = {
   pointerEvents: "none" as const,
   userSelect: "none" as const,
   overflow: "hidden" as const,
+  touchAction: "none" as const,
 };
+
+function isTouchDevice() {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window
+  );
+}
+
+function scheduleChartsMount(onReady: () => void) {
+  const mount = () => startTransition(onReady);
+
+  if (!isTouchDevice()) {
+    const id = requestAnimationFrame(mount);
+    return () => cancelAnimationFrame(id);
+  }
+
+  if (typeof window.requestIdleCallback === "function") {
+    const id = window.requestIdleCallback(mount, { timeout: 500 });
+    return () => window.cancelIdleCallback(id);
+  }
+
+  const id = setTimeout(mount, 500);
+  return () => clearTimeout(id);
+}
+
+export function DeskStatsSkeleton() {
+  return (
+    <Box
+      sx={{
+        mb: 3,
+        p: 2,
+        bgcolor: "background.paper",
+        borderRadius: 2,
+        boxShadow: 1,
+      }}
+    >
+      <Skeleton variant="text" width="40%" height={28} sx={{ mb: 2 }} />
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Skeleton variant="circular" width={80} height={80} />
+        <Box sx={{ flex: 1 }}>
+          <Skeleton variant="text" />
+          <Skeleton variant="text" />
+          <Skeleton variant="text" />
+          <Skeleton variant="text" />
+        </Box>
+      </Stack>
+      <Skeleton variant="rounded" height={90} sx={{ mt: 2 }} />
+    </Box>
+  );
+}
 
 export function AnkiStyleStats({ stats }: DeskStatsProps) {
   const [week, setWeek] = useState<"current" | "previous">("current");
   const [chartsReady, setChartsReady] = useState(false);
+  const touchDevice = isTouchDevice();
+  const chartAnimationMs = touchDevice ? 800 : 1500;
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      startTransition(() => setChartsReady(true));
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
+  useEffect(() => scheduleChartsMount(() => setChartsReady(true)), []);
 
   const pieData = [
     { name: "Due", value: stats.due_today, color: "#ff6b6b" },
@@ -127,6 +175,7 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
                 outerRadius={40}
                 dataKey="value"
                 stroke="none"
+                animationDuration={chartAnimationMs}
               >
                 {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -206,6 +255,7 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
               radius={[2, 2, 0, 0]}
               fill="#5961d3"
               fillOpacity={0.6}
+              animationDuration={chartAnimationMs}
               label={{
                 position: "top",
                 formatter: (value) => (value === 0 ? "" : value),
