@@ -1,7 +1,7 @@
 
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { Box, Typography, Stack, IconButton } from "@mui/material";
-import { useState } from "react";
+import { Box, Typography, Stack, IconButton, Skeleton } from "@mui/material";
+import { useEffect, useState } from "react";
 import {
   PieChart,
   Pie,
@@ -42,8 +42,19 @@ interface DeskStatsProps {
   };
 }
 
+const chartContainerSx = {
+  pointerEvents: "none" as const,
+  userSelect: "none" as const,
+};
+
 export function AnkiStyleStats({ stats }: DeskStatsProps) {
   const [week, setWeek] = useState<"current" | "previous">("current");
+  const [chartsReady, setChartsReady] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setChartsReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   const pieData = [
     { name: "Due", value: stats.due_today, color: "#ff6b6b" },
@@ -99,7 +110,10 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
       </Stack>
 
       <Stack direction="row" spacing={2} alignItems="center">
-        <Box sx={{ width: "40%", height: 100 }}>
+        <Box sx={{ width: "40%", height: 100, ...chartContainerSx }}>
+          {!chartsReady ? (
+            <Skeleton variant="circular" width={80} height={80} sx={{ mx: "auto" }} />
+          ) : (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -110,6 +124,7 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
                 outerRadius={40}
                 dataKey="value"
                 stroke="none"
+                isAnimationActive={false}
               >
                 {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -135,6 +150,7 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
               </Pie>
             </PieChart>
           </ResponsiveContainer>
+          )}
         </Box>
 
         <Box sx={{ width: "60%" }}>
@@ -168,7 +184,10 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
         </Box>
       </Stack>
 
-      <Box sx={{ mt: 2, height: 90 }}>
+      <Box sx={{ mt: 2, height: 90, ...chartContainerSx }}>
+        {!chartsReady ? (
+          <Skeleton variant="rounded" width="100%" height="100%" />
+        ) : (
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={barData}
@@ -185,6 +204,7 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
               radius={[2, 2, 0, 0]}
               fill="#5961d3"
               fillOpacity={0.6}
+              isAnimationActive={false}
               label={{
                 position: "top",
                 formatter: (value) => (value === 0 ? "" : value),
@@ -194,6 +214,7 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
             />
           </BarChart>
         </ResponsiveContainer>
+        )}
       </Box>
 
       <Stack

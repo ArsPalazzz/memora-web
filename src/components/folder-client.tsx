@@ -13,7 +13,7 @@ import {
   USER_FOLDERS,
 } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
-import { FullPageLoader } from "@/components/ui/Loader";
+import { Loader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import { motion } from "framer-motion";
@@ -187,7 +187,7 @@ export default function FolderClient() {
     updateSortBy(newSortBy);
   };
 
-  if (isFolderInfoLoading || isContentsLoading) return <FullPageLoader />;
+  const isLoading = isFolderInfoLoading || isContentsLoading;
 
   const RightButtons = () => (
     <Box sx={{ display: "flex", gap: 1 }}>
@@ -223,6 +223,19 @@ export default function FolderClient() {
             overflow: "hidden",
           }}
         >
+          {isLoading ? (
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Loader />
+            </Box>
+          ) : (
+          <>
           {!!contents?.length && (
             <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
               <Box
@@ -297,6 +310,8 @@ export default function FolderClient() {
               </Grid>
             )}
           </Box>
+          </>
+          )}
         </Box>
       </Box>
 

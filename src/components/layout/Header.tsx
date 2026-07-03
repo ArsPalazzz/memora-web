@@ -24,8 +24,9 @@ export default function Header({
         pt: 2,
         pb: 1,
         px: 2,
-        zIndex: 10,
+        zIndex: 1300,
         height: "8vh",
+        isolation: "isolate",
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center" }}>

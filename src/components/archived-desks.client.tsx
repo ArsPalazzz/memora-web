@@ -9,7 +9,7 @@ import {
 import { useAuthContext } from "@/context/AuthContext";
 import { ARCHIVED_DESKS, USER_DESKS } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
-import { FullPageLoader } from "@/components/ui/Loader";
+import { Loader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import { useNavigate } from "react-router-dom";
 import WithBottomNav from "./layout/WithBottomNav";
@@ -52,8 +52,6 @@ export default function ArchivedDesksClient() {
     archiveDeskMutation.mutate({ data: { desk_sub }, token: accessToken! });
   };
 
-  if (isDesksLoading) return <FullPageLoader />;
-
   if (!authenticated) return null;
 
   return (
@@ -64,8 +62,17 @@ export default function ArchivedDesksClient() {
           onBack={() => navigate(ROUTES.PROFILE)}
         />
 
-        <Box sx={{ px: 2, pt: 2 }}>
-          {isDesksLoading && <FullPageLoader />}
+        <Box
+          sx={{
+            px: 2,
+            pt: 2,
+            display: isDesksLoading ? "flex" : undefined,
+            alignItems: isDesksLoading ? "center" : undefined,
+            justifyContent: isDesksLoading ? "center" : undefined,
+            minHeight: isDesksLoading ? "50vh" : undefined,
+          }}
+        >
+          {isDesksLoading && <Loader />}
 
           {!desks?.length && <ArchiveEmptyState />}
 
