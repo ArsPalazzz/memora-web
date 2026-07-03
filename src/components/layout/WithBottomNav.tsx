@@ -14,7 +14,9 @@ export default function WithBottomNav({ children }: WithBottomNavProps) {
       sx={{
         display: "flex",
         flexDirection: "column",
-        height: "100%",
+        minHeight: "100dvh",
+        maxHeight: "100dvh",
+        overflow: "hidden",
       }}
     >
       <Box

@@ -1,5 +1,5 @@
 
-import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
+import { BottomNavigation, BottomNavigationAction, Box } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -33,17 +33,18 @@ export default function BottomNav() {
   };
 
   return (
-    <Paper
+    <Box
+      component="nav"
       sx={{
         position: "fixed",
         bottom: 0,
         left: 0,
         right: 0,
         zIndex: 1300,
-        pb: "env(safe-area-inset-bottom, 0px)",
-        backgroundColor: "background.paper",
+        bgcolor: "background.paper",
+        borderTop: 1,
+        borderColor: "divider",
       }}
-      elevation={3}
     >
       <BottomNavigation
         value={value}
@@ -51,7 +52,7 @@ export default function BottomNav() {
         sx={{
           height: BOTTOM_NAV_BAR_HEIGHT,
           padding: 0,
-          backgroundColor: "background.paper",
+          bgcolor: "background.paper",
         }}
       >
         <BottomNavigationAction
@@ -73,6 +74,14 @@ export default function BottomNav() {
           icon={<PersonIcon />}
         />
       </BottomNavigation>
-    </Paper>
+
+      <Box
+        aria-hidden
+        sx={{
+          height: "env(safe-area-inset-bottom, 0px)",
+          bgcolor: "background.paper",
+        }}
+      />
+    </Box>
   );
 }

@@ -204,7 +204,7 @@ export default function HomeClient() {
         sx={{
           display: "flex",
           flexDirection: "column",
-          height: "100vh",
+          height: "100dvh",
           overflow:
             (activeTab === 0 && desks && !desks.length) ||
             (activeTab === 1 && folders && !folders.length)
