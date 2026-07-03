@@ -10,31 +10,34 @@ interface WithBottomNavProps {
 
 export default function WithBottomNav({ children }: WithBottomNavProps) {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100dvh",
-        maxHeight: "100dvh",
-        overflow: "hidden",
-      }}
-    >
+    <>
       <Box
         sx={{
-          flex: 1,
-          overflow: "auto",
           display: "flex",
           flexDirection: "column",
-          WebkitOverflowScrolling: "touch",
-          pb: {
-            xs: BOTTOM_NAV_HEIGHT,
-            md: 7,
-          },
+          minHeight: "100dvh",
+          maxHeight: "100dvh",
+          overflow: "hidden",
         }}
       >
-        {children}
+        <Box
+          component="main"
+          sx={{
+            flex: 1,
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+            WebkitOverflowScrolling: "touch",
+            pb: {
+              xs: BOTTOM_NAV_HEIGHT,
+              md: 7,
+            },
+          }}
+        >
+          {children}
+        </Box>
       </Box>
       <BottomNav />
-    </Box>
+    </>
   );
 }
