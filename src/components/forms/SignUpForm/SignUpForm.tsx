@@ -8,8 +8,8 @@ import {
   useTheme,
 } from "@mui/material";
 import { SignUpFormProps } from "./SignUpForm.types";
-import Link from "next/link";
-import { ROUTES } from "@/routes/next";
+import { Link } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useState } from "react";
@@ -145,7 +145,7 @@ const SignUpForm = ({
 
         <Typography align="center">
           <Link
-            href={ROUTES.LOGIN}
+            to={ROUTES.LOGIN}
             style={{ textDecoration: "none", color: "inherit" }}
           >
             Already have an account?

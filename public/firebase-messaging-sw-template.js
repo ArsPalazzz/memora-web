@@ -24,7 +24,7 @@ messaging.onBackgroundMessage((payload) => {
   const notificationOptions = {
     body,
     icon: "/icons/logo-192x192.png",
-    badge: "/badge-72.png",
+    badge: "/icons/logo-192x192.png",
     data: payload.data || {},
   };
 
@@ -55,14 +55,4 @@ self.addEventListener("notificationclick", (event) => {
   } else {
     event.waitUntil(clients.openWindow("/"));
   }
-});
-
-self.addEventListener("install", (event) => {
-  console.log("🔧 Service Worker installing...");
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  console.log("🚀 Service Worker activating...");
-  event.waitUntil(clients.claim());
 });

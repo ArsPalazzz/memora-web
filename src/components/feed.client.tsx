@@ -1,7 +1,6 @@
-"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Card,
@@ -49,7 +48,7 @@ import {
 } from "@/services/desk/desk";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import Header from "./layout/Header";
-import { ROUTES } from "@/routes/next";
+import { ROUTES } from "@/routes/paths";
 import { useSwipeable } from "react-swipeable";
 import CardExamplesModal from "./modals/CardExamples/CardExamples.modal";
 import { useAuthContext } from "@/context/AuthContext";
@@ -88,7 +87,7 @@ const GRADE_OPTIONS = [
 ] as const;
 
 export default function FeedPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { call } = useProtectedRequest();
   const { accessToken } = useAuthContext();
 
@@ -418,7 +417,7 @@ export default function FeedPage() {
 
   return (
     <>
-      <Header title="Feed" onBack={() => router.push(ROUTES.HOME)} />
+      <Header title="Feed" onBack={() => navigate(ROUTES.HOME)} />
       <Box
         ref={containerRef}
         sx={{

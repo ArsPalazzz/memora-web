@@ -1,40 +1,24 @@
-"use client";
-
+import { useEffect, useState } from "react";
 import { useFCM } from "@/hooks/useFCM";
 
-import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+function FCMInner() {
+  useFCM();
+  return null;
+}
 
 export function FCMInitializer() {
-  const [isMounted, setIsMounted] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    if (typeof navigator === "undefined") return;
 
-    // Проверяем iOS
-    if (typeof navigator !== "undefined") {
-      const userAgent = navigator.userAgent.toLowerCase();
-      setIsIOS(/iphone|ipad|ipod/.test(userAgent));
-    }
+    const userAgent = navigator.userAgent.toLowerCase();
+    setEnabled(!/iphone|ipad|ipod/.test(userAgent));
   }, []);
 
-  useEffect(() => {
-    if (!isMounted || isIOS) return;
+  if (!enabled) {
+    return null;
+  }
 
-    // Динамически импортируем хук только на клиенте
-    const initFCM = async () => {
-      try {
-        const { useFCM } = await import("@/hooks/useFCM");
-        // Просто импортируем, хук сам отработает
-      } catch (error) {
-        console.error("FCM initialization error:", error);
-      }
-    };
-
-    initFCM();
-  }, [isMounted, isIOS]);
-
-  // На сервере и iOS ничего не рендерим
-  return null;
+  return <FCMInner />;
 }

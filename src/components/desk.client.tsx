@@ -1,7 +1,6 @@
-"use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/auth";
 import { Loader } from "./ui/Loader";
 import { getDeskPlaceholder } from "@/utils/desk-placeholder";
@@ -57,7 +56,7 @@ import {
   updateDeskSchema,
   UpdateDeskValues,
 } from "@/schemas/updateDesk.schema";
-import { ROUTES } from "@/routes/next";
+import { ROUTES } from "@/routes/paths";
 import {
   updateCardSchema,
   UpdateCardValues,
@@ -112,7 +111,7 @@ export default function DeskClient() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const {
     handleSubmit: handleSubmitCreateCard,
@@ -288,7 +287,7 @@ export default function DeskClient() {
     onSuccess: () => {
       setUpdateDeskModal(false);
 
-      router.replace(ROUTES.HOME);
+      navigate(ROUTES.HOME, { replace: true });
 
       notifySuccess(`Deck archived successfully`);
 
@@ -382,7 +381,7 @@ export default function DeskClient() {
         >
           <Header
             title="Decks"
-            onBack={router.back}
+            onBack={() => navigate(-1)}
             RightButton={
               <>
                 <IconButton onClick={(e) => handleMenuOpen(e)}>
@@ -510,7 +509,7 @@ export default function DeskClient() {
                         <KeyboardArrowRightIcon
                           fontSize="large"
                           sx={{ cursor: "pointer" }}
-                          onClick={() => router.push(`${desk.sub}/cards`)}
+                          onClick={() => navigate(`/desk/${sub}/cards`)}
                         />
                       )}
                     </Grid>
@@ -692,7 +691,7 @@ export default function DeskClient() {
                             }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              router.push(`${desk.sub}/cards`);
+                              navigate(`/desk/${sub}/cards`);
                             }}
                           >
                             <IconButton size="large">
@@ -798,7 +797,7 @@ export default function DeskClient() {
                   if (!desk?.cards.length) return;
 
                   setIsNavigating(true);
-                  router.push(`/desk/${sub}/play`);
+                  navigate(`/desk/${sub}/play`);
                 }}
               >
                 {isNavigating ? (

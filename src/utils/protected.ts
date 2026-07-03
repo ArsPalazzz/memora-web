@@ -1,11 +1,11 @@
 import { refreshRequest } from "@/services/auth/auth";
 import { useAuthContext } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
-import { ROUTES } from "@/routes/next";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 
 export function useProtectedRequest() {
   const { setAccessToken, accessToken } = useAuthContext();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const call = async <T>(
     requestFn: (token: string) => Promise<T>,
@@ -18,7 +18,7 @@ export function useProtectedRequest() {
         return await requestFn(newToken);
       } catch (error) {
         setAccessToken(null);
-        router.replace(ROUTES.LOGIN);
+        navigate(ROUTES.LOGIN, { replace: true });
         return Promise.reject(error);
       }
     }
@@ -41,14 +41,14 @@ export function useProtectedRequest() {
           return await requestFn(newToken);
         } catch {
           setAccessToken(null);
-          router.replace(ROUTES.LOGIN);
+          navigate(ROUTES.LOGIN, { replace: true });
           return Promise.resolve([] as unknown as T);
         }
       }
 
       if (isExpired) {
         setAccessToken(null);
-        router.replace(ROUTES.LOGIN);
+        navigate(ROUTES.LOGIN, { replace: true });
         return Promise.resolve([] as unknown as T);
       }
 

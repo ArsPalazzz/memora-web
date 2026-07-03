@@ -1,11 +1,10 @@
-"use client";
 
 import { Box, Typography, Paper, useTheme, alpha } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { ROUTES } from "@/routes/next";
+import { ROUTES } from "@/routes/paths";
 import { SignUpFormValues, signUpSchema } from "@/schemas/signup.schema";
 import SignUpForm from "@/components/forms/SignUpForm/SignUpForm";
 import { signUpRequest } from "@/services/user/user";
@@ -15,7 +14,7 @@ import Particles from "@/components/ui/Particles";
 import { useNotification } from "@/context/NotificationContext";
 
 export default function SignUpClient() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { call } = useProtectedRequest();
   const theme = useTheme();
   const { notifySuccess, notifyError } = useNotification();
@@ -36,7 +35,7 @@ export default function SignUpClient() {
     },
     onSuccess: () => {
       notifySuccess("Account created successfully");
-      router.push(ROUTES.LOGIN);
+      navigate(ROUTES.LOGIN);
     },
     onError: (err) => {
       console.error(err);

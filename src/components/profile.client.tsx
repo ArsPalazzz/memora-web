@@ -1,4 +1,3 @@
-"use client";
 
 import {
   Typography,
@@ -31,8 +30,8 @@ import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader, Loader } from "@/components/ui/Loader";
 import { getMyProfileRequest } from "@/services/user/user";
 import { logoutRequest } from "@/services/auth/auth";
-import { ROUTES } from "@/routes/next";
-import { useRouter } from "next/navigation";
+import { ROUTES } from "@/routes/paths";
+import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/context/AuthContext";
 import Header from "@/components/layout/Header";
 import { useFCM } from "@/hooks/useFCM";
@@ -54,7 +53,7 @@ import ReviewSettingsCardsPerSessionModal from "./modals/ReviewSettings/ReviewSe
 import { useNotification } from "@/context/NotificationContext";
 
 export default function ProfileClient() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { authenticated } = useAuth();
   const { setAccessToken, accessToken } = useAuthContext();
   const { call } = useProtectedRequest();
@@ -85,7 +84,7 @@ export default function ProfileClient() {
     mutationFn: () => call((token) => logoutRequest(token)),
     onSuccess: () => {
       setAccessToken(null);
-      router.push(ROUTES.LOGIN);
+      navigate(ROUTES.LOGIN);
     },
     onError: (err) => {
       console.warn(err);
@@ -691,7 +690,7 @@ export default function ProfileClient() {
                   }}
                 >
                   <ListItemButton
-                    onClick={() => router.push("/desk/archived")}
+                    onClick={() => navigate("/desk/archived")}
                     sx={{
                       pl: 0,
                       "&:hover": { bgcolor: "inherit" },

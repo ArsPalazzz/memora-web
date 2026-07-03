@@ -1,4 +1,3 @@
-"use client";
 
 import { SnackbarProvider } from "notistack";
 

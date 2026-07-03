@@ -1,7 +1,6 @@
-"use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Card,
@@ -22,6 +21,7 @@ import { NextCardResponse } from "@/services/games/games.types";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { gradeCardRequest, getNextCardRequest } from "@/services/games/games";
 import { USER_DAILY } from "@/routes/react-query";
+import { FINISH_GAME_API } from "@/routes/api";
 
 type AnswerResult = {
   isCorrect: boolean;
@@ -49,7 +49,7 @@ export default function ReviewPlayClient() {
   const params = useParams() as { id: string };
   const sessionId = params.id;
 
-  const router = useRouter();
+  const navigate = useNavigate();
   const theme = useTheme();
   const { call } = useProtectedRequest();
 
@@ -67,14 +67,7 @@ export default function ReviewPlayClient() {
   const nextCardMutation = useNextCard();
   const answerMutation = useAnswerCard();
 
-  useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-
-    loadNextCard();
-  }, [sessionId]);
-
-  const loadNextCard = async () => {
+  async function loadNextCard() {
     setCardLoading(true);
     try {
       const card = await call((token) => getNextCardRequest(sessionId, token));
@@ -84,7 +77,14 @@ export default function ReviewPlayClient() {
     } finally {
       setCardLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+
+    loadNextCard();
+  }, [sessionId]);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -137,7 +137,7 @@ export default function ReviewPlayClient() {
     if (!sessionId) return;
 
     if (result?.finished) {
-      router.push(`/home`);
+      navigate("/home");
       return;
     }
 
@@ -165,13 +165,14 @@ export default function ReviewPlayClient() {
 
       queryClient.invalidateQueries({ queryKey: [USER_DAILY] });
 
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/games/finish`, {
+      fetch(`/api${FINISH_GAME_API}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ sessionId }),
+        credentials: "include",
         keepalive: true,
       });
     };

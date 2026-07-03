@@ -1,4 +1,3 @@
-"use client";
 
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { Box, Typography, Stack, IconButton } from "@mui/material";

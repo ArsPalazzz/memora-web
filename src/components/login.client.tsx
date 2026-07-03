@@ -1,7 +1,6 @@
-"use client";
 
 import { Box, Typography, Paper, useTheme, alpha } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -9,14 +8,14 @@ import { useMutation } from "@tanstack/react-query";
 import { loginRequest } from "@/services/auth/auth";
 import { LoginFormValues, loginSchema } from "@/schemas/login.schema";
 import LoginForm from "@/components/forms/LoginForm/Login.form";
-import { ROUTES } from "@/routes/next";
+import { ROUTES } from "@/routes/paths";
 import { useProtectedRequest } from "@/utils/protected";
 import { notifyError } from "@/utils/notification";
 import { motion } from "framer-motion";
 import Particles from "@/components/ui/Particles";
 
 export default function LoginClient() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { setAccessToken } = useAuthContext();
   const { call } = useProtectedRequest();
   const theme = useTheme();
@@ -36,7 +35,7 @@ export default function LoginClient() {
     },
     onSuccess: (data) => {
       setAccessToken(data.accessToken);
-      router.push(ROUTES.HOME);
+      navigate(ROUTES.HOME);
     },
     onError: (err) => {
       console.warn(err);

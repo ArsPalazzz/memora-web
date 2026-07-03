@@ -28,3 +28,6 @@ export const RESTORE_DESK_API = (sub: string) => `/desks/${sub}/restore`;
 export const UPDATE_DESK_SETTINGS_API = (sub: string) =>
   `/desks/${sub}/settings`;
 export const UPDATE_REVIEW_SETTINGS_API = "/review/settings";
+
+// GAMES
+export const FINISH_GAME_API = "/games/finish";

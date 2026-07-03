@@ -1,4 +1,3 @@
-"use client";
 
 import { Typography, Box, Grid } from "@mui/material";
 import { useAuth } from "../utils/auth";
@@ -12,10 +11,10 @@ import { ARCHIVED_DESKS, USER_DESKS } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import WithBottomNav from "./layout/WithBottomNav";
 import { motion } from "framer-motion";
-import { ROUTES } from "@/routes/next";
+import { ROUTES } from "@/routes/paths";
 import { ArchivedDeskCard } from "./ui/ArchivedDeskCard";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import { useNotification } from "@/context/NotificationContext";
@@ -25,7 +24,7 @@ export default function ArchivedDesksClient() {
   const { accessToken } = useAuthContext();
   const queryClient = useQueryClient();
   const { call } = useProtectedRequest();
-  const router = useRouter();
+  const navigate = useNavigate();
   const { notifySuccess, notifyError } = useNotification();
 
   const { data: desks, isLoading: isDesksLoading } = useQuery({
@@ -62,7 +61,7 @@ export default function ArchivedDesksClient() {
       <Box sx={{ position: "relative" }}>
         <Header
           title="Archived Decks"
-          onBack={() => router.push(ROUTES.PROFILE)}
+          onBack={() => navigate(ROUTES.PROFILE)}
         />
 
         <Box sx={{ px: 2, pt: 2 }}>

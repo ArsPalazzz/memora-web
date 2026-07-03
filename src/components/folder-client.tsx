@@ -1,7 +1,6 @@
-"use client";
 
 import { Typography, Box, Grid, IconButton, Button } from "@mui/material";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import AddIcon from "@mui/icons-material/Add";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
@@ -42,7 +41,7 @@ import { useNotification } from "@/context/NotificationContext";
 export default function FolderClient() {
   const params = useParams() as { id: string };
   const folderSub = params.id;
-  const router = useRouter();
+  const navigate = useNavigate();
   const { accessToken } = useAuthContext();
   const queryClient = useQueryClient();
   const { call } = useProtectedRequest();
@@ -213,7 +212,7 @@ export default function FolderClient() {
         <Header
           title={folderInfo?.title || "Folder"}
           RightButton={<RightButtons />}
-          onBack={() => router.back()}
+          onBack={() => navigate(-1)}
         />
 
         <Box
@@ -271,7 +270,7 @@ export default function FolderClient() {
                       {item.type === "folder" ? (
                         <FolderCard
                           folder={item}
-                          onClick={() => router.push(`/folder/${item.sub}`)}
+                          onClick={() => navigate(`/folder/${item.sub}`)}
                         />
                       ) : (
                         <DeskCard
@@ -289,7 +288,7 @@ export default function FolderClient() {
                               (item.masteredCards || 0) +
                               (item.newCards || 0)
                           )}
-                          onClick={() => router.push(`/desk/${item.sub}`)}
+                          onClick={() => navigate(`/desk/${item.sub}`)}
                         />
                       )}
                     </motion.div>

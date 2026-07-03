@@ -1,16 +1,16 @@
-"use client";
 
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
-import { useRouter, usePathname } from "next/navigation";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { ROUTES } from "@/routes/next";
+import { ROUTES } from "@/routes/paths";
 import ExploreIcon from "@mui/icons-material/Explore";
 
 export default function BottomNav() {
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const pathname = location.pathname;
   const [value, setValue] = useState(pathname || ROUTES.HOME);
 
   useEffect(() => {
@@ -19,11 +19,11 @@ export default function BottomNav() {
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
-    router.push(newValue);
+    navigate(newValue);
   };
 
   const handleFeedClick = () => {
-    router.push(ROUTES.FEED);
+    navigate(ROUTES.FEED);
   };
 
   return (

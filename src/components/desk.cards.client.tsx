@@ -1,7 +1,6 @@
-"use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/auth";
 import { FullPageLoader, Loader } from "./ui/Loader";
 import { Box, Card, IconButton, Typography } from "@mui/material";
@@ -47,7 +46,7 @@ export default function DeskCardsClient() {
 
   const [updateCardModalSub, setUpdateCardModalSub] = useState("");
 
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const {
     handleSubmit: handleSubmitUpdateCard,
@@ -136,7 +135,7 @@ export default function DeskCardsClient() {
             position: "relative",
           }}
         >
-          <Header title="Deck Cards" onBack={() => router.back()} />
+          <Header title="Deck Cards" onBack={() => navigate(-1)} />
           <Box
             sx={{
               flex: 1,

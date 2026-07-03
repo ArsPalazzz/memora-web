@@ -1,7 +1,6 @@
-"use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Card,
@@ -25,6 +24,7 @@ import {
   startDeskSessionRequest,
 } from "@/services/games/games";
 import { USER_DAILY } from "@/routes/react-query";
+import { FINISH_GAME_API } from "@/routes/api";
 import { FullPageLoader } from "./ui/Loader";
 
 type AnswerResult = {
@@ -53,7 +53,7 @@ export default function PlayDeskPage() {
   const params = useParams() as { id: string };
   const deskSub = params.id;
 
-  const router = useRouter();
+  const navigate = useNavigate();
   const theme = useTheme();
   const { call } = useProtectedRequest();
 
@@ -148,7 +148,7 @@ export default function PlayDeskPage() {
       window.history.replaceState(currentState, "", `/desk/${deskSub}`);
 
       setTimeout(() => {
-        router.replace(`/desk/${deskSub}`);
+        navigate(`/desk/${deskSub}`, { replace: true });
       }, 0);
 
       return;
@@ -178,13 +178,14 @@ export default function PlayDeskPage() {
 
       queryClient.invalidateQueries({ queryKey: [USER_DAILY] });
 
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/games/finish`, {
+      fetch(`/api${FINISH_GAME_API}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ sessionId }),
+        credentials: "include",
         keepalive: true,
       });
     };

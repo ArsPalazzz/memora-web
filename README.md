@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Memora Web
 
-## Getting Started
+Spaced-repetition flashcard app. **React 19 + Vite 8 + React Router 7 + TypeScript + MUI.**
 
-First, run the development server:
+Migrated from Next.js 16 App Router. Backend: [memora-api](../memora-api) (Express, port `3001`).
+
+## Requirements
+
+- Node.js 20+
+- Running `memora-api` on `http://localhost:3001`
+
+## Quick start
 
 ```bash
+cp .env.example .env
+# Fill in VITE_FIREBASE_* if you need push notifications
+
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Generate Firebase SW + Vite dev server (`:3000`, proxies `/api` → API) |
+| `npm run build` | Typecheck + production build to `dist/` (includes PWA service worker) |
+| `npm run preview` | Serve `dist/` locally with API proxy (prod-like) |
+| `npm run lint` | ESLint (TypeScript + React Hooks) |
 
-## Learn More
+## Environment variables
 
-To learn more about Next.js, take a look at the following resources:
+Copy `.env.example` → `.env`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Purpose |
+|----------|---------|
+| `VITE_API_URL` | Backend URL for Vite dev/preview proxy (`/api/*` → this host) |
+| `VITE_FIREBASE_*` | Firebase client config + FCM (see `.env.example`) |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Client API calls use same-origin `/api` (axios `baseURL: "/api"`, `withCredentials: true`). Auth refresh token is an httpOnly cookie.
 
-## Deploy on Vercel
+## Production deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Vercel (recommended)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The repo includes `vercel.json` + `middleware.ts` (Edge proxy `/api` → backend).
+
+1. **Import** the `memora-web` repo in [Vercel](https://vercel.com) (or reconnect existing project).
+2. **Project Settings → General**
+   - Framework Preset: **Vite** (auto from `vercel.json`)
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+   - Root Directory: `.` (repo root is `memora-web`)
+3. **Project Settings → Environment Variables** (Production + Preview):
+
+   | Variable | Example | Notes |
+   |----------|---------|-------|
+   | `VITE_API_URL` | `https://your-api.up.railway.app` | Edge proxy target; was `NEXT_PUBLIC_API_URL` on Next |
+   | `VITE_FIREBASE_*` | see `.env.example` | Build + `generate-sw.js` |
+
+4. **Redeploy** after changing env vars.
+
+Auth cookies work because the browser calls same-origin `/api`; middleware forwards to the API (like old `next.config.ts` rewrites). **No CORS changes needed** for normal app traffic.
+
+If you ever call the API **directly** from the browser (without `/api` proxy), set `CORS_URL` on memora-api to your exact Vercel URL and keep cookies `Secure` + `SameSite=None`.
+
+### Self-hosted (nginx)
+
+1. **Build**
+
+   ```bash
+   npm run build
+   ```
+
+2. **Serve static files** from `dist/` (nginx example in `deploy/nginx.conf`)
+
+3. **Reverse-proxy `/api`** to memora-api on the same origin (required for auth cookies):
+
+   ```
+   https://app.example.com/        → dist/
+   https://app.example.com/api/*   → memora-api:3001/*
+   ```
+
+4. **PWA + push** — see [deploy/PWA.md](deploy/PWA.md)
+
+## Project structure
+
+```
+memora-web/
+├── index.html              # App shell + metadata
+├── vite.config.ts          # Vite, PWA, /api proxy
+├── src/
+│   ├── main.tsx            # Entry
+│   ├── App.tsx             # BrowserRouter
+│   ├── AppProviders.tsx    # Theme, Query, Auth, FCM, …
+│   ├── router.tsx          # React Router routes
+│   ├── sw.ts               # PWA service worker (Workbox + FCM)
+│   ├── components/         # UI pages & widgets
+│   ├── context/            # Auth, Theme, Notifications
+│   ├── hooks/              # useFCM, useFolderSort
+│   ├── lib/                # axios, firebase
+│   ├── providers/          # React Query, notistack
+│   ├── routes/             # API paths, ROUTES, query keys
+│   ├── schemas/            # Zod validation
+│   ├── services/           # API clients
+│   └── theme/              # MUI theme
+├── public/                 # Static assets, manifest, FCM SW template
+├── scripts/generate-sw.js  # Builds firebase-messaging-sw.js from .env
+└── deploy/                 # nginx.conf, PWA docs
+```
+
+## vs Next.js (what changed)
+
+| Next.js | Vite |
+|---------|------|
+| App Router `src/app/**/page.tsx` | `src/router.tsx` + `*.client.tsx` |
+| `next/navigation`, `next/link` | `react-router-dom` |
+| `next.config.ts` rewrites | Vite dev proxy + Vercel `middleware.ts` / nginx |
+| `@ducanh2912/next-pwa` | `vite-plugin-pwa` (`injectManifest`) |
+| `NEXT_PUBLIC_*` | `VITE_*` + `import.meta.env` |
+| Server Components / metadata | SPA + `index.html` meta tags |
+| `"use client"` everywhere | Not needed |
+
+Business logic (`components`, `services`, `schemas`, `context`, …) is unchanged.

@@ -1,4 +1,3 @@
-"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { firebaseConfig, vapidKey } from "@/lib/firebase";
@@ -43,10 +42,20 @@ export const useFCM = () => {
 
     const registerSW = async () => {
       try {
-        const reg = await navigator.serviceWorker.register(
-          "/firebase-messaging-sw.js"
-        );
-        console.log("✅ Service Worker registered");
+        if (import.meta.env.DEV) {
+          // Dev: PWA SW disabled — register FCM handlers directly (same as before Next migration)
+          const reg = await navigator.serviceWorker.register(
+            "/firebase-messaging-sw.js",
+            { scope: "/" },
+          );
+          console.log("✅ FCM Service Worker registered (dev)");
+          setSwRegistration(reg);
+          return;
+        }
+
+        // Prod: unified SW (Workbox + FCM via importScripts) registered by vite-plugin-pwa
+        const reg = await navigator.serviceWorker.ready;
+        console.log("✅ PWA Service Worker ready (prod)");
         setSwRegistration(reg);
       } catch (err) {
         console.error("❌ Service Worker registration failed:", err);

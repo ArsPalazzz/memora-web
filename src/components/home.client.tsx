@@ -1,4 +1,3 @@
-"use client";
 
 import { Typography, Box, Grid, IconButton, Button } from "@mui/material";
 import { useAuth } from "../utils/auth";
@@ -32,7 +31,7 @@ import { useProtectedRequest } from "@/utils/protected";
 import { DeskCardSkeleton, Loader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import { v4 as uuidV4 } from "uuid";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import WithBottomNav from "./layout/WithBottomNav";
 import { motion } from "framer-motion";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
@@ -50,7 +49,7 @@ export default function HomeClient() {
   const { accessToken } = useAuthContext();
   const queryClient = useQueryClient();
   const { call } = useProtectedRequest();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const [openDeskModal, setOpenDeskModal] = useState(false);
   const [openFolderModal, setOpenFolderModal] = useState(false);
@@ -59,7 +58,7 @@ export default function HomeClient() {
     setActiveTab(newTab);
   };
 
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const urlTab = searchParams.get("tab");
   const initialTab = urlTab === "folders" ? 1 : 0;
@@ -74,13 +73,14 @@ export default function HomeClient() {
       !currentTabParam ||
       (activeTab === 0 && currentTabParam === "folders")
     ) {
-      return router.replace(`?tab=desks`, { scroll: false });
+      navigate({ pathname: "/home", search: "tab=desks" }, { replace: true });
+      return;
     }
 
     if (activeTab === 1 && currentTabParam === "desks") {
-      return router.replace(`?tab=folders`, { scroll: false });
+      navigate({ pathname: "/home", search: "tab=folders" }, { replace: true });
     }
-  }, [activeTab, router, searchParams]);
+  }, [activeTab, navigate, searchParams]);
 
   const { data: daily } = useQuery({
     queryKey: [USER_DAILY],
@@ -308,7 +308,7 @@ export default function HomeClient() {
                               stats={stats}
                               priorityColor={priorityColor}
                               onPointerDown={() => prefetchDesk(desk.sub)}
-                              onClick={() => router.push(`desk/${desk.sub}`)}
+                              onClick={() => navigate(`/desk/${desk.sub}`)}
                             />
                           </motion.div>
                         </Grid>
@@ -349,7 +349,7 @@ export default function HomeClient() {
                         >
                           <FolderCard
                             folder={folder}
-                            onClick={() => router.push(`/folder/${folder.sub}`)}
+                            onClick={() => navigate(`/folder/${folder.sub}`)}
                           />
                         </motion.div>
                       </Grid>
