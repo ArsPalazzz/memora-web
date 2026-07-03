@@ -62,6 +62,7 @@ import {
   UpdateCardValues,
 } from "@/schemas/updateCard.schema";
 import WithBottomNav from "./layout/WithBottomNav";
+import { BOTTOM_NAV_HEIGHT } from "./layout/bottom-nav.constants";
 import { useNotification } from "@/context/NotificationContext";
 import { DeskStatsSkeleton } from "./ui/DeskStats";
 import NewCardModal from "./modals/NewCard/NewCard.modal";
@@ -75,7 +76,6 @@ const AnkiStyleStats = lazy(() =>
   import("./ui/DeskStats").then((mod) => ({ default: mod.AnkiStyleStats }))
 );
 
-const BOTTOM_NAV_HEIGHT = 36 + 4 * 10;
 const PLAY_BUTTON_HEIGHT = 64;
 
 export default function DeskClient() {
@@ -456,9 +456,7 @@ export default function DeskClient() {
           />
           <Box
             sx={{
-              paddingBottom: `${
-                BOTTOM_NAV_HEIGHT + PLAY_BUTTON_HEIGHT + 16
-              }px`,
+              paddingBottom: `calc(${PLAY_BUTTON_HEIGHT + 16}px + ${BOTTOM_NAV_HEIGHT})`,
               display: !desk && (loading || isDeskLoading) ? "flex" : undefined,
               alignItems: !desk && (loading || isDeskLoading) ? "center" : undefined,
               minHeight: !desk && (loading || isDeskLoading) ? "40vh" : undefined,
@@ -767,7 +765,7 @@ export default function DeskClient() {
             <Box
               sx={{
                 position: "fixed",
-                bottom: `${BOTTOM_NAV_HEIGHT}px`,
+                bottom: BOTTOM_NAV_HEIGHT,
                 left: 0,
                 right: 0,
                 px: 2,

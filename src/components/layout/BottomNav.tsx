@@ -6,6 +6,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ROUTES } from "@/routes/paths";
 import ExploreIcon from "@mui/icons-material/Explore";
+import {
+  BOTTOM_NAV_BAR_HEIGHT,
+  BOTTOM_NAV_HEIGHT,
+} from "./bottom-nav.constants";
+
+export { BOTTOM_NAV_HEIGHT };
 
 export default function BottomNav() {
   const navigate = useNavigate();
@@ -33,12 +39,9 @@ export default function BottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: "calc(56px + 20px + env(safe-area-inset-bottom, 0px))",
         zIndex: 1300,
-        transition: "padding-bottom 0.3s ease",
-        display: "flex",
-        flexDirection: "column",
-        padding: 0,
+        pb: "env(safe-area-inset-bottom, 0px)",
+        backgroundColor: "background.paper",
       }}
       elevation={3}
     >
@@ -46,8 +49,7 @@ export default function BottomNav() {
         value={value}
         onChange={handleChange}
         sx={{
-          height: 56,
-          flexShrink: 0,
+          height: BOTTOM_NAV_BAR_HEIGHT,
           padding: 0,
           backgroundColor: "background.paper",
         }}
@@ -71,13 +73,6 @@ export default function BottomNav() {
           icon={<PersonIcon />}
         />
       </BottomNavigation>
-
-      <div
-        style={{
-          flex: 1,
-          backgroundColor: "inherit",
-        }}
-      />
     </Paper>
   );
 }

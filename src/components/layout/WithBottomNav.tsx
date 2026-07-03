@@ -2,6 +2,7 @@
 import { Box } from "@mui/material";
 import BottomNav from "./BottomNav";
 import { ReactNode } from "react";
+import { BOTTOM_NAV_HEIGHT } from "./bottom-nav.constants";
 
 interface WithBottomNavProps {
   children: ReactNode;
@@ -24,7 +25,7 @@ export default function WithBottomNav({ children }: WithBottomNavProps) {
           flexDirection: "column",
           WebkitOverflowScrolling: "touch",
           pb: {
-            xs: "56px",
+            xs: BOTTOM_NAV_HEIGHT,
             md: 7,
           },
         }}
