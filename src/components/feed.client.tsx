@@ -108,6 +108,9 @@ const GRADE_OPTIONS = [
   { quality: 4, label: "Easy" },
 ] as const;
 
+/** Side action buttons (64px) + right offset (24px) */
+const FEED_ACTION_COLUMN_WIDTH = 88;
+
 export default function FeedPage() {
   const { call } = useProtectedRequest();
 
@@ -776,15 +779,25 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                       flex: 1,
                       display: "flex",
                       flexDirection: "column",
-                      alignItems: "center",
+                      alignItems: "stretch",
                       justifyContent: "center",
-                      textAlign: "center",
                       py: 4,
                       pt: 8,
-                      px: isCurrent ? { xs: 2, sm: 3 } : 3,
-                      pr: isCurrent ? { xs: 11, sm: 12 } : undefined,
+                      px: { xs: 2, sm: 3 },
                     }}
                   >
+                    <Box
+                      sx={{
+                        width: isCurrent
+                          ? `calc(100% - ${FEED_ACTION_COLUMN_WIDTH}px)`
+                          : "100%",
+                        alignSelf: isCurrent ? "flex-start" : "center",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        textAlign: "center",
+                      }}
+                    >
                     <Typography
                       variant="h3"
                       fontWeight={600}
@@ -794,7 +807,6 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                         pointerEvents: "none",
                         maxWidth: "100%",
                         lineHeight: 1.2,
-                        px: isCurrent ? 1 : 0,
                       }}
                     >
                       {card.text.join(", ")}
@@ -819,7 +831,6 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                           sx={{
                             userSelect: "none",
                             pointerEvents: "none",
-                            px: 1,
                           }}
                         >
                           {showTranslation && !showAnswer
@@ -828,6 +839,7 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                         </Typography>
                       </Collapse>
                     )}
+                    </Box>
                   </CardContent>
                 </Card>
               </Box>
