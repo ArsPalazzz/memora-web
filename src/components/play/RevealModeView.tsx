@@ -89,7 +89,7 @@ export function RevealModeView({
                         text={result.answerVariants}
                         language={answerLanguage}
                         label="Listen to answer"
-                        size="medium"
+                        variant="compact"
                       />
                     </Box>
 

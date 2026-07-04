@@ -771,7 +771,7 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                             }
                             language={card.answerLanguage ?? DEFAULT_BACK_LANGUAGE}
                             label="Listen to answer"
-                            size="medium"
+                            variant="compact"
                           />
                         </Box>
                       </Collapse>

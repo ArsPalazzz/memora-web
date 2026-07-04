@@ -116,6 +116,7 @@ export function WriteModeView({
                           text={result.correctVariants}
                           language={answerLanguage}
                           label="Listen to answer"
+                          variant="compact"
                         />
                       </Box>
                     </Box>

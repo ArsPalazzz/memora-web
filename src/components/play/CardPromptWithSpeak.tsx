@@ -21,14 +21,15 @@ export function CardPromptWithSpeak({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 0.5,
+        gap: 1,
         maxWidth: "100%",
+        flexWrap: "wrap",
       }}
     >
-      <Typography variant={variant} fontWeight={fontWeight}>
+      <Typography variant={variant} fontWeight={fontWeight} sx={{ lineHeight: 1.2 }}>
         {text.join(", ")}
       </Typography>
-      <SpeakButton text={text} language={language} size="medium" />
+      <SpeakButton text={text} language={language} variant="default" />
     </Box>
   );
 }

@@ -61,11 +61,14 @@ function pickVoice(lang: string): SpeechSynthesisVoice | null {
   );
 }
 
-export function speakText(text: string, language: LanguageCode): boolean {
-  if (!isSpeechSupported()) return false;
+export function speakText(
+  text: string,
+  language: LanguageCode
+): SpeechSynthesisUtterance | null {
+  if (!isSpeechSupported()) return null;
 
   const trimmed = text.trim();
-  if (!trimmed) return false;
+  if (!trimmed) return null;
 
   window.speechSynthesis.cancel();
 
@@ -80,7 +83,7 @@ export function speakText(text: string, language: LanguageCode): boolean {
   }
 
   window.speechSynthesis.speak(utterance);
-  return true;
+  return utterance;
 }
 
 export function stopSpeech(): void {
