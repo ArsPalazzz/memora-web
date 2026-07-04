@@ -39,6 +39,7 @@ import {
   UPDATE_DESK_SETTINGS_API,
   UPDATE_FEED_SETTINGS_API,
   UPDATE_REVIEW_SETTINGS_API,
+  REGENERATE_CARD_EXAMPLES_API,
 } from "@/routes/api";
 
 export async function fetchMyDesksRequest(
@@ -316,6 +317,17 @@ export async function updateCardRequest(
 ): Promise<{ updated: boolean }> {
   return handleApiRequest(
     api.put(UPDATE_CARD_API(payload.card_sub), payload.payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function regenerateCardExamplesRequest(
+  cardSub: string,
+  token: string
+): Promise<{ examples: string[] }> {
+  return handleApiRequest(
+    api.post(REGENERATE_CARD_EXAMPLES_API(cardSub), null, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

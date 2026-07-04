@@ -11,6 +11,7 @@ import { useProtectedRequest } from "@/utils/protected";
 import {
   deleteCardRequest,
   fetchDeskCardsRequest,
+  regenerateCardExamplesRequest,
   updateCardRequest,
 } from "@/services/desk/desk";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -45,6 +46,7 @@ export default function DeskCardsClient() {
   });
 
   const [updateCardModalSub, setUpdateCardModalSub] = useState("");
+  const [editCardExamples, setEditCardExamples] = useState<string[]>([]);
 
   const navigate = useNavigate();
 
@@ -113,6 +115,25 @@ export default function DeskCardsClient() {
     },
   });
 
+  const regenerateExamplesMutation = useMutation({
+    mutationFn: (payload: { cardSub: string; token: string }) =>
+      call(() => regenerateCardExamplesRequest(payload.cardSub, payload.token)),
+    onSuccess: (data) => {
+      setEditCardExamples(data.examples);
+      notifySuccess(
+        data.examples.length > 0
+          ? `Generated ${data.examples.length} examples`
+          : "No examples could be generated"
+      );
+      queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
+      queryClient.invalidateQueries({ queryKey: [USER_CARDS, sub] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
   useEffect(() => {
     if (cards && updateCardModalSub) {
       const el = cards.filter((item) => item.sub === updateCardModalSub)[0];
@@ -121,6 +142,7 @@ export default function DeskCardsClient() {
         front: el.frontVariants.map((item) => ({ value: item })),
         back: el.backVariants.map((item) => ({ value: item })),
       });
+      setEditCardExamples(el.examples ?? []);
     }
   }, [cards, updateCardModalSub, resetUpdateCard]);
 
@@ -317,9 +339,14 @@ export default function DeskCardsClient() {
           register={registerUpdateCard}
           onSubmit={handleSubmitUpdateCard(onUpdateCardSubmit)}
           control={controlUpdateCard}
-          examples={
-            cards?.find((c) => c.sub === updateCardModalSub)?.examples || []
+          examples={editCardExamples}
+          onRegenerateExamples={() =>
+            regenerateExamplesMutation.mutate({
+              cardSub: updateCardModalSub,
+              token: accessToken!,
+            })
           }
+          isRegeneratingExamples={regenerateExamplesMutation.isPending}
           onDelete={() => onDeleteCardSubmit(updateCardModalSub)}
         />
       )}

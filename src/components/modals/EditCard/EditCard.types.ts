@@ -10,4 +10,6 @@ export interface EditCardModalProps {
   control: Control<UpdateCardValues>;
   examples: string[];
   onDelete: () => void;
+  onRegenerateExamples?: () => void;
+  isRegeneratingExamples?: boolean;
 }

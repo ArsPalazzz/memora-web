@@ -62,6 +62,7 @@ import {
 import {
   addCardToDeskFeedRequest,
   fetchMyDesksShortRequest,
+  regenerateCardExamplesRequest,
 } from "@/services/desk/desk";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import Header from "./layout/Header";
@@ -458,6 +459,33 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
       setAddToDeskDialog(false);
       setSelectedDesk("");
       notifySuccess(`Card added successfully`);
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const canRegenerateExamples =
+    !!currentCard &&
+    !!myDesks?.some((desk) => desk.sub === currentCard.deskSub);
+
+  const regenerateExamplesMutation = useMutation({
+    mutationFn: (payload: { cardSub: string; token: string }) =>
+      call(() => regenerateCardExamplesRequest(payload.cardSub, payload.token)),
+    onSuccess: (data, variables) => {
+      setCards((prev) =>
+        prev.map((card) =>
+          card.sub === variables.cardSub
+            ? { ...card, examples: data.examples }
+            : card
+        )
+      );
+      notifySuccess(
+        data.examples.length > 0
+          ? `Generated ${data.examples.length} examples`
+          : "No examples could be generated"
+      );
     },
     onError: (err) => {
       console.warn(err);
@@ -1091,11 +1119,19 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
         </DialogActions>
       </Dialog>
 
-      {showExamples && (
+      {showExamples && currentCard && (
         <CardExamplesModal
           examples={currentCard.examples}
           open={showExamples}
           onClose={() => setShowExamples(false)}
+          canRegenerate={canRegenerateExamples}
+          isRegenerating={regenerateExamplesMutation.isPending}
+          onRegenerate={() =>
+            regenerateExamplesMutation.mutate({
+              cardSub: currentCard.sub,
+              token: accessToken!,
+            })
+          }
         />
       )}
     </Box>

@@ -8,4 +8,6 @@ export interface EditCardFormProps {
   onClose: () => void;
   control: Control<UpdateCardValues>;
   examples: string[];
+  onRegenerateExamples?: () => void;
+  isRegeneratingExamples?: boolean;
 }

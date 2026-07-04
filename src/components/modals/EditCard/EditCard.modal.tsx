@@ -22,6 +22,8 @@ export default function EditCardModal(props: EditCardModalProps) {
     control,
     examples,
     onDelete,
+    onRegenerateExamples,
+    isRegeneratingExamples,
   } = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -67,6 +69,8 @@ export default function EditCardModal(props: EditCardModalProps) {
           register={register}
           control={control}
           examples={examples}
+          onRegenerateExamples={onRegenerateExamples}
+          isRegeneratingExamples={isRegeneratingExamples}
         />
       </DialogContent>
 

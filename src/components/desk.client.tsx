@@ -32,6 +32,7 @@ import {
   deleteCardRequest,
   fetchCardRequest,
   fetchDeskRequest,
+  regenerateCardExamplesRequest,
   updateCardRequest,
   updateDeskRequest,
   updateDeskSettingsRequest,
@@ -115,6 +116,7 @@ export default function DeskClient() {
   const [createCardModal, setCreateCardModal] = useState(false);
   const [updateDeskModal, setUpdateDeskModal] = useState(false);
   const [updateCardModalSub, setUpdateCardModalSub] = useState("");
+  const [editCardExamples, setEditCardExamples] = useState<string[]>([]);
   const [deleteDeskModal, setDeleteDeskModal] = useState(false);
   const [openSheet, setOpenSheet] = useState<null | string>(null);
 
@@ -326,6 +328,25 @@ export default function DeskClient() {
     },
   });
 
+  const regenerateExamplesMutation = useMutation({
+    mutationFn: (payload: { cardSub: string; token: string }) =>
+      call(() => regenerateCardExamplesRequest(payload.cardSub, payload.token)),
+    onSuccess: (data) => {
+      setEditCardExamples(data.examples);
+      notifySuccess(
+        data.examples.length > 0
+          ? `Generated ${data.examples.length} examples`
+          : "No examples could be generated"
+      );
+      queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
+      queryClient.invalidateQueries({ queryKey: [USER_CARDS, sub] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
   const cardOrientation =
     desk &&
     desk.settings &&
@@ -402,6 +423,7 @@ export default function DeskClient() {
         front: el.front_variants.map((item) => ({ value: item })),
         back: el.back_variants.map((item) => ({ value: item })),
       });
+      setEditCardExamples(el.examples ?? []);
     }
   }, [desk, updateCardModalSub, resetUpdateCard]);
 
@@ -874,10 +896,14 @@ export default function DeskClient() {
           register={registerUpdateCard}
           onSubmit={handleSubmitUpdateCard(onUpdateCardSubmit)}
           control={controlUpdateCard}
-          examples={
-            desk.cards?.find((c) => c.sub === updateCardModalSub)?.examples ||
-            []
+          examples={editCardExamples}
+          onRegenerateExamples={() =>
+            regenerateExamplesMutation.mutate({
+              cardSub: updateCardModalSub,
+              token: accessToken!,
+            })
           }
+          isRegeneratingExamples={regenerateExamplesMutation.isPending}
           onDelete={() => onDeleteCardSubmit(updateCardModalSub)}
         />
       )}

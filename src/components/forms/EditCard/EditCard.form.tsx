@@ -1,4 +1,5 @@
-import { alpha, Box, Chip, TextField, useTheme } from "@mui/material";
+import { alpha, Box, Button, Chip, CircularProgress, TextField, Typography, useTheme } from "@mui/material";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { EditCardFormProps } from "./EditCard.types";
 import { useFieldArray } from "react-hook-form";
 import { useState, useEffect } from "react";
@@ -8,6 +9,8 @@ const EditCard = ({
   control,
   errors,
   examples,
+  onRegenerateExamples,
+  isRegeneratingExamples = false,
 }: EditCardFormProps) => {
   const {
     fields: frontFields,
@@ -111,21 +114,38 @@ const EditCard = ({
         </Box>
       </Box>
 
-      {examples && examples.length > 0 && (
-        <Box sx={{ mb: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                mr: 1,
-              }}
-            />
-            <Box sx={{ fontWeight: 500, fontSize: "0.9rem" }}>
-              Examples ({examples.length})
-            </Box>
-          </Box>
+      <Box sx={{ mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1,
+          }}
+        >
+          <Typography sx={{ fontWeight: 500, fontSize: "0.9rem" }}>
+            Examples ({examples.length})
+          </Typography>
+          {onRegenerateExamples && (
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={isRegeneratingExamples}
+              onClick={onRegenerateExamples}
+              startIcon={
+                isRegeneratingExamples ? (
+                  <CircularProgress size={14} />
+                ) : (
+                  <AutorenewIcon fontSize="small" />
+                )
+              }
+            >
+              {isRegeneratingExamples ? "Generating..." : "Regenerate"}
+            </Button>
+          )}
+        </Box>
+
+        {examples.length > 0 ? (
           <Box
             sx={{
               maxHeight: 150,
@@ -143,8 +163,12 @@ const EditCard = ({
               </Box>
             ))}
           </Box>
-        </Box>
-      )}
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No examples yet.
+          </Typography>
+        )}
+      </Box>
     </Box>
   );
 };
