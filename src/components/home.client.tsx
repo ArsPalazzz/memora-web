@@ -1,5 +1,5 @@
 
-import { Typography, Box, Grid, IconButton, Button } from "@mui/material";
+import { Typography, Box, Grid, IconButton, Button, Card, CardContent } from "@mui/material";
 import { useAuth } from "../utils/auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -13,6 +13,7 @@ import {
   moveFolderToParentRequest,
 } from "../services/desk/desk";
 import AddIcon from "@mui/icons-material/Add";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import NewDeskModal from "@/components/modals/NewDesk/NewDesk.modal";
@@ -319,6 +320,30 @@ export default function HomeClient() {
             )}
 
             <TabsSwitcher activeTab={activeTab} onChange={handleTabChange} />
+
+            <Card
+              variant="outlined"
+              sx={{ mt: 2, mb: 1, cursor: "pointer" }}
+              onClick={() => navigate("/import/anki")}
+            >
+              <CardContent
+                sx={{
+                  py: 1.5,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  "&:last-child": { pb: 1.5 },
+                }}
+              >
+                <UploadFileIcon color="primary" />
+                <Box>
+                  <Typography fontWeight={600}>Import from Anki</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Upload .zip exports from Anki Desktop
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
           </Box>
 
           <Box

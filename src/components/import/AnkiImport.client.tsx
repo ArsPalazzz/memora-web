@@ -5,14 +5,9 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   CircularProgress,
   Divider,
-  FormControl,
-  InputLabel,
   LinearProgress,
-  MenuItem,
-  Select,
   Stack,
   Typography,
 } from "@mui/material";
@@ -22,12 +17,10 @@ import WithBottomNav from "@/components/layout/WithBottomNav";
 import { useNavigate } from "react-router-dom";
 import { parseAnkiZipFiles } from "@/lib/anki/parseAnkiZip";
 import {
-  DeskImportStrategy,
   ImportJobPayload,
   ImportPreviewDeskResult,
   ParsedAnkiDeck,
 } from "@/lib/anki/ankiImport.types";
-import { useAuthContext } from "@/context/AuthContext";
 import { useProtectedRequest } from "@/utils/protected";
 import {
   createAnkiImportJobRequest,
@@ -41,21 +34,27 @@ import { ROOT_FOLDERS, USER_DESKS } from "@/routes/react-query";
 
 type Step = "upload" | "preview" | "importing" | "done";
 
-const STRATEGY_LABELS: Record<DeskImportStrategy, string> = {
-  merge: "Merge",
-  skip: "Skip",
-  replace: "Replace",
-  rename: "Rename",
-};
+const IMPORT_STRATEGY = "merge" as const;
 
 function formatFolderPath(path: string[]) {
   return path.length ? path.join(" › ") : "Home";
 }
 
+function describeDeskAction(desk: ImportPreviewDeskResult) {
+  if (!desk.conflict) {
+    return "New deck";
+  }
+
+  if (desk.estimatedNewCards === 0) {
+    return "Already imported — nothing new";
+  }
+
+  return `Add ${desk.estimatedNewCards} new card${desk.estimatedNewCards === 1 ? "" : "s"}`;
+}
+
 export default function AnkiImportClient() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { accessToken } = useAuthContext();
   const { call } = useProtectedRequest();
   const { notifySuccess, notifyError } = useNotification();
   const queryClient = useQueryClient();
@@ -65,14 +64,17 @@ export default function AnkiImportClient() {
   const [parseProgress, setParseProgress] = useState({ current: 0, total: 0 });
   const [parsedDesks, setParsedDesks] = useState<ParsedAnkiDeck[]>([]);
   const [previewDesks, setPreviewDesks] = useState<ImportPreviewDeskResult[]>([]);
-  const [defaultStrategy, setDefaultStrategy] = useState<DeskImportStrategy>("merge");
-  const [deskStrategies, setDeskStrategies] = useState<Record<string, DeskImportStrategy>>({});
   const [importProgress, setImportProgress] = useState({ progress: 0, total: 0 });
-  const [importSummary, setImportSummary] = useState<string>("");
+  const [importSummary, setImportSummary] = useState("");
 
   const totalCards = useMemo(
     () => parsedDesks.reduce((sum, desk) => sum + desk.cards.length, 0),
     [parsedDesks]
+  );
+
+  const totalNewCards = useMemo(
+    () => previewDesks.reduce((sum, desk) => sum + desk.estimatedNewCards, 0),
+    [previewDesks]
   );
 
   const handleFilesSelected = async (files: FileList | null) => {
@@ -95,11 +97,6 @@ export default function AnkiImportClient() {
 
       const preview = await call((token) => previewAnkiImportRequest(decks, token));
       setPreviewDesks(preview.desks);
-
-      const initialStrategies = Object.fromEntries(
-        preview.desks.map((desk) => [desk.clientId, defaultStrategy])
-      );
-      setDeskStrategies(initialStrategies);
       setStep("preview");
     } catch (error) {
       notifyError(error instanceof Error ? error.message : "Failed to parse Anki export");
@@ -120,13 +117,30 @@ export default function AnkiImportClient() {
 
       if (status.status === "completed" && status.result) {
         const { summary } = status.result;
-        setImportSummary(
-          `Created ${summary.desksCreated}, merged ${summary.desksMerged}, skipped ${summary.desksSkipped}. Added ${summary.cardsAdded} cards, ${summary.examplesAdded} examples.`
-        );
+        const parts: string[] = [];
+
+        if (summary.desksCreated > 0) {
+          parts.push(
+            `${summary.desksCreated} new deck${summary.desksCreated === 1 ? "" : "s"}`
+          );
+        }
+        if (summary.desksMerged > 0) {
+          parts.push(
+            `${summary.desksMerged} existing deck${summary.desksMerged === 1 ? "" : "s"} updated`
+          );
+        }
+        if (summary.cardsAdded > 0) {
+          parts.push(`${summary.cardsAdded} cards added`);
+        }
+        if (summary.cardsSkipped > 0) {
+          parts.push(`${summary.cardsSkipped} duplicates skipped`);
+        }
+
+        setImportSummary(parts.length ? parts.join(" · ") : "Nothing new to import");
         setStep("done");
         queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
         queryClient.invalidateQueries({ queryKey: [ROOT_FOLDERS] });
-        notifySuccess("Anki import completed");
+        notifySuccess("Import finished");
         return;
       }
 
@@ -145,11 +159,11 @@ export default function AnkiImportClient() {
 
     try {
       const payload: ImportJobPayload = {
-        defaultStrategy,
+        defaultStrategy: IMPORT_STRATEGY,
         languageSettings: DEFAULT_DESK_LANGUAGE_SETTINGS,
         desks: parsedDesks.map((desk) => ({
           ...desk,
-          strategy: deskStrategies[desk.clientId] ?? defaultStrategy,
+          strategy: IMPORT_STRATEGY,
         })),
       };
 
@@ -171,12 +185,11 @@ export default function AnkiImportClient() {
           <Card>
             <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Typography variant="h6" fontWeight={600}>
-                Upload Anki exports
+                Import decks from Anki
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Export decks from Anki Desktop as .zip files. We parse the XML inside,
-                map tags like <code>Topics::2026</code> to folders, and import Context /
-                other extra fields as example sentences — Gemini is not used during import.
+                In Anki Desktop, export your deck as a .zip file, then upload it here.
+                You can select several files at once.
               </Typography>
 
               <input
@@ -190,17 +203,24 @@ export default function AnkiImportClient() {
 
               <Button
                 variant="contained"
-                startIcon={isParsing ? <CircularProgress size={18} color="inherit" /> : <UploadFileIcon />}
+                size="large"
+                startIcon={
+                  isParsing ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : (
+                    <UploadFileIcon />
+                  )
+                }
                 disabled={isParsing}
                 onClick={() => fileInputRef.current?.click()}
               >
-                {isParsing ? "Parsing..." : "Select Anki .zip files"}
+                {isParsing ? "Reading files..." : "Choose .zip files"}
               </Button>
 
               {isParsing && (
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Parsing file {parseProgress.current} of {parseProgress.total}
+                    File {parseProgress.current} of {parseProgress.total}
                   </Typography>
                   <LinearProgress />
                 </Box>
@@ -212,90 +232,69 @@ export default function AnkiImportClient() {
         {step === "preview" && (
           <>
             <Card>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
                 <Typography variant="h6" fontWeight={600}>
-                  Preview import
+                  Ready to import
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {previewDesks.length} decks, {totalCards} cards ready to import.
+                  {previewDesks.length} deck{previewDesks.length === 1 ? "" : "s"},{" "}
+                  {totalCards} card{totalCards === 1 ? "" : "s"} total
+                  {totalNewCards < totalCards
+                    ? ` (${totalNewCards} new)`
+                    : ""}
+                  .
                 </Typography>
-
-                <FormControl fullWidth>
-                  <InputLabel>Default conflict strategy</InputLabel>
-                  <Select
-                    label="Default conflict strategy"
-                    value={defaultStrategy}
-                    onChange={(event) =>
-                      setDefaultStrategy(event.target.value as DeskImportStrategy)
-                    }
-                  >
-                    {Object.entries(STRATEGY_LABELS).map(([value, label]) => (
-                      <MenuItem key={value} value={value}>
-                        {label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Typography variant="body2" color="text.secondary">
+                  If a deck already exists, only new cards are added. Duplicates are
+                  skipped automatically.
+                </Typography>
               </CardContent>
             </Card>
 
             {previewDesks.map((desk) => (
-              <Card key={desk.clientId}>
-                <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Card key={desk.clientId} variant="outlined">
+                <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    gap={2}
+                  >
                     <Box>
-                      <Typography fontWeight={700}>{desk.title}</Typography>
+                      <Typography fontWeight={600}>{desk.title}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {formatFolderPath(desk.folderPath)}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {formatFolderPath(desk.folderPath)} · {desk.cardCount} cards ·{" "}
-                        {desk.exampleCount} examples
+                        {desk.cardCount} cards
+                        {desk.exampleCount > 0
+                          ? ` · ${desk.exampleCount} with examples`
+                          : ""}
                       </Typography>
                     </Box>
-                    {desk.conflict && <Chip size="small" color="warning" label="Exists" />}
-                  </Stack>
-
-                  <Typography variant="caption" color="text.secondary">
-                    Fields: front={desk.frontField}, back={desk.backField}
-                    {desk.exampleFields.length
-                      ? `, examples=[${desk.exampleFields.join(", ")}]`
-                      : ""}
-                  </Typography>
-
-                  {desk.conflict && (
-                    <Typography variant="caption" color="text.secondary">
-                      Existing deck at {desk.existingLocationLabel}. Estimated{" "}
-                      {desk.estimatedNewCards} new, {desk.estimatedDuplicateCards} duplicates.
-                    </Typography>
-                  )}
-
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Strategy</InputLabel>
-                    <Select
-                      label="Strategy"
-                      value={deskStrategies[desk.clientId] ?? defaultStrategy}
-                      onChange={(event) =>
-                        setDeskStrategies((prev) => ({
-                          ...prev,
-                          [desk.clientId]: event.target.value as DeskImportStrategy,
-                        }))
-                      }
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ textAlign: "right", flexShrink: 0, maxWidth: "45%" }}
                     >
-                      {Object.entries(STRATEGY_LABELS).map(([value, label]) => (
-                        <MenuItem key={value} value={value}>
-                          {label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                      {describeDeskAction(desk)}
+                    </Typography>
+                  </Stack>
                 </CardContent>
               </Card>
             ))}
 
             <Stack direction="row" spacing={1}>
               <Button variant="outlined" onClick={() => setStep("upload")}>
-                Back
+                Choose other files
               </Button>
-              <Button variant="contained" onClick={() => void handleImport()}>
-                Start import
+              <Button
+                variant="contained"
+                fullWidth
+                disabled={totalNewCards === 0}
+                onClick={() => void handleImport()}
+              >
+                {totalNewCards === 0 ? "Nothing new to import" : "Import"}
               </Button>
             </Stack>
           </>
@@ -308,12 +307,10 @@ export default function AnkiImportClient() {
                 Importing...
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {importProgress.progress} / {importProgress.total} cards processed
+                {importProgress.progress} / {importProgress.total} cards
               </Typography>
               <LinearProgress
-                variant={
-                  importProgress.total > 0 ? "determinate" : "indeterminate"
-                }
+                variant={importProgress.total > 0 ? "determinate" : "indeterminate"}
                 value={
                   importProgress.total > 0
                     ? (importProgress.progress / importProgress.total) * 100
@@ -328,12 +325,12 @@ export default function AnkiImportClient() {
           <Card>
             <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Typography variant="h6" fontWeight={600}>
-                Import complete
+                Done
               </Typography>
               <Typography variant="body2">{importSummary}</Typography>
               <Divider />
               <Button variant="contained" onClick={() => navigate("/home")}>
-                Go to Home
+                Back to Home
               </Button>
             </CardContent>
           </Card>
