@@ -3,13 +3,41 @@ import { ParsedAnkiDeck } from "./ankiImport.types";
 import { htmlToPlainText, parseAnkiTagsToFolderPath, splitBackVariants } from "./htmlToPlainText";
 import { resolveAnkiFields } from "./resolveAnkiFields";
 
-function readFieldValue(cardEl: Element, fieldName: string): string {
-  const fieldEl = Array.from(cardEl.querySelectorAll(":scope > rich-text")).find(
+function readFieldRawContent(fieldEl: Element): string {
+  if (!fieldEl.childNodes.length) {
+    return fieldEl.textContent?.trim() ?? "";
+  }
+
+  const serializer = new XMLSerializer();
+  const serialized = Array.from(fieldEl.childNodes)
+    .map((node) => serializer.serializeToString(node))
+    .join("");
+
+  const textContent = fieldEl.textContent ?? "";
+  if (!serialized.trim() && textContent.trim()) {
+    return textContent;
+  }
+
+  return serialized || textContent;
+}
+
+function findCardField(cardEl: Element, fieldName: string): Element | null {
+  const richTextField = Array.from(cardEl.querySelectorAll(":scope > rich-text")).find(
     (node) => node.getAttribute("name") === fieldName
   );
+  if (richTextField) return richTextField;
 
+  return (
+    Array.from(cardEl.querySelectorAll(":scope > field, :scope > *")).find(
+      (node) => node.getAttribute("name") === fieldName
+    ) ?? null
+  );
+}
+
+function readFieldValue(cardEl: Element, fieldName: string): string {
+  const fieldEl = findCardField(cardEl, fieldName);
   if (!fieldEl) return "";
-  return htmlToPlainText(fieldEl.innerHTML);
+  return htmlToPlainText(readFieldRawContent(fieldEl));
 }
 
 export function parseAnkiDeckXml(xml: string, sourceName?: string): ParsedAnkiDeck {

@@ -109,7 +109,7 @@ export default function AnkiImportClient() {
   };
 
   const pollJob = async (jobSub: string) => {
-    const pollIntervalMs = 1000;
+    const pollIntervalMs = 400;
 
     while (true) {
       const status = await call((token) => getAnkiImportJobRequest(jobSub, token));
@@ -307,14 +307,20 @@ export default function AnkiImportClient() {
                 Importing...
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {importProgress.progress} / {importProgress.total} cards
+                {importProgress.total > 0
+                  ? `${importProgress.progress} / ${importProgress.total} cards`
+                  : "Starting import..."}
               </Typography>
               <LinearProgress
-                variant={importProgress.total > 0 ? "determinate" : "indeterminate"}
+                variant={
+                  importProgress.total > 0 && importProgress.progress > 0
+                    ? "determinate"
+                    : "indeterminate"
+                }
                 value={
                   importProgress.total > 0
                     ? (importProgress.progress / importProgress.total) * 100
-                    : 0
+                    : undefined
                 }
               />
             </CardContent>

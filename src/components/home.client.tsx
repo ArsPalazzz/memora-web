@@ -1,5 +1,5 @@
 
-import { Typography, Box, Grid, IconButton, Button, Card, CardContent } from "@mui/material";
+import { Typography, Box, Grid, IconButton, Button, Menu, MenuItem } from "@mui/material";
 import { useAuth } from "../utils/auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -13,6 +13,7 @@ import {
   moveFolderToParentRequest,
 } from "../services/desk/desk";
 import AddIcon from "@mui/icons-material/Add";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -67,6 +68,8 @@ export default function HomeClient() {
     title: string;
     currentLocationSub: string | null;
   } | null>(null);
+  const [anchorMenu, setAnchorMenu] = useState<HTMLElement | null>(null);
+  const openMenu = Boolean(anchorMenu);
 
   const handleTabChange = (newTab: number) => {
     setActiveTab(newTab);
@@ -266,19 +269,42 @@ export default function HomeClient() {
   if (!authenticated) return null;
 
   const RightButton = () => {
-    if (activeTab === 0) {
-      return (
-        <IconButton onClick={() => setOpenDeskModal(true)}>
-          <AddIcon sx={{ color: "white", fontSize: 30 }} />
+    return (
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+        <IconButton onClick={(event) => setAnchorMenu(event.currentTarget)}>
+          <MoreHorizIcon sx={{ color: "white", fontSize: 30 }} />
         </IconButton>
-      );
-    } else {
-      return (
-        <IconButton onClick={() => setOpenFolderModal(true)}>
-          <CreateNewFolderIcon sx={{ color: "white", fontSize: 30 }} />
-        </IconButton>
-      );
-    }
+
+        <Menu
+          anchorEl={anchorMenu}
+          open={openMenu}
+          onClose={() => setAnchorMenu(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <MenuItem
+            sx={{ display: "flex", gap: 1, alignItems: "center" }}
+            onClick={() => {
+              setAnchorMenu(null);
+              navigate("/import/anki");
+            }}
+          >
+            <UploadFileIcon sx={{ fontSize: 20 }} />
+            <Typography>Import from Anki</Typography>
+          </MenuItem>
+        </Menu>
+
+        {activeTab === 0 ? (
+          <IconButton onClick={() => setOpenDeskModal(true)}>
+            <AddIcon sx={{ color: "white", fontSize: 30 }} />
+          </IconButton>
+        ) : (
+          <IconButton onClick={() => setOpenFolderModal(true)}>
+            <CreateNewFolderIcon sx={{ color: "white", fontSize: 30 }} />
+          </IconButton>
+        )}
+      </Box>
+    );
   };
 
   return (
@@ -320,30 +346,6 @@ export default function HomeClient() {
             )}
 
             <TabsSwitcher activeTab={activeTab} onChange={handleTabChange} />
-
-            <Card
-              variant="outlined"
-              sx={{ mt: 2, mb: 1, cursor: "pointer" }}
-              onClick={() => navigate("/import/anki")}
-            >
-              <CardContent
-                sx={{
-                  py: 1.5,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  "&:last-child": { pb: 1.5 },
-                }}
-              >
-                <UploadFileIcon color="primary" />
-                <Box>
-                  <Typography fontWeight={600}>Import from Anki</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Upload .zip exports from Anki Desktop
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
           </Box>
 
           <Box
