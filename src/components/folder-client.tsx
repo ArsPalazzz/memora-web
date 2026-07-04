@@ -36,6 +36,7 @@ import {
 import { SortSelector } from "@/components/ui/SortSelector";
 import { FolderCard } from "./ui/FolterCard";
 import { useFolderSortSettings } from "@/hooks/useFolderSort";
+import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
 import { useNotification } from "@/context/NotificationContext";
 import {
   FolderNavState,
@@ -133,7 +134,7 @@ export default function FolderClient() {
     control,
   } = useForm<CreateDeskValues>({
     resolver: zodResolver(createDeskSchema),
-    defaultValues: { isPublic: true },
+    defaultValues: { isPublic: true, ...DEFAULT_DESK_LANGUAGE_SETTINGS },
     mode: "onChange",
   });
 

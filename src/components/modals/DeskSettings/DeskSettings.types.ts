@@ -1,4 +1,4 @@
-import { CARD_ORIENTATION } from "@/services/desk/desk.const";
+import { DeskSettings } from "@/services/desk/desk.types";
 
 export interface DeskSettingsCardsPerSessionModalProps {
   setOpenSheet: (arg: null | string) => void;
@@ -8,6 +8,20 @@ export interface DeskSettingsCardsPerSessionModalProps {
 
 export interface DeskSettingsCardOrientationModalProps {
   setOpenSheet: (arg: null | string) => void;
-  currentValue: CARD_ORIENTATION;
-  onClose: (arg: CARD_ORIENTATION) => void;
+  currentValue: DeskSettings["card_orientation"];
+  onClose: (arg: DeskSettings["card_orientation"]) => void;
+}
+
+export interface DeskSettingsLanguagesModalProps {
+  setOpenSheet: (arg: null | string) => void;
+  currentValue: Pick<
+    DeskSettings,
+    "front_language" | "back_language" | "example_language"
+  >;
+  onClose: (
+    arg: Pick<
+      DeskSettings,
+      "front_language" | "back_language" | "example_language"
+    >
+  ) => void;
 }

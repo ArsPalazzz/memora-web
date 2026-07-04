@@ -42,6 +42,7 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import { FolderCard } from "./ui/FolterCard";
 import NewFolderModal from "./modals/NewFolder/NewFolder.modal";
 import { TabsSwitcher } from "./ui/TabSwitcher";
+import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
 import { useNotification } from "@/context/NotificationContext";
 
 export default function HomeClient() {
@@ -115,7 +116,7 @@ export default function HomeClient() {
     control,
   } = useForm<CreateDeskValues>({
     resolver: zodResolver(createDeskSchema),
-    defaultValues: { isPublic: true },
+    defaultValues: { isPublic: true, ...DEFAULT_DESK_LANGUAGE_SETTINGS },
     mode: "onChange",
   });
 

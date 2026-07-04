@@ -1,5 +1,6 @@
 import { UpdateDeskValues } from "@/schemas/updateDesk.schema";
 import { CARD_ORIENTATION } from "./desk.const";
+import { LanguageCode } from "@/constants/language.const";
 
 export interface FetchDesksResponse {
   sub: string;
@@ -31,6 +32,9 @@ export interface FetchDesksShortResponse {
 export interface DeskSettings {
   cards_per_session: number;
   card_orientation: CARD_ORIENTATION;
+  front_language: LanguageCode;
+  back_language: LanguageCode;
+  example_language: LanguageCode;
 }
 
 export interface FeedSettings {
@@ -119,6 +123,9 @@ export interface CreateDeskParams {
   description: string;
   isPublic: boolean;
   folder_sub: string | null;
+  front_language: LanguageCode;
+  back_language: LanguageCode;
+  example_language: LanguageCode;
 }
 
 export interface CreateCardParams {

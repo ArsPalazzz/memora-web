@@ -1,5 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { CARD_ORIENTATION } from "@/services/desk/desk.const";
+import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
 import {
   FetchDeskResponse,
   FetchDesksResponse,
@@ -28,6 +29,7 @@ export function deskSummaryToPlaceholder(
     settings: {
       cards_per_session: 20,
       card_orientation: CARD_ORIENTATION.NORMAL,
+      ...DEFAULT_DESK_LANGUAGE_SETTINGS,
     },
     stats: {
       total_cards: summary.totalCards,

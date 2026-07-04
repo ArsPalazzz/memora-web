@@ -71,6 +71,9 @@ import DeleteDeskModal from "./modals/DeleteDesk/DeleteDesk.modal";
 import DeskSettingsCardsPerSessionModal from "./modals/DeskSettings/DeskSettingsCardsPerSession.modal";
 import EditCardModal from "./modals/EditCard/EditCard.modal";
 import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettingsCardOrientation.modal";
+import DeskSettingsLanguagesModal from "./modals/DeskSettings/DeskSettingsLanguages.modal";
+import { formatLanguagePair } from "@/constants/language.const";
+import TranslateIcon from "@mui/icons-material/Translate";
 
 const AnkiStyleStats = lazy(() =>
   import("./ui/DeskStats").then((mod) => ({ default: mod.AnkiStyleStats }))
@@ -328,6 +331,14 @@ export default function DeskClient() {
     desk.settings.card_orientation.charAt(0).toUpperCase() +
       desk.settings.card_orientation.slice(1);
 
+  const languagesLabel =
+    desk?.settings?.front_language && desk?.settings?.back_language
+      ? formatLanguagePair(
+          desk.settings.front_language,
+          desk.settings.back_language
+        )
+      : "English → Russian";
+
   const settingsItems = [
     {
       key: "cardsPerSession",
@@ -342,6 +353,13 @@ export default function DeskClient() {
       title: "Card orientation",
       subtitle: "How cards should be displayed",
       value: cardOrientation,
+    },
+    {
+      key: "languages",
+      icon: <TranslateIcon />,
+      title: "Languages",
+      subtitle: "Front, back, and example sentence languages",
+      value: languagesLabel,
     },
   ];
 
@@ -749,7 +767,7 @@ export default function DeskClient() {
                               </Typography>
                             </ListItemButton>
 
-                            {index !== 1 && <Divider component="li" />}
+                            {index !== settingsItems.length - 1 && <Divider component="li" />}
                           </React.Fragment>
                         ))}
                       </List>
@@ -885,6 +903,30 @@ export default function DeskClient() {
             onUpdateSettingsSubmit({
               ...desk.settings,
               card_orientation: value,
+            });
+          }}
+        />
+      )}
+
+      {desk && openSheet === "languages" && (
+        <DeskSettingsLanguagesModal
+          setOpenSheet={setOpenSheet}
+          currentValue={{
+            front_language: desk.settings.front_language,
+            back_language: desk.settings.back_language,
+            example_language: desk.settings.example_language,
+          }}
+          onClose={(value) => {
+            const unchanged =
+              value.front_language === desk.settings.front_language &&
+              value.back_language === desk.settings.back_language &&
+              value.example_language === desk.settings.example_language;
+
+            if (unchanged) return;
+
+            onUpdateSettingsSubmit({
+              ...desk.settings,
+              ...value,
             });
           }}
         />
