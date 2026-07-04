@@ -35,8 +35,10 @@ export default function FeedStudyPlay({
   const [empty, setEmpty] = useState(false);
   const [error, setError] = useState(false);
   const roundKeyRef = useRef(0);
+  const activeRoundRef = useRef(0);
 
   const startRound = useCallback(async () => {
+    const roundId = ++activeRoundRef.current;
     setLoading(true);
     setEmpty(false);
     setError(false);
@@ -44,12 +46,15 @@ export default function FeedStudyPlay({
 
     try {
       const session = await call((token) => startFeedSessionRequest(token));
+      if (roundId !== activeRoundRef.current) return;
+
       const mode = session.mode ?? preferredMode ?? DEFAULT_FEED_STUDY_MODE;
       setResolvedMode(mode);
 
       const data = await call((token) =>
         getFeedNextCardRequest({ sessionId: session.sessionId }, token)
       );
+      if (roundId !== activeRoundRef.current) return;
 
       if (!data?.cards?.length) {
         setEmpty(true);
@@ -59,10 +64,13 @@ export default function FeedStudyPlay({
       roundKeyRef.current += 1;
       setSessionId(session.sessionId);
     } catch (err) {
+      if (roundId !== activeRoundRef.current) return;
       console.error("Failed to start feed study session:", err);
       setError(true);
     } finally {
-      setLoading(false);
+      if (roundId === activeRoundRef.current) {
+        setLoading(false);
+      }
     }
   }, [call, preferredMode]);
 
@@ -86,13 +94,14 @@ export default function FeedStudyPlay({
                 color: "white",
                 borderColor: "rgba(255,255,255,0.6)",
                 minHeight: 36,
+                whiteSpace: "nowrap",
                 "&:hover": {
                   borderColor: "white",
                   bgcolor: "rgba(255,255,255,0.08)",
                 },
               }}
             >
-              Browse
+              Swipe browse
             </Button>
           }
         />

@@ -25,12 +25,20 @@ export function PlayScreen({ sessionId, onFinished, initialMode = null }: PlaySc
   const [bootError, setBootError] = useState(false);
 
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId) {
+      setBoot(null);
+      setBootError(false);
+      return;
+    }
+
+    let cancelled = false;
+    setBoot(null);
+    setBootError(false);
 
     const resolveBoot = async () => {
       if (initialMode === "match") {
         const matchBoard = await call((token) => getMatchBoardRequest(sessionId, token));
-        setBoot({ mode: "match", card: null, matchBoard });
+        if (!cancelled) setBoot({ mode: "match", card: null, matchBoard });
         return;
       }
 
@@ -40,24 +48,28 @@ export function PlayScreen({ sessionId, onFinished, initialMode = null }: PlaySc
 
         if (mode === "match") {
           const matchBoard = await call((token) => getMatchBoardRequest(sessionId, token));
-          setBoot({ mode: "match", card: null, matchBoard });
+          if (!cancelled) setBoot({ mode: "match", card: null, matchBoard });
           return;
         }
 
-        setBoot({ mode, card: res, matchBoard: null });
+        if (!cancelled) setBoot({ mode, card: res, matchBoard: null });
       } catch {
         try {
           const matchBoard = await call((token) => getMatchBoardRequest(sessionId, token));
-          setBoot({ mode: "match", card: null, matchBoard });
+          if (!cancelled) setBoot({ mode: "match", card: null, matchBoard });
         } catch {
-          setBootError(true);
+          if (!cancelled) setBootError(true);
         }
       }
     };
 
     resolveBoot().catch(() => {
-      setBootError(true);
+      if (!cancelled) setBootError(true);
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [sessionId, initialMode, call]);
 
   if (bootError) {

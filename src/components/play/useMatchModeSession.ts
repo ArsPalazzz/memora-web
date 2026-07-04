@@ -139,12 +139,18 @@ export function useMatchModeSession({
   const allPaired = totalCards > 0 && matchedLeftSubs.size === totalCards;
 
   const selectLeft = (cardSub: string) => {
-    if (matchedLeftSubs.has(cardSub)) return;
+    if (matchedLeftSubs.has(cardSub)) {
+      unmatchPair(cardSub);
+      return;
+    }
     setSelectedLeft((prev) => (prev === cardSub ? null : cardSub));
   };
 
   const selectRight = (slotId: number) => {
-    if (matchedSlotIds.has(slotId)) return;
+    if (matchedSlotIds.has(slotId)) {
+      unmatchBySlot(slotId);
+      return;
+    }
     if (!selectedLeft) return;
 
     const leftSub = selectedLeft;
@@ -152,6 +158,21 @@ export function useMatchModeSession({
     setSelectedLeft(null);
     setRecentMatch(leftSub);
     window.setTimeout(() => setRecentMatch(null), 400);
+  };
+
+  const unmatchPair = (leftCardSub: string) => {
+    setPairs((prev) => {
+      if (!(leftCardSub in prev)) return prev;
+      const next = { ...prev };
+      delete next[leftCardSub];
+      return next;
+    });
+    setSelectedLeft((prev) => (prev === leftCardSub ? null : prev));
+  };
+
+  const unmatchBySlot = (slotId: number) => {
+    const leftSub = Object.entries(pairs).find(([, id]) => id === slotId)?.[0];
+    if (leftSub) unmatchPair(leftSub);
   };
 
   const submitPairs = () => {
@@ -230,6 +251,7 @@ export function useMatchModeSession({
     gradingIndex,
     selectLeft,
     selectRight,
+    unmatchPair,
     submitPairs,
     startGrading,
     submitGrade,

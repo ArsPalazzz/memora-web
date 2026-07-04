@@ -37,6 +37,7 @@ export function MatchPlayScreen({
     gradingIndex,
     selectLeft,
     selectRight,
+    unmatchPair,
     submitPairs,
     startGrading,
     submitGrade,
@@ -86,6 +87,7 @@ export function MatchPlayScreen({
           isSubmitting={isSubmitting}
           onSelectLeft={selectLeft}
           onSelectRight={selectRight}
+          onUnmatch={unmatchPair}
           onSubmit={submitPairs}
         />
       )}

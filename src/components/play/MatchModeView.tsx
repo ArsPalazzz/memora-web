@@ -18,23 +18,22 @@ interface MatchModeViewProps {
   isSubmitting: boolean;
   onSelectLeft: (cardSub: string) => void;
   onSelectRight: (slotId: number) => void;
+  onUnmatch: (leftCardSub: string) => void;
   onSubmit: () => void;
 }
 
 function MatchItem({
   label,
   selected,
-  matched,
+  paired,
   recent,
   onClick,
-  side,
 }: {
   label: string;
   selected: boolean;
-  matched: boolean;
+  paired: boolean;
   recent: boolean;
   onClick: () => void;
-  side: "left" | "right";
 }) {
   const theme = useTheme();
 
@@ -49,7 +48,7 @@ function MatchItem({
       }
     >
       <Box
-        onClick={matched ? undefined : onClick}
+        onClick={onClick}
         sx={{
           minHeight: 44,
           px: 1.5,
@@ -58,18 +57,17 @@ function MatchItem({
           border: "2px solid",
           borderColor: selected
             ? "primary.main"
-            : matched
-              ? "success.light"
+            : paired
+              ? "primary.light"
               : "divider",
           bgcolor: selected
             ? "action.selected"
-            : matched
+            : paired
               ? theme.palette.mode === "dark"
-                ? "rgba(67, 160, 71, 0.12)"
-                : "successBg"
+                ? "rgba(89, 97, 211, 0.14)"
+                : "rgba(89, 97, 211, 0.08)"
               : "background.paper",
-          opacity: matched ? 0.72 : 1,
-          cursor: matched ? "default" : "pointer",
+          cursor: "pointer",
           display: "flex",
           alignItems: "center",
           gap: 1,
@@ -79,8 +77,8 @@ function MatchItem({
           WebkitTapHighlightColor: "transparent",
         }}
       >
-        {matched && (
-          <LinkIcon sx={{ fontSize: 16, color: "success.main", flexShrink: 0 }} />
+        {paired && (
+          <LinkIcon sx={{ fontSize: 16, color: "primary.main", flexShrink: 0 }} />
         )}
         <Typography
           variant="body2"
@@ -89,13 +87,17 @@ function MatchItem({
         >
           {label}
         </Typography>
-        {matched && (
+        {paired && (
           <Chip
-            label={side === "left" ? "Matched" : "Taken"}
+            label="Undo"
             size="small"
-            color="success"
             variant="outlined"
-            sx={{ height: 24, fontSize: "0.7rem" }}
+            sx={{
+              height: 24,
+              fontSize: "0.7rem",
+              borderColor: "primary.light",
+              color: "primary.main",
+            }}
           />
         )}
       </Box>
@@ -139,6 +141,7 @@ export function MatchModeView({
   isSubmitting,
   onSelectLeft,
   onSelectRight,
+  onUnmatch,
   onSubmit,
 }: MatchModeViewProps) {
   const theme = useTheme();
@@ -155,7 +158,7 @@ export function MatchModeView({
       }}
     >
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2, px: 0.5 }}>
-        Tap a term on the left, then its match on the right.
+        Tap left, then right to link. Tap a linked item or chip to undo.
       </Typography>
 
       <Box
@@ -176,10 +179,9 @@ export function MatchModeView({
                 key={card.sub}
                 label={card.front.join(", ")}
                 selected={selectedLeft === card.sub}
-                matched={matchedLeftSubs.has(card.sub)}
+                paired={matchedLeftSubs.has(card.sub)}
                 recent={recentMatch === card.sub}
                 onClick={() => onSelectLeft(card.sub)}
-                side="left"
               />
             ))}
           </AnimatePresence>
@@ -192,10 +194,9 @@ export function MatchModeView({
                 key={slot.slotId}
                 label={slot.text}
                 selected={false}
-                matched={matchedSlotIds.has(slot.slotId)}
+                paired={matchedSlotIds.has(slot.slotId)}
                 recent={false}
                 onClick={() => onSelectRight(slot.slotId)}
-                side="right"
               />
             ))}
           </AnimatePresence>
@@ -216,6 +217,7 @@ export function MatchModeView({
                   label={`${card.front[0]?.slice(0, 12) ?? "…"} → ${slot?.text.slice(0, 12) ?? "…"}`}
                   variant="outlined"
                   color="primary"
+                  onDelete={() => onUnmatch(card.sub)}
                 />
               );
             })}

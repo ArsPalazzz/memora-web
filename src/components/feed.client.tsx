@@ -488,7 +488,7 @@ function FeedSwipePage({
                 },
               }}
             >
-              Study
+              Study mode
             </Button>
           ) : undefined
         }
