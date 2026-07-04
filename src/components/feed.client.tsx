@@ -60,7 +60,6 @@ import { ROUTES } from "@/routes/paths";
 import { useSwipeable } from "react-swipeable";
 import CardExamplesModal from "./modals/CardExamples/CardExamples.modal";
 import { useAuthContext } from "@/context/AuthContext";
-import { motion } from "framer-motion";
 import { useNotification } from "@/context/NotificationContext";
 
 interface FeedCard {
@@ -94,9 +93,19 @@ const GRADE_OPTIONS = [
   { quality: 4, label: "Easy" },
 ] as const;
 
+const SWIPE_THRESHOLD = 140;
+const SWIPE_EXIT_MS = 360;
+const SWIPE_TRANSITION =
+  "transform 0.42s cubic-bezier(0.34, 1.35, 0.64, 1), opacity 0.32s ease";
+const SWIPE_EXIT_TRANSITION =
+  "transform 0.36s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease";
+
+function cardRotate(offset: number) {
+  return offset * 0.012;
+}
+
 export default function FeedPage() {
   const { call } = useProtectedRequest();
-  const [browseMode, setBrowseMode] = useState(false);
 
   const { data: feedStudyMode, isLoading: profileLoading } = useQuery({
     queryKey: [MY_PROFILE],
@@ -109,32 +118,15 @@ export default function FeedPage() {
   }
 
   const studyMode = feedStudyMode ?? DEFAULT_FEED_STUDY_MODE;
-  const useSwipeUi = studyMode === "swipe" || browseMode;
 
-  if (!useSwipeUi) {
-    return (
-      <FeedStudyPlay
-        preferredMode={studyMode}
-        onBrowseMode={() => setBrowseMode(true)}
-      />
-    );
+  if (studyMode === "swipe") {
+    return <FeedSwipePage />;
   }
 
-  return (
-    <FeedSwipePage
-      showReturnToStudy={studyMode !== "swipe"}
-      onReturnToStudy={() => setBrowseMode(false)}
-    />
-  );
+  return <FeedStudyPlay preferredMode={studyMode} />;
 }
 
-function FeedSwipePage({
-  showReturnToStudy = false,
-  onReturnToStudy,
-}: {
-  showReturnToStudy?: boolean;
-  onReturnToStudy?: () => void;
-}) {
+function FeedSwipePage() {
   const navigate = useNavigate();
   const { call } = useProtectedRequest();
   const { accessToken } = useAuthContext();
@@ -167,6 +159,10 @@ function FeedSwipePage({
   const [isSwiping, setIsSwiping] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isGradingRequired, setIsGradingRequired] = useState(false);
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [isGradingPending, setGradingPending] = useState(false);
+
+  const exitTimerRef = useRef<number | null>(null);
 
   const cardsLengthRef = useRef(cards.length);
 
@@ -223,7 +219,45 @@ function FeedSwipePage({
     setShowGrades(false);
     setIsGradingRequired(false);
     setSwipeOffset(0);
+    setIsSwiping(false);
+    setIsAnimatingOut(false);
   };
+
+  const clearExitTimer = () => {
+    if (exitTimerRef.current !== null) {
+      window.clearTimeout(exitTimerRef.current);
+      exitTimerRef.current = null;
+    }
+  };
+
+  const snapBack = useCallback(() => {
+    setIsSwiping(false);
+    requestAnimationFrame(() => {
+      setSwipeOffset(0);
+    });
+  }, []);
+
+  const animateSwipeExit = useCallback(
+    (targetOffset: number, onComplete: () => void) => {
+      clearExitTimer();
+      setIsSwiping(false);
+      setIsAnimatingOut(true);
+      setShowTranslation(false);
+      setSwipeOffset(targetOffset);
+
+      exitTimerRef.current = window.setTimeout(() => {
+        setIsAnimatingOut(false);
+        setSwipeOffset(0);
+        exitTimerRef.current = null;
+        onComplete();
+      }, SWIPE_EXIT_MS);
+    },
+    []
+  );
+
+  useEffect(() => {
+    return () => clearExitTimer();
+  }, []);
 
   const markShownOnce = async (cardSub: string) => {
     if (!sessionId) return;
@@ -286,68 +320,50 @@ function FeedSwipePage({
     onSwiping: (e) => {
       if (isAnimatingOut || isGradingRequired) return;
 
+      if (e.dir !== "Up" && e.dir !== "Down") return;
+
+      let delta = e.deltaY;
+
       if (e.dir === "Down" && currentIndex === 0) {
-        return;
+        delta = e.deltaY * 0.28;
       }
 
       if (e.dir === "Up" && currentIndex === cards.length - 1) {
-        return;
+        delta = e.deltaY * 0.28;
       }
 
-      if (e.dir === "Up" || e.dir === "Down") {
-        setIsSwiping(true);
-        setSwipeOffset(e.deltaY);
-      }
+      setIsSwiping(true);
+      setSwipeOffset(delta);
     },
     onSwiped: (e) => {
       if (isAnimatingOut || isGradingRequired) return;
-      setIsSwiping(false);
 
       if (e.dir === "Down" && currentIndex === 0) {
-        setSwipeOffset(0);
+        snapBack();
         return;
       }
 
       if (e.dir === "Up" && currentIndex === cards.length - 1) {
-        setSwipeOffset(0);
+        snapBack();
         return;
       }
 
       if (e.dir === "Up" && -e.deltaY > SWIPE_THRESHOLD) {
-        setIsAnimatingOut(true);
-        setShowTranslation(false);
-        setSwipeOffset(-window.innerHeight);
-
-        setTimeout(() => {
-          setIsAnimatingOut(false);
-          setSwipeOffset(0);
-          goToNextCard();
-        }, 800);
+        animateSwipeExit(-window.innerHeight, goToNextCard);
         return;
       }
 
       if (e.dir === "Down" && e.deltaY > SWIPE_THRESHOLD && currentIndex > 0) {
-        setIsAnimatingOut(true);
-        setShowTranslation(false);
-        setSwipeOffset(window.innerHeight);
-
-        setTimeout(() => {
-          goToPrevCard();
-          setSwipeOffset(0);
-          setIsAnimatingOut(false);
-        }, 800);
+        animateSwipeExit(window.innerHeight, goToPrevCard);
         return;
       }
 
-      setSwipeOffset(0);
+      snapBack();
     },
     preventScrollOnSwipe: true,
     trackMouse: true,
     delta: 10,
   });
-
-  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
-  const [isGradingPending, setGradingPending] = useState(false);
 
   const handleSubmitAnswer = async () => {
     if (!sessionId || !userAnswer.trim() || !currentCard) return;
@@ -414,9 +430,12 @@ function FeedSwipePage({
     setGradingPending(false);
   };
 
-  const SWIPE_THRESHOLD = 140;
-
   const progress = Math.min(Math.max(-swipeOffset / SWIPE_THRESHOLD, 0), 1);
+  const cardTransition = isSwiping
+    ? "none"
+    : isAnimatingOut
+      ? SWIPE_EXIT_TRANSITION
+      : SWIPE_TRANSITION;
 
   const { notifySuccess, notifyError } = useNotification();
 
@@ -469,30 +488,7 @@ function FeedSwipePage({
 
   return (
     <Box sx={VIEWPORT_SHELL_SX}>
-      <Header
-        title="Feed"
-        onBack={() => navigate(ROUTES.HOME)}
-        RightButton={
-          showReturnToStudy && onReturnToStudy ? (
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={onReturnToStudy}
-              sx={{
-                color: "white",
-                borderColor: "rgba(255,255,255,0.6)",
-                minHeight: 36,
-                "&:hover": {
-                  borderColor: "white",
-                  bgcolor: "rgba(255,255,255,0.08)",
-                },
-              }}
-            >
-              Study mode
-            </Button>
-          ) : undefined
-        }
-      />
+      <Header title="Feed" onBack={() => navigate(ROUTES.HOME)} />
       <Box
         ref={containerRef}
         sx={{
@@ -525,13 +521,7 @@ function FeedSwipePage({
             );
 
             const downProgress = Math.min(clampedOffset / SWIPE_THRESHOLD, 1);
-
-            const swipeDirection =
-              swipeOffset < 0 ? "up" : swipeOffset > 0 ? "down" : null;
-
-            const activeCardForTransition =
-              (swipeDirection === "up" && isCurrent) ||
-              (swipeDirection === "down" && isPrev);
+            const rotate = cardRotate(clampedOffset);
 
             return (
               <Box
@@ -548,29 +538,29 @@ function FeedSwipePage({
                   pointerEvents:
                     isCurrent && isGradingRequired ? "none" : "auto",
                   cursor: isCurrent && isGradingRequired ? "default" : "grab",
+                  willChange: isCurrent && (isSwiping || isAnimatingOut)
+                    ? "transform, opacity"
+                    : undefined,
 
                   transform: isCurrent
                     ? isSwipingUp
-                      ? `translateY(${clampedOffset}px)`
-                      : `translateY(0px)`
+                      ? `translateY(${clampedOffset}px) rotate(${rotate}deg)`
+                      : `translateY(0px) rotate(0deg)`
                     : isPrev
-                    ? isSwipingDown
-                      ? `translateY(${-window.innerHeight + clampedOffset}px)
-         scale(${1.04 - downProgress * 0.04})`
-                      : `translateY(-${window.innerHeight}px)`
-                    : isNext
-                    ? `translateY(0px) scale(1)`
-                    : "translateY(100%)",
+                      ? isSwipingDown
+                        ? `translateY(${-window.innerHeight + clampedOffset}px) scale(${1.04 - downProgress * 0.04}) rotate(${-rotate * 0.5}deg)`
+                        : `translateY(-${window.innerHeight}px) scale(1)`
+                      : isNext
+                        ? `translateY(0px) scale(${0.94 + progress * 0.06})`
+                        : "translateY(100%)",
                   opacity: isPrev
                     ? 1
                     : isCurrent
-                    ? 1
-                    : isNext
-                    ? 0.8 + progress * 0.2
-                    : 0,
-                  transition: activeCardForTransition
-                    ? "transform 0.8s cubic-bezier(0.25,0.8,0.25,1), opacity 0.4s ease"
-                    : "transform 0s, opacity 0s",
+                      ? 1 - Math.min(Math.abs(clampedOffset) / (window.innerHeight * 0.85), 0.15)
+                      : isNext
+                        ? 0.88 + progress * 0.12
+                        : 0,
+                  transition: cardTransition,
                 }}
               >
                 <Card
@@ -595,112 +585,84 @@ function FeedSwipePage({
                         flexDirection: "column",
                         gap: 2.5,
                         zIndex: 2,
+                        pointerEvents: "none",
+                        "@keyframes feedActionFadeIn": {
+                          from: { opacity: 0.55, transform: "translateX(8px)" },
+                          to: { opacity: 1, transform: "translateX(0)" },
+                        },
                       }}
                     >
-                      <motion.div
-                        initial={{ x: 50, opacity: 0 }}
-                        animate={{
-                          x: 0,
-                          opacity: 1,
+                      <IconButton
+                        onClick={() => {
+                          setShowTranslation(!showTranslation);
+                          setShowExamples(false);
                         }}
-                        transition={{
-                          duration: 0.5,
-                          ease: [0.22, 1, 0.36, 1],
-                          delay: 0,
-                        }}
-                      >
-                        <IconButton
-                          onClick={() => {
-                            setShowTranslation(!showTranslation);
-                            setShowExamples(false);
-                          }}
-                          sx={{
-                            width: 64,
-                            height: 64,
+                        sx={{
+                          width: 64,
+                          height: 64,
+                          pointerEvents: "auto",
+                          animation: "feedActionFadeIn 0.18s ease-out both",
+                          bgcolor: showTranslation
+                            ? "primary.main"
+                            : "action.hover",
+                          color: showTranslation
+                            ? "primary.contrastText"
+                            : "text.secondary",
+                          "&:hover": {
                             bgcolor: showTranslation
-                              ? "primary.main"
-                              : "action.hover",
-                            color: showTranslation
-                              ? "primary.contrastText"
-                              : "text.secondary",
-                            "&:hover": {
-                              bgcolor: showTranslation
-                                ? "primary.dark"
-                                : "action.selected",
-                            },
-                          }}
-                        >
-                          <Translate fontSize="medium" />
-                        </IconButton>
-                      </motion.div>
-                      <motion.div
-                        initial={{ x: 50, opacity: 0 }}
-                        animate={{
-                          x: 0,
-                          opacity: 1,
-                        }}
-                        transition={{
-                          duration: 0.5,
-                          ease: [0.22, 1, 0.36, 1],
-                          delay: 0.1,
+                              ? "primary.dark"
+                              : "action.selected",
+                          },
                         }}
                       >
-                        <IconButton
-                          onClick={() => {
-                            setShowExamples(!showExamples);
-                            setShowTranslation(false);
-                          }}
-                          sx={{
-                            width: 64,
-                            height: 64,
+                        <Translate fontSize="medium" />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => {
+                          setShowExamples(!showExamples);
+                          setShowTranslation(false);
+                        }}
+                        sx={{
+                          width: 64,
+                          height: 64,
+                          pointerEvents: "auto",
+                          animation: "feedActionFadeIn 0.18s ease-out 0.04s both",
+                          bgcolor: showExamples
+                            ? "secondary.main"
+                            : "action.hover",
+                          color: showExamples
+                            ? "secondary.contrastText"
+                            : "text.secondary",
+                          "&:hover": {
                             bgcolor: showExamples
-                              ? "secondary.main"
-                              : "action.hover",
-                            color: showExamples
-                              ? "secondary.contrastText"
-                              : "text.secondary",
-                            "&:hover": {
-                              bgcolor: showExamples
-                                ? "secondary.dark"
-                                : "action.selected",
-                            },
-                          }}
-                        >
-                          <MenuBook fontSize="medium" />
-                        </IconButton>
-                      </motion.div>
-                      <motion.div
-                        initial={{ x: 50, opacity: 0 }}
-                        animate={{
-                          x: 0,
-                          opacity: 1,
-                        }}
-                        transition={{
-                          duration: 0.5,
-                          ease: [0.22, 1, 0.36, 1],
-                          delay: 0.2,
+                              ? "secondary.dark"
+                              : "action.selected",
+                          },
                         }}
                       >
-                        <IconButton
-                          onClick={() => {
-                            const alreadyAdded =
-                              addedToDesks[currentCard.sub] || [];
-                            setSelectedDesks(alreadyAdded);
-                            setAddToDeskDialog(true);
-                          }}
-                          sx={{
-                            width: 64,
-                            height: 64,
-                            bgcolor: "action.hover",
-                            color: "text.secondary",
-                            "&:hover": {
-                              bgcolor: "action.selected",
-                            },
-                          }}
-                        >
-                          <Favorite fontSize="medium" />
-                        </IconButton>
-                      </motion.div>
+                        <MenuBook fontSize="medium" />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => {
+                          const alreadyAdded =
+                            addedToDesks[currentCard.sub] || [];
+                          setSelectedDesks(alreadyAdded);
+                          setAddToDeskDialog(true);
+                        }}
+                        sx={{
+                          width: 64,
+                          height: 64,
+                          pointerEvents: "auto",
+                          animation: "feedActionFadeIn 0.18s ease-out 0.08s both",
+                          bgcolor: "action.hover",
+                          color: "text.secondary",
+                          "&:hover": {
+                            bgcolor: "action.selected",
+                          },
+                        }}
+                      >
+                        <Favorite fontSize="medium" />
+                      </IconButton>
                     </Box>
                   )}
 

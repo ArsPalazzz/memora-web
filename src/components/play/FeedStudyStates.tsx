@@ -50,21 +50,13 @@ function FeedStudyStatePanel({
   );
 }
 
-export function FeedStudyEmpty({
-  onRetry,
-  onBrowse,
-}: {
-  onRetry: () => void;
-  onBrowse: () => void;
-}) {
+export function FeedStudyEmpty({ onRetry }: { onRetry: () => void }) {
   return (
     <FeedStudyStatePanel
       title="No cards to study"
-      message="There are no recommended cards right now. Try again later or browse the feed."
+      message="There are no recommended cards right now. Try again later or change feed settings."
       primaryLabel="Try again"
       onPrimary={onRetry}
-      secondaryLabel="Browse mode"
-      onSecondary={onBrowse}
     />
   );
 }

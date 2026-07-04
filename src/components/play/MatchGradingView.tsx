@@ -21,6 +21,7 @@ export function MatchGradingView({
     <Box
       sx={{
         flex: 1,
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
         px: 2,

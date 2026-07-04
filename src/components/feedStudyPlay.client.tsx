@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
 import {
   getFeedNextCardRequest,
@@ -21,13 +21,9 @@ import {
 
 interface FeedStudyPlayProps {
   preferredMode: StudyMode;
-  onBrowseMode: () => void;
 }
 
-export default function FeedStudyPlay({
-  preferredMode,
-  onBrowseMode,
-}: FeedStudyPlayProps) {
+export default function FeedStudyPlay({ preferredMode }: FeedStudyPlayProps) {
   const { call } = useProtectedRequest();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [resolvedMode, setResolvedMode] = useState<StudyMode>(preferredMode);
@@ -82,45 +78,25 @@ export default function FeedStudyPlay({
 
   return (
     <WithBottomNav>
-      <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
-        <Header
-          title={`Feed — ${modeLabel}`}
-          RightButton={
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={onBrowseMode}
-              sx={{
-                color: "white",
-                borderColor: "rgba(255,255,255,0.6)",
-                minHeight: 36,
-                whiteSpace: "nowrap",
-                "&:hover": {
-                  borderColor: "white",
-                  bgcolor: "rgba(255,255,255,0.08)",
-                },
-              }}
-            >
-              Swipe browse
-            </Button>
-          }
-        />
+      <Box sx={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <Header title={`Feed — ${modeLabel}`} />
 
         {loading && !sessionId && !empty && !error && <FullPageLoader />}
 
-        {empty && (
-          <FeedStudyEmpty onRetry={startRound} onBrowse={onBrowseMode} />
-        )}
+        {empty && <FeedStudyEmpty onRetry={startRound} />}
 
         {error && <FeedStudyError onRetry={startRound} />}
 
         {sessionId && !loading && (
-          <PlayScreen
-            key={`${sessionId}-${roundKeyRef.current}`}
-            sessionId={sessionId}
-            initialMode={resolvedMode}
-            onFinished={startRound}
-          />
+          <Box sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+            <PlayScreen
+              key={`${sessionId}-${roundKeyRef.current}`}
+              sessionId={sessionId}
+              initialMode={resolvedMode}
+              onFinished={startRound}
+              nested
+            />
+          </Box>
         )}
       </Box>
     </WithBottomNav>

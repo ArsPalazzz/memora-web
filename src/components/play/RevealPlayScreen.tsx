@@ -8,12 +8,14 @@ interface RevealPlayScreenProps {
   sessionId: string | null;
   onFinished: () => void;
   initialCard?: NextCardResponse | null;
+  nested?: boolean;
 }
 
 export function RevealPlayScreen({
   sessionId,
   onFinished,
   initialCard = null,
+  nested = false,
 }: RevealPlayScreenProps) {
   const {
     result,
@@ -37,6 +39,7 @@ export function RevealPlayScreen({
     <PlaySessionShell
       current={currentCard.progress.current}
       total={currentCard.progress.total}
+      nested={nested}
     >
       <RevealModeView
         currentCard={currentCard}

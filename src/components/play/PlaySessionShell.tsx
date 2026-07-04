@@ -6,22 +6,39 @@ interface PlaySessionShellProps {
   current?: number;
   total?: number;
   children: ReactNode;
+  /** When true, fills parent flex area instead of locking to 100dvh (feed with header/nav). */
+  nested?: boolean;
 }
 
-export function PlaySessionShell({ current, total, children }: PlaySessionShellProps) {
+export function PlaySessionShell({
+  current,
+  total,
+  children,
+  nested = false,
+}: PlaySessionShellProps) {
   const showProgress = current !== undefined && total !== undefined && total > 0;
 
   return (
     <Box
       sx={{
-        ...VIEWPORT_SHELL_SX,
-        pb: 2,
-        pt: VIEWPORT_TOP_SAFE_PADDING,
-        boxSizing: "border-box",
+        ...(nested
+          ? {
+              flex: 1,
+              minHeight: 0,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }
+          : {
+              ...VIEWPORT_SHELL_SX,
+              pb: 2,
+              pt: VIEWPORT_TOP_SAFE_PADDING,
+              boxSizing: "border-box",
+            }),
       }}
     >
       {showProgress && (
-        <Box sx={{ px: 3, mb: 2 }}>
+        <Box sx={{ px: 3, mb: 2, flexShrink: 0 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
             <Typography variant="body2" color="text.secondary">
               {current} / {total}
@@ -46,7 +63,16 @@ export function PlaySessionShell({ current, total, children }: PlaySessionShellP
         </Box>
       )}
 
-      {children}
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {children}
+      </Box>
     </Box>
   );
 }

@@ -20,8 +20,17 @@ export function MatchResultsView({
   onContinue,
 }: MatchResultsViewProps) {
   return (
-    <Box sx={{ flex: 1, display: "flex", flexDirection: "column", px: 2, pb: 2 }}>
-      <Box sx={{ textAlign: "center", mb: 3, mt: 1 }}>
+    <Box
+      sx={{
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        flexDirection: "column",
+        px: 2,
+        pb: 2,
+      }}
+    >
+      <Box sx={{ textAlign: "center", mb: 2, mt: 1, flexShrink: 0 }}>
         <Typography variant="h5" fontWeight={700} gutterBottom>
           {correctCount} of {total} matched
         </Typography>
@@ -30,7 +39,17 @@ export function MatchResultsView({
         </Typography>
       </Box>
 
-      <Box sx={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 1 }}>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflow: "auto",
+          WebkitOverflowScrolling: "touch",
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+        }}
+      >
         {cards.map((card, index) => {
           const isCorrect = resultByCard.get(card.sub) ?? false;
 
@@ -81,7 +100,7 @@ export function MatchResultsView({
         variant="contained"
         size="large"
         onClick={onContinue}
-        sx={{ mt: 2, minHeight: 48 }}
+        sx={{ mt: 2, minHeight: 48, flexShrink: 0 }}
       >
         Continue to grading
       </Button>

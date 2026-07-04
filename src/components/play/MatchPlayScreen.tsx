@@ -11,14 +11,14 @@ interface MatchPlayScreenProps {
   sessionId: string | null;
   onFinished: () => void;
   initialBoard?: MatchBoardResponse | null;
-  onBrowse?: () => void;
+  nested?: boolean;
 }
 
 export function MatchPlayScreen({
   sessionId,
   onFinished,
   initialBoard = null,
-  onBrowse,
+  nested = false,
 }: MatchPlayScreenProps) {
   const {
     board,
@@ -56,10 +56,7 @@ export function MatchPlayScreen({
 
   if (boardEmpty || !board) {
     return (
-      <FeedStudyEmpty
-        onRetry={onFinished}
-        onBrowse={onBrowse ?? onFinished}
-      />
+      <FeedStudyEmpty onRetry={onFinished} />
     );
   }
 
@@ -73,7 +70,7 @@ export function MatchPlayScreen({
   const progressTotal = board.progress.total;
 
   return (
-    <PlaySessionShell current={progressCurrent} total={progressTotal}>
+    <PlaySessionShell current={progressCurrent} total={progressTotal} nested={nested}>
       {phase === "matching" && (
         <MatchModeView
           cards={board.cards}

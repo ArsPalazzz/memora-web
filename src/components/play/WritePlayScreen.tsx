@@ -9,12 +9,14 @@ interface WritePlayScreenProps {
   sessionId: string | null;
   onFinished: () => void;
   initialCard?: NextCardResponse | null;
+  nested?: boolean;
 }
 
 export function WritePlayScreen({
   sessionId,
   onFinished,
   initialCard = null,
+  nested = false,
 }: WritePlayScreenProps) {
   const {
     answer,
@@ -40,6 +42,7 @@ export function WritePlayScreen({
     <PlaySessionShell
       current={currentCard.progress.current}
       total={currentCard.progress.total}
+      nested={nested}
     >
       <WriteModeView
         currentCard={currentCard}

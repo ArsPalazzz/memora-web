@@ -13,9 +13,15 @@ interface PlayScreenProps {
   sessionId: string | null;
   onFinished: () => void;
   initialMode?: StudyMode | null;
+  nested?: boolean;
 }
 
-export function PlayScreen({ sessionId, onFinished, initialMode = null }: PlayScreenProps) {
+export function PlayScreen({
+  sessionId,
+  onFinished,
+  initialMode = null,
+  nested = false,
+}: PlayScreenProps) {
   const { call } = useProtectedRequest();
   const [boot, setBoot] = useState<{
     mode: StudyMode;
@@ -86,6 +92,7 @@ export function PlayScreen({ sessionId, onFinished, initialMode = null }: PlaySc
         sessionId={sessionId}
         onFinished={onFinished}
         initialBoard={boot.matchBoard}
+        nested={nested}
       />
     );
   }
@@ -96,6 +103,7 @@ export function PlayScreen({ sessionId, onFinished, initialMode = null }: PlaySc
         sessionId={sessionId}
         onFinished={onFinished}
         initialCard={boot.card}
+        nested={nested}
       />
     );
   }
@@ -105,6 +113,7 @@ export function PlayScreen({ sessionId, onFinished, initialMode = null }: PlaySc
       sessionId={sessionId}
       onFinished={onFinished}
       initialCard={boot.card}
+      nested={nested}
     />
   );
 }
