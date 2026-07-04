@@ -30,7 +30,7 @@ import {
 import { useNotification } from "@/context/NotificationContext";
 import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
 import { useQueryClient } from "@tanstack/react-query";
-import { ROOT_FOLDERS, USER_DESKS } from "@/routes/react-query";
+import { invalidateDeskListQueries } from "@/utils/invalidateDeskQueries";
 
 type Step = "upload" | "preview" | "importing" | "done";
 
@@ -137,9 +137,8 @@ export default function AnkiImportClient() {
         }
 
         setImportSummary(parts.length ? parts.join(" · ") : "Nothing new to import");
+        await invalidateDeskListQueries(queryClient);
         setStep("done");
-        queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
-        queryClient.invalidateQueries({ queryKey: [ROOT_FOLDERS] });
         notifySuccess("Import finished");
         return;
       }
@@ -335,7 +334,14 @@ export default function AnkiImportClient() {
               </Typography>
               <Typography variant="body2">{importSummary}</Typography>
               <Divider />
-              <Button variant="contained" onClick={() => navigate("/home")}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  void invalidateDeskListQueries(queryClient).finally(() =>
+                    navigate("/home")
+                  );
+                }}
+              >
                 Back to Home
               </Button>
             </CardContent>

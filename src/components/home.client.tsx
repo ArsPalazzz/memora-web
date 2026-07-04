@@ -28,9 +28,6 @@ import {
   USER_DESKS,
   USER_DESK,
   ROOT_FOLDERS,
-  FOLDER_CONTENTS,
-  FOLDER_INFO,
-  FOLDERS_FLAT,
 } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
@@ -51,6 +48,7 @@ import MoveItemModal from "@/components/modals/MoveItem/MoveItem.modal";
 import { TabsSwitcher } from "./ui/TabSwitcher";
 import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
 import { useNotification } from "@/context/NotificationContext";
+import { invalidateDeskListQueries } from "@/utils/invalidateDeskQueries";
 
 export default function HomeClient() {
   const { authenticated } = useAuth();
@@ -188,11 +186,7 @@ export default function HomeClient() {
   };
 
   const invalidateMoveQueries = () => {
-    queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
-    queryClient.invalidateQueries({ queryKey: [ROOT_FOLDERS] });
-    queryClient.invalidateQueries({ queryKey: [FOLDER_CONTENTS] });
-    queryClient.invalidateQueries({ queryKey: [FOLDER_INFO] });
-    queryClient.invalidateQueries({ queryKey: [FOLDERS_FLAT] });
+    void invalidateDeskListQueries(queryClient);
   };
 
   const moveDeskMutation = useMutation({
