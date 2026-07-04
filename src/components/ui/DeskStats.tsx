@@ -1,7 +1,7 @@
 
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { Box, Typography, Stack, IconButton, Skeleton } from "@mui/material";
-import { startTransition, useEffect, useState } from "react";
+import { Box, Typography, Stack, IconButton } from "@mui/material";
+import { useState } from "react";
 import {
   PieChart,
   Pie,
@@ -42,6 +42,13 @@ interface DeskStatsProps {
   };
 }
 
+const PIE_COLORS = {
+  due: "#ff6b6b",
+  new: "#4ecdc4",
+  learning: "#45b7d1",
+  mastered: "#96ceb4",
+} as const;
+
 const chartContainerSx = {
   pointerEvents: "none" as const,
   userSelect: "none" as const,
@@ -56,60 +63,39 @@ function isTouchDevice() {
   );
 }
 
-function scheduleChartsMount(onReady: () => void) {
-  const mount = () => startTransition(onReady);
-
-  if (!isTouchDevice()) {
-    const id = requestAnimationFrame(mount);
-    return () => cancelAnimationFrame(id);
-  }
-
-  if (typeof window.requestIdleCallback === "function") {
-    const id = window.requestIdleCallback(mount, { timeout: 500 });
-    return () => window.cancelIdleCallback(id);
-  }
-
-  const id = setTimeout(mount, 500);
-  return () => clearTimeout(id);
-}
-
-export function DeskStatsSkeleton() {
+function EmptyPieRing() {
   return (
     <Box
       sx={{
-        mb: 3,
-        p: 2,
-        bgcolor: "background.paper",
-        borderRadius: 2,
-        boxShadow: 1,
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <Skeleton variant="text" width="40%" height={28} sx={{ mb: 2 }} />
-      <Stack direction="row" spacing={2} alignItems="center">
-        <Skeleton variant="circular" width={80} height={80} />
-        <Box sx={{ flex: 1 }}>
-          <Skeleton variant="text" />
-          <Skeleton variant="text" />
-          <Skeleton variant="text" />
-          <Skeleton variant="text" />
-        </Box>
-      </Stack>
-      <Skeleton variant="rounded" height={90} sx={{ mt: 2 }} />
+      <Box component="svg" viewBox="0 0 100 100" sx={{ width: 80, height: 80 }}>
+        <circle
+          cx="50"
+          cy="50"
+          r="32.5"
+          fill="none"
+          stroke="#e0e0e0"
+          strokeWidth="15"
+        />
+      </Box>
     </Box>
   );
 }
 
 export function AnkiStyleStats({ stats }: DeskStatsProps) {
   const [week, setWeek] = useState<"current" | "previous">("current");
-  const [chartsReady, setChartsReady] = useState(false);
   const touchDevice = isTouchDevice();
   const chartAnimationMs = touchDevice ? 800 : 1500;
 
-  useEffect(() => scheduleChartsMount(() => setChartsReady(true)), []);
-
   const pieData = [
-    { name: "Due", value: stats.due_today, color: "#ff6b6b" },
-    { name: "New", value: stats.new_cards, color: "#4ecdc4" },
+    { name: "Due", value: stats.due_today, color: PIE_COLORS.due },
+    { name: "New", value: stats.new_cards, color: PIE_COLORS.new },
     {
       name: "Learning",
       value: Math.max(
@@ -119,10 +105,12 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
           stats.new_cards -
           stats.mastered_cards
       ),
-      color: "#45b7d1",
+      color: PIE_COLORS.learning,
     },
-    { name: "Mastered", value: stats.mastered_cards, color: "#96ceb4" },
+    { name: "Mastered", value: stats.mastered_cards, color: PIE_COLORS.mastered },
   ];
+
+  const pieTotal = pieData.reduce((sum, item) => sum + item.value, 0);
 
   const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
@@ -162,45 +150,27 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
 
       <Stack direction="row" spacing={2} alignItems="center">
         <Box sx={{ width: "40%", height: 100, ...chartContainerSx }}>
-          {!chartsReady ? (
-            <Skeleton variant="circular" width={80} height={80} sx={{ mx: "auto" }} />
+          {pieTotal === 0 ? (
+            <EmptyPieRing />
           ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                innerRadius={25}
-                outerRadius={40}
-                dataKey="value"
-                stroke="none"
-                animationDuration={chartAnimationMs}
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-
-                <circle
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
                   cx="50%"
                   cy="50%"
-                  r={40}
-                  fill="none"
-                  stroke="#e0e0e0"
-                  strokeWidth="1"
-                />
-
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r={25}
-                  fill="none"
-                  stroke="#e0e0e0"
-                  strokeWidth="1"
-                />
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+                  innerRadius={25}
+                  outerRadius={40}
+                  dataKey="value"
+                  stroke="none"
+                  animationDuration={chartAnimationMs}
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
           )}
         </Box>
 
@@ -236,9 +206,6 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
       </Stack>
 
       <Box sx={{ mt: 2, height: 90, ...chartContainerSx }}>
-        {!chartsReady ? (
-          <Skeleton variant="rounded" width="100%" height="100%" />
-        ) : (
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={barData}
@@ -255,7 +222,7 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
               radius={[2, 2, 0, 0]}
               fill="#5961d3"
               fillOpacity={0.6}
-              animationDuration={chartAnimationMs}
+              animationDuration={pieTotal === 0 ? 0 : chartAnimationMs}
               label={{
                 position: "top",
                 formatter: (value) => (value === 0 ? "" : value),
@@ -265,7 +232,6 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
             />
           </BarChart>
         </ResponsiveContainer>
-        )}
       </Box>
 
       <Stack

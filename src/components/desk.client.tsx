@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/auth";
 import { Loader } from "./ui/Loader";
@@ -64,7 +64,7 @@ import {
 import WithBottomNav from "./layout/WithBottomNav";
 import { BOTTOM_NAV_HEIGHT } from "./layout/bottom-nav.constants";
 import { useNotification } from "@/context/NotificationContext";
-import { DeskStatsSkeleton } from "./ui/DeskStats";
+import { AnkiStyleStats } from "./ui/DeskStats";
 import NewCardModal from "./modals/NewCard/NewCard.modal";
 import EditDeskModal from "./modals/EditDesk/EditDesk.modal";
 import DeleteDeskModal from "./modals/DeleteDesk/DeleteDesk.modal";
@@ -74,10 +74,6 @@ import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettings
 import DeskSettingsLanguagesModal from "./modals/DeskSettings/DeskSettingsLanguages.modal";
 import { formatLanguagePair } from "@/constants/language.const";
 import TranslateIcon from "@mui/icons-material/Translate";
-
-const AnkiStyleStats = lazy(() =>
-  import("./ui/DeskStats").then((mod) => ({ default: mod.AnkiStyleStats }))
-);
 
 const PLAY_BUTTON_HEIGHT = 64;
 
@@ -500,9 +496,7 @@ export default function DeskClient() {
 
                     {(!!desk.cards.length || desk.stats.total_cards > 0) && (
                       <Grid size={{ xs: 12 }}>
-                        <Suspense fallback={<DeskStatsSkeleton />}>
-                          <AnkiStyleStats stats={desk.stats} />
-                        </Suspense>
+                        <AnkiStyleStats stats={desk.stats} />
                       </Grid>
                     )}
 
