@@ -49,6 +49,7 @@ import {
   updateReviewSettingsRequest,
 } from "@/services/desk/desk";
 import ArchiveIcon from "@mui/icons-material/Archive";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 import ReviewSettingsCardsPerSessionModal from "./modals/ReviewSettings/ReviewSettingsCardsPerSession.modal";
 import { useNotification } from "@/context/NotificationContext";
 
@@ -689,6 +690,28 @@ export default function ProfileClient() {
                     pt: 2,
                   }}
                 >
+                  <ListItemButton
+                    onClick={() => navigate("/import/anki")}
+                    sx={{
+                      pl: 0,
+                      "&:hover": { bgcolor: "inherit" },
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <ListItemIcon sx={{ minWidth: 40 }}>
+                        <UploadFileIcon
+                          sx={{ color: "primary.main", fontSize: 20 }}
+                        />
+                      </ListItemIcon>
+
+                      <ListItemText
+                        primary="Import from Anki"
+                        secondary="Upload Anki .zip exports"
+                        primaryTypographyProps={{ fontWeight: 600 }}
+                      />
+                    </Box>
+                  </ListItemButton>
+
                   <ListItemButton
                     onClick={() => navigate("/desk/archived")}
                     sx={{

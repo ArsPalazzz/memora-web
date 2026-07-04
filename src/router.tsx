@@ -14,6 +14,7 @@ import DeskClient from "@/components/desk.client";
 import DeskCardsClient from "@/components/desk.cards.client";
 import DeskPlayClient from "@/components/deskPlay.client";
 import FolderClient from "@/components/folder-client";
+import AnkiImportClient from "@/components/import/AnkiImport.client";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import Header from "@/components/layout/Header";
 import { Box, Typography } from "@mui/material";
@@ -68,6 +69,7 @@ export function AppRouter() {
         <Route path="/desk/:id/cards" element={<DeskCardsClient />} />
         <Route path="/desk/:id/play" element={<DeskPlayClient />} />
         <Route path="/folder/:id" element={<FolderClient />} />
+        <Route path="/import/anki" element={<AnkiImportClient />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/home" replace />} />

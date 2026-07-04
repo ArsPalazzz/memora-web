@@ -29,5 +29,10 @@ export const UPDATE_DESK_SETTINGS_API = (sub: string) =>
   `/desks/${sub}/settings`;
 export const UPDATE_REVIEW_SETTINGS_API = "/review/settings";
 
+// IMPORT
+export const ANKI_IMPORT_PREVIEW_API = "/import/anki/preview";
+export const ANKI_IMPORT_CREATE_JOB_API = "/import/anki/jobs";
+export const ANKI_IMPORT_GET_JOB_API = (sub: string) => `/import/anki/jobs/${sub}`;
+
 // GAMES
 export const FINISH_GAME_API = "/games/finish";
