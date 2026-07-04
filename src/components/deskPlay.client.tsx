@@ -26,6 +26,7 @@ import {
 import { USER_DAILY } from "@/routes/react-query";
 import { FINISH_GAME_API } from "@/routes/api";
 import { FullPageLoader } from "./ui/Loader";
+import { VIEWPORT_SHELL_SX } from "./layout/viewport.constants";
 
 type AnswerResult = {
   isCorrect: boolean;
@@ -203,11 +204,10 @@ export default function PlayDeskPage() {
   return (
     <Box
       sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
+        ...VIEWPORT_SHELL_SX,
         pb: 2,
         pt: 2,
+        boxSizing: "border-box",
       }}
     >
       {currentCard && (
@@ -247,7 +247,7 @@ export default function PlayDeskPage() {
       {currentCard && (
         <>
           <Fade in key={currentCard.card.sub}>
-            <Box sx={{ flex: 1, display: "flex", px: 2 }}>
+            <Box sx={{ flex: 1, minHeight: 0, display: "flex", px: 2 }}>
               <Card
                 sx={{
                   flex: 1,

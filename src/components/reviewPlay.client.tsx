@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader } from "@/components/ui/Loader";
+import { VIEWPORT_SHELL_SX } from "@/components/layout/viewport.constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
 import { NextCardResponse } from "@/services/games/games.types";
@@ -190,11 +191,10 @@ export default function ReviewPlayClient() {
   return (
     <Box
       sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
+        ...VIEWPORT_SHELL_SX,
         pb: 2,
         pt: 2,
+        boxSizing: "border-box",
       }}
     >
       {currentCard && (
@@ -234,7 +234,7 @@ export default function ReviewPlayClient() {
       {currentCard && (
         <>
           <Fade in key={currentCard.card.sub}>
-            <Box sx={{ flex: 1, display: "flex", px: 2 }}>
+            <Box sx={{ flex: 1, minHeight: 0, display: "flex", px: 2 }}>
               <Card
                 sx={{
                   flex: 1,

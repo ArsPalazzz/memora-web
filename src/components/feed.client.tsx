@@ -48,6 +48,7 @@ import {
 } from "@/services/desk/desk";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import Header from "./layout/Header";
+import { VIEWPORT_SHELL_SX } from "./layout/viewport.constants";
 import { ROUTES } from "@/routes/paths";
 import { useSwipeable } from "react-swipeable";
 import CardExamplesModal from "./modals/CardExamples/CardExamples.modal";
@@ -416,12 +417,13 @@ export default function FeedPage() {
       : "errorBg";
 
   return (
-    <>
+    <Box sx={VIEWPORT_SHELL_SX}>
       <Header title="Feed" onBack={() => navigate(ROUTES.HOME)} />
       <Box
         ref={containerRef}
         sx={{
-          height: "92dvh",
+          flex: 1,
+          minHeight: 0,
           display: "flex",
           flexDirection: "column",
           position: "relative",
@@ -697,7 +699,7 @@ export default function FeedPage() {
                 borderTop: "1px solid",
                 borderColor: "divider",
                 bottom: 0,
-                pb: 4,
+                pb: 2,
               }}
             >
               <TextField
@@ -763,7 +765,7 @@ export default function FeedPage() {
                 borderTop: "1px solid",
                 borderColor: "divider",
                 bottom: 0,
-                pb: 4,
+                pb: 2,
               }}
             >
               <Box
@@ -952,6 +954,6 @@ export default function FeedPage() {
           onClose={() => setShowExamples(false)}
         />
       )}
-    </>
+    </Box>
   );
 }
