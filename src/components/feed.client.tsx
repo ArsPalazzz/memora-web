@@ -153,7 +153,6 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const [isGradingPending, setGradingPending] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
-  const [gradedCardSubs, setGradedCardSubs] = useState<Set<string>>(new Set());
 
   const cardsLengthRef = useRef(cards.length);
 
@@ -301,11 +300,6 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
       }
 
       if (e.dir === "Up" && -e.deltaY > SWIPE_THRESHOLD) {
-        if (currentCard && !gradedCardSubs.has(currentCard.sub)) {
-          setSwipeOffset(0);
-          return;
-        }
-
         setIsAnimatingOut(true);
         setShowTranslation(false);
         setSwipeOffset(-window.innerHeight);
@@ -421,7 +415,6 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
         invalidateUserDaily(queryClient);
       }
 
-      setGradedCardSubs((prev) => new Set(prev).add(currentCard.sub));
       setShowGrades(false);
       setIsGradingRequired(false);
       setShowTranslation(false);
