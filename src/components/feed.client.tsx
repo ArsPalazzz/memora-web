@@ -549,6 +549,9 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                   pointerEvents:
                     isCurrent && isGradingRequired ? "none" : "auto",
                   cursor: isCurrent && isGradingRequired ? "default" : "grab",
+                  "& [data-feed-actions]": {
+                    pointerEvents: "auto",
+                  },
 
                   transform: isCurrent
                     ? isSwipingUp
@@ -588,6 +591,7 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                 >
                   {isCurrent && (
                     <Box
+                      data-feed-actions
                       sx={{
                         position: "absolute",
                         top: "50%",
@@ -596,7 +600,8 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                         display: "flex",
                         flexDirection: "column",
                         gap: 2.5,
-                        zIndex: 2,
+                        zIndex: 4,
+                        pointerEvents: "auto",
                       }}
                     >
                       <motion.div
