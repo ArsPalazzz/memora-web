@@ -9,7 +9,7 @@ import {
   stopSpeech,
 } from "@/utils/speech";
 
-type SpeakButtonVariant = "default" | "compact";
+type SpeakButtonVariant = "default" | "compact" | "feed";
 
 interface SpeakButtonProps {
   text: string | string[];
@@ -27,7 +27,39 @@ const VARIANT_SX: Record<
 > = {
   default: { box: 48, icon: "medium" },
   compact: { box: 40, icon: "small" },
+  feed: { box: 64, icon: "medium" },
 };
+
+function getVariantStyles(variant: SpeakButtonVariant, isSpeaking: boolean) {
+  if (variant === "feed") {
+    return {
+      borderRadius: "50%",
+      border: "none",
+      bgcolor: isSpeaking ? "primary.main" : "action.hover",
+      color: isSpeaking ? "primary.contrastText" : "text.secondary",
+      boxShadow: isSpeaking ? 2 : 0,
+      "&:hover": {
+        bgcolor: isSpeaking ? "primary.dark" : "action.selected",
+        color: isSpeaking ? "primary.contrastText" : "text.secondary",
+      },
+    };
+  }
+
+  return {
+    borderRadius: 2.5,
+    border: "1px solid",
+    borderColor: isSpeaking ? "primary.main" : "divider",
+    bgcolor: isSpeaking ? "primary.main" : "action.hover",
+    color: isSpeaking ? "primary.contrastText" : "text.secondary",
+    boxShadow: isSpeaking ? 2 : 0,
+    "&:hover": {
+      bgcolor: isSpeaking ? "primary.dark" : "action.selected",
+      borderColor: isSpeaking ? "primary.dark" : "primary.light",
+      color: isSpeaking ? "primary.contrastText" : "primary.main",
+      transform: "scale(1.04)",
+    },
+  };
+}
 
 export function SpeakButton({
   text,
@@ -109,28 +141,17 @@ export function SpeakButton({
             flexShrink: 0,
             width: dimensions.box,
             height: dimensions.box,
-            borderRadius: 2.5,
-            border: "1px solid",
-            borderColor: isSpeaking ? "primary.main" : "divider",
-            bgcolor: isSpeaking ? "primary.main" : "action.hover",
-            color: isSpeaking ? "primary.contrastText" : "text.secondary",
-            boxShadow: isSpeaking ? 2 : 0,
             transition:
-              "background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease",
+              "background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease",
             animation: isSpeaking ? "speakPulse 1.2s ease-in-out infinite" : "none",
             "@keyframes speakPulse": {
               "0%, 100%": { transform: "scale(1)" },
               "50%": { transform: "scale(1.05)" },
             },
-            "&:hover": {
-              bgcolor: isSpeaking ? "primary.dark" : "action.selected",
-              borderColor: isSpeaking ? "primary.dark" : "primary.light",
-              color: isSpeaking ? "primary.contrastText" : "primary.main",
-              transform: "scale(1.04)",
-            },
             "&:active": {
               transform: "scale(0.96)",
             },
+            ...getVariantStyles(variant, isSpeaking),
             ...sx,
           }}
         >

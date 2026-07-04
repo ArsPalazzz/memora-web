@@ -72,7 +72,6 @@ import CardExamplesModal from "./modals/CardExamples/CardExamples.modal";
 import { useAuthContext } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { useNotification } from "@/context/NotificationContext";
-import { CardPromptWithSpeak } from "@/components/play/CardPromptWithSpeak";
 import { SpeakButton } from "@/components/ui/SpeakButton";
 
 interface FeedCard {
@@ -587,12 +586,13 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                     bgcolor: cardColor,
                   }}
                 >
-                  {isCurrent && !showAnswer && (
+                  {isCurrent && (
                     <Box
                       sx={{
                         position: "absolute",
-                        bottom: 72,
-                        right: 40,
+                        top: "50%",
+                        right: 24,
+                        transform: "translateY(-50%)",
                         display: "flex",
                         flexDirection: "column",
                         gap: 2.5,
@@ -606,6 +606,45 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                           duration: 0.5,
                           ease: [0.22, 1, 0.36, 1],
                           delay: 0,
+                        }}
+                      >
+                        <SpeakButton
+                          text={card.text}
+                          language={card.promptLanguage ?? DEFAULT_FRONT_LANGUAGE}
+                          label="Listen to word"
+                          variant="feed"
+                        />
+                      </motion.div>
+                      {(showAnswer || showTranslation) && (
+                        <motion.div
+                          initial={{ x: 50, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{
+                            duration: 0.4,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                        >
+                          <SpeakButton
+                            text={
+                              showTranslation && !showAnswer
+                                ? card.backVariants
+                                : result?.correctVariants ?? card.backVariants
+                            }
+                            language={card.answerLanguage ?? DEFAULT_BACK_LANGUAGE}
+                            label="Listen to translation"
+                            variant="feed"
+                          />
+                        </motion.div>
+                      )}
+                      {!showAnswer && (
+                        <>
+                      <motion.div
+                        initial={{ x: 50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{
+                          duration: 0.5,
+                          ease: [0.22, 1, 0.36, 1],
+                          delay: 0.08,
                         }}
                       >
                         <IconButton
@@ -638,7 +677,7 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                         transition={{
                           duration: 0.5,
                           ease: [0.22, 1, 0.36, 1],
-                          delay: 0.1,
+                          delay: 0.16,
                         }}
                       >
                         <IconButton
@@ -671,7 +710,7 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                         transition={{
                           duration: 0.5,
                           ease: [0.22, 1, 0.36, 1],
-                          delay: 0.2,
+                          delay: 0.24,
                         }}
                       >
                         <IconButton
@@ -694,6 +733,8 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                           <Favorite fontSize="medium" />
                         </IconButton>
                       </motion.div>
+                        </>
+                      )}
                     </Box>
                   )}
 
@@ -707,27 +748,24 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                       textAlign: "center",
                       py: 4,
                       pt: 8,
+                      px: isCurrent ? { xs: 2, sm: 3 } : 3,
+                      pr: isCurrent ? { xs: 11, sm: 12 } : undefined,
                     }}
                   >
-                    {isCurrent ? (
-                      <CardPromptWithSpeak
-                        text={card.text}
-                        language={card.promptLanguage ?? DEFAULT_FRONT_LANGUAGE}
-                        variant="h3"
-                      />
-                    ) : (
-                      <Typography
-                        variant="h3"
-                        fontWeight={600}
-                        gutterBottom
-                        sx={{
-                          userSelect: "none",
-                          pointerEvents: "none",
-                        }}
-                      >
-                        {card.text.join(", ")}
-                      </Typography>
-                    )}
+                    <Typography
+                      variant="h3"
+                      fontWeight={600}
+                      gutterBottom={isCurrent && (showAnswer || showTranslation)}
+                      sx={{
+                        userSelect: "none",
+                        pointerEvents: "none",
+                        maxWidth: "100%",
+                        lineHeight: 1.2,
+                        px: isCurrent ? 1 : 0,
+                      }}
+                    >
+                      {card.text.join(", ")}
+                    </Typography>
                     {isCurrent && (showAnswer || showTranslation) && (
                       <Collapse
                         in={showAnswer || showTranslation}
@@ -742,38 +780,19 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                             bgcolor: "divider",
                           }}
                         />
-                        <Box
+                        <Typography
+                          variant="h5"
+                          color="text.secondary"
                           sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 0.5,
-                            mt: 2,
+                            userSelect: "none",
+                            pointerEvents: "none",
+                            px: 1,
                           }}
                         >
-                          <Typography
-                            variant="h5"
-                            color="text.secondary"
-                            sx={{
-                              userSelect: "none",
-                              pointerEvents: "none",
-                            }}
-                          >
-                            {showTranslation && !showAnswer
-                              ? card.backVariants.join(", ")
-                              : result?.correctVariants.join(", ")}
-                          </Typography>
-                          <SpeakButton
-                            text={
-                              showTranslation && !showAnswer
-                                ? card.backVariants
-                                : result?.correctVariants ?? []
-                            }
-                            language={card.answerLanguage ?? DEFAULT_BACK_LANGUAGE}
-                            label="Listen to answer"
-                            variant="compact"
-                          />
-                        </Box>
+                          {showTranslation && !showAnswer
+                            ? card.backVariants.join(", ")
+                            : result?.correctVariants.join(", ")}
+                        </Typography>
                       </Collapse>
                     )}
                   </CardContent>
