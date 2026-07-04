@@ -10,12 +10,14 @@ import React, { useMemo, useState } from "react";
 import {
   DEFAULT_DESK_STUDY_MODE,
   DEFAULT_FEED_STUDY_MODE,
+  FEED_STUDY_MODES,
+  FeedStudyMode,
   STUDY_MODE_LABELS,
   StudyMode,
+  normalizeFeedStudyMode,
 } from "@/constants/studyMode.const";
 
 const DESK_STUDY_MODES: StudyMode[] = ["write", "reveal", "match"];
-const FEED_STUDY_MODES: StudyMode[] = ["swipe", "write", "reveal", "match"];
 
 function normalizeStudyMode(value: StudyMode, modes: StudyMode[]): StudyMode {
   if (modes.includes(value)) return value;
@@ -37,19 +39,20 @@ export default function StudyModeSelectModal({
   setOpenSheet,
   includeSwipe = false,
 }: StudyModeSelectModalProps) {
-  const modes = useMemo(
-    () => (includeSwipe ? FEED_STUDY_MODES : DESK_STUDY_MODES),
-    [includeSwipe]
-  );
+  const deskModes = useMemo(() => DESK_STUDY_MODES, []);
+  const feedModes = useMemo(() => [...FEED_STUDY_MODES], []);
+  const modes = includeSwipe ? feedModes : deskModes;
 
   const fallback = includeSwipe ? DEFAULT_FEED_STUDY_MODE : DEFAULT_DESK_STUDY_MODE;
 
-  const [selectedValue, setSelectedValue] = useState<StudyMode>(
-    normalizeStudyMode(currentValue ?? fallback, modes)
+  const [selectedValue, setSelectedValue] = useState<StudyMode | FeedStudyMode>(
+    includeSwipe
+      ? normalizeFeedStudyMode(currentValue)
+      : normalizeStudyMode(currentValue ?? fallback, deskModes)
   );
 
   const handleClose = () => {
-    onClose(selectedValue);
+    onClose(selectedValue as StudyMode);
     setOpenSheet(null);
   };
 

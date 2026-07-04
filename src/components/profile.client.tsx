@@ -40,7 +40,7 @@ import WithBottomNav from "./layout/WithBottomNav";
 import { useState } from "react";
 import FeedSettingsCardOrientationModal from "./modals/FeedSettings/FeedSettingsCardOrientation.modal";
 import { CARD_ORIENTATION } from "@/services/desk/desk.const";
-import { DEFAULT_FEED_STUDY_MODE, DEFAULT_REVIEW_STUDY_MODE, STUDY_MODE_LABELS, StudyMode } from "@/constants/studyMode.const";
+import { DEFAULT_FEED_STUDY_MODE, DEFAULT_REVIEW_STUDY_MODE, STUDY_MODE_LABELS, StudyMode, normalizeFeedStudyMode } from "@/constants/studyMode.const";
 import StudyModeSelectModal from "./modals/StudyModeSelect.modal";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import React from "react";
@@ -118,9 +118,8 @@ export default function ProfileClient() {
     },
   ];
 
-  const feedStudyModeLabel = profileInfo?.settings?.study_mode
-    ? STUDY_MODE_LABELS[profileInfo.settings.study_mode]
-    : STUDY_MODE_LABELS[DEFAULT_FEED_STUDY_MODE];
+  const feedStudyModeLabel =
+    STUDY_MODE_LABELS[normalizeFeedStudyMode(profileInfo?.settings?.study_mode)];
 
   const reviewStudyModeLabel = profileInfo?.settings?.reviewSettings?.study_mode
     ? STUDY_MODE_LABELS[profileInfo.settings.reviewSettings.study_mode]
@@ -830,13 +829,21 @@ export default function ProfileClient() {
           title="Feed study mode"
           includeSwipe
           setOpenSheet={setOpenSheet}
-          currentValue={profileInfo.settings.study_mode ?? DEFAULT_FEED_STUDY_MODE}
+          currentValue={normalizeFeedStudyMode(
+            profileInfo.settings.study_mode ?? DEFAULT_FEED_STUDY_MODE
+          )}
           onClose={(value) => {
-            if (value === (profileInfo.settings.study_mode ?? DEFAULT_FEED_STUDY_MODE)) return;
+            const normalized = normalizeFeedStudyMode(value);
+            if (
+              normalized ===
+              normalizeFeedStudyMode(profileInfo.settings.study_mode ?? DEFAULT_FEED_STUDY_MODE)
+            ) {
+              return;
+            }
 
             onUpdateFeedSettingsSubmit({
               card_orientation: profileInfo.settings.card_orientation,
-              study_mode: value,
+              study_mode: normalized,
             });
           }}
         />

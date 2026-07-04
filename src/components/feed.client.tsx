@@ -40,13 +40,18 @@ import {
   shownCardRequest,
   answerCardFeedRequest,
   gradeCardFeedRequest,
+  revealCardFeedRequest,
 } from "@/services/games/games";
 import { MY_PROFILE, USER_DESKS_SHORT } from "@/routes/react-query";
 import { getMyProfileRequest } from "@/services/user/user";
-import { DEFAULT_FEED_STUDY_MODE } from "@/constants/studyMode.const";
-import FeedStudyPlay from "@/components/feedStudyPlay.client";
+import {
+  DEFAULT_FEED_STUDY_MODE,
+  FeedStudyMode,
+  normalizeFeedStudyMode,
+} from "@/constants/studyMode.const";
 import {
   invalidateUserDaily,
+  shouldInvalidateDailyAfterGrade,
   shouldInvalidateDailyAfterWriteAnswer,
 } from "@/utils/invalidateUserDaily";
 import {
@@ -110,23 +115,19 @@ export default function FeedPage() {
   const { data: feedStudyMode, isLoading: profileLoading } = useQuery({
     queryKey: [MY_PROFILE],
     queryFn: () => call((token) => getMyProfileRequest(token)),
-    select: (data) => data.settings.study_mode ?? DEFAULT_FEED_STUDY_MODE,
+    select: (data) => normalizeFeedStudyMode(data.settings.study_mode),
   });
 
   if (profileLoading) {
     return <FullPageLoader />;
   }
 
-  const studyMode = feedStudyMode ?? DEFAULT_FEED_STUDY_MODE;
+  const studyMode = normalizeFeedStudyMode(feedStudyMode ?? DEFAULT_FEED_STUDY_MODE);
 
-  if (studyMode === "swipe") {
-    return <FeedSwipePage />;
-  }
-
-  return <FeedStudyPlay preferredMode={studyMode} />;
+  return <FeedSwipePage key={studyMode} feedStudyMode={studyMode} />;
 }
 
-function FeedSwipePage() {
+function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
   const navigate = useNavigate();
   const { call } = useProtectedRequest();
   const { accessToken } = useAuthContext();
@@ -161,6 +162,8 @@ function FeedSwipePage() {
   const [isGradingRequired, setIsGradingRequired] = useState(false);
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const [isGradingPending, setGradingPending] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const [gradedCardSubs, setGradedCardSubs] = useState<Set<string>>(new Set());
 
   const exitTimerRef = useRef<number | null>(null);
 
@@ -349,6 +352,11 @@ function FeedSwipePage() {
       }
 
       if (e.dir === "Up" && -e.deltaY > SWIPE_THRESHOLD) {
+        if (currentCard && !gradedCardSubs.has(currentCard.sub)) {
+          snapBack();
+          return;
+        }
+
         animateSwipeExit(-window.innerHeight, goToNextCard);
         return;
       }
@@ -364,6 +372,33 @@ function FeedSwipePage() {
     trackMouse: true,
     delta: 10,
   });
+
+  const handleReveal = async () => {
+    if (!sessionId || !currentCard || isRevealing) return;
+
+    setIsRevealing(true);
+
+    try {
+      const response = await call((token) =>
+        revealCardFeedRequest(
+          { sessionId, cardSub: currentCard.sub },
+          token
+        )
+      );
+
+      setResult({
+        isCorrect: true,
+        correctVariants: response.answerVariants,
+      });
+      setShowAnswer(true);
+      setShowGrades(true);
+      setIsGradingRequired(true);
+    } catch (error) {
+      console.error("Reveal failed:", error);
+    } finally {
+      setIsRevealing(false);
+    }
+  };
 
   const handleSubmitAnswer = async () => {
     if (!sessionId || !userAnswer.trim() || !currentCard) return;
@@ -417,6 +452,11 @@ function FeedSwipePage() {
         )
       );
 
+      if (feedStudyMode === "reveal" && shouldInvalidateDailyAfterGrade(quality, "reveal")) {
+        invalidateUserDaily(queryClient);
+      }
+
+      setGradedCardSubs((prev) => new Set(prev).add(currentCard.sub));
       setShowGrades(false);
       setIsGradingRequired(false);
       setShowTranslation(false);
@@ -480,11 +520,13 @@ function FeedSwipePage() {
   }
 
   const cardColor =
-    result === null
+    feedStudyMode === "reveal" && showAnswer
       ? "background.paper"
-      : result.isCorrect
-      ? "successBg"
-      : "errorBg";
+      : result === null
+        ? "background.paper"
+        : result.isCorrect
+          ? "successBg"
+          : "errorBg";
 
   return (
     <Box sx={VIEWPORT_SHELL_SX}>
@@ -725,7 +767,7 @@ function FeedSwipePage() {
           })}
         </Box>
 
-        {currentCard && !showGrades && (
+        {currentCard && !showGrades && feedStudyMode === "write" && (
           <Fade in={true}>
             <Box
               sx={{
@@ -787,6 +829,32 @@ function FeedSwipePage() {
                   ),
                 }}
               />
+            </Box>
+          </Fade>
+        )}
+
+        {currentCard && !showGrades && feedStudyMode === "reveal" && (
+          <Fade in={true}>
+            <Box
+              sx={{
+                flexShrink: 0,
+                p: 2,
+                bgcolor: "background.paper",
+                borderTop: "1px solid",
+                borderColor: "divider",
+                pb: 2,
+              }}
+            >
+              <Button
+                fullWidth
+                variant="contained"
+                size="large"
+                onClick={handleReveal}
+                disabled={isRevealing || isSwiping}
+                sx={{ minHeight: 48 }}
+              >
+                {isRevealing ? "Loading…" : "Show answer"}
+              </Button>
             </Box>
           </Fade>
         )}

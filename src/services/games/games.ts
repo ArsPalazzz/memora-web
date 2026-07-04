@@ -112,6 +112,19 @@ export async function submitMatchRequest(
   );
 }
 
+export async function revealCardFeedRequest(
+  payload: { sessionId: string; cardSub: string },
+  token: string
+): Promise<RevealResult> {
+  const { cardSub, ...rest } = payload;
+
+  return handleApiRequest(
+    api.post(`/games/reveal-feed/${cardSub}`, rest, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
 export async function gradeCardRequest(
   payload: { sessionId: string; quality: number; cardSub?: string },
   token: string
