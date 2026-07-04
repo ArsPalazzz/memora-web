@@ -1,3 +1,5 @@
+import { LanguageCode } from "@/constants/language.const";
+
 export type StartSessionResponse = {
   sessionId: string;
   mode?: "write" | "reveal" | "match" | "swipe";
@@ -38,6 +40,8 @@ export type NextCardResponse = {
   card: {
     sub: string;
     text: string[];
+    promptLanguage?: LanguageCode;
+    answerLanguage?: LanguageCode;
   };
   progress: {
     current: number;
@@ -77,5 +81,7 @@ export type GetFeedNextCardResult = {
       answered: number;
     };
     examples: string[];
+    promptLanguage?: LanguageCode;
+    answerLanguage?: LanguageCode;
   }[];
 };

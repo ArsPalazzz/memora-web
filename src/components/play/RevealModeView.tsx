@@ -1,6 +1,12 @@
 import { Box, Button, Card, CardContent, Fade, Typography, useTheme } from "@mui/material";
 import { NextCardResponse, RevealResult } from "@/services/games/games.types";
 import { GradeButtons } from "./GradeButtons";
+import { CardPromptWithSpeak } from "./CardPromptWithSpeak";
+import { SpeakButton } from "@/components/ui/SpeakButton";
+import {
+  DEFAULT_BACK_LANGUAGE,
+  DEFAULT_FRONT_LANGUAGE,
+} from "@/constants/language.const";
 
 interface RevealModeViewProps {
   currentCard: NextCardResponse;
@@ -21,6 +27,10 @@ export function RevealModeView({
 }: RevealModeViewProps) {
   const theme = useTheme();
   const revealed = result !== null;
+  const promptLanguage =
+    currentCard.card.promptLanguage ?? DEFAULT_FRONT_LANGUAGE;
+  const answerLanguage =
+    currentCard.card.answerLanguage ?? DEFAULT_BACK_LANGUAGE;
 
   return (
     <>
@@ -47,9 +57,10 @@ export function RevealModeView({
                 gap: 2,
               }}
             >
-              <Typography variant="h4" fontWeight={600}>
-                {currentCard.card.text.join(", ")}
-              </Typography>
+              <CardPromptWithSpeak
+                text={currentCard.card.text}
+                language={promptLanguage}
+              />
 
               {revealed && (
                 <Fade in>
@@ -63,9 +74,24 @@ export function RevealModeView({
                         bgcolor: "divider",
                       }}
                     />
-                    <Typography variant="h5" fontWeight={500} color="text.primary">
-                      {result.answerVariants.join(", ")}
-                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 0.5,
+                      }}
+                    >
+                      <Typography variant="h5" fontWeight={500} color="text.primary">
+                        {result.answerVariants.join(", ")}
+                      </Typography>
+                      <SpeakButton
+                        text={result.answerVariants}
+                        language={answerLanguage}
+                        label="Listen to answer"
+                        size="medium"
+                      />
+                    </Box>
 
                     {result.examples.length > 0 && (
                       <Box sx={{ mt: 3, textAlign: "left", width: "100%" }}>

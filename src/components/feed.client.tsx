@@ -45,6 +45,11 @@ import {
 import { MY_PROFILE, USER_DESKS_SHORT } from "@/routes/react-query";
 import { getMyProfileRequest } from "@/services/user/user";
 import {
+  DEFAULT_BACK_LANGUAGE,
+  DEFAULT_FRONT_LANGUAGE,
+  LanguageCode,
+} from "@/constants/language.const";
+import {
   DEFAULT_FEED_STUDY_MODE,
   FeedStudyMode,
   normalizeFeedStudyMode,
@@ -67,6 +72,8 @@ import CardExamplesModal from "./modals/CardExamples/CardExamples.modal";
 import { useAuthContext } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { useNotification } from "@/context/NotificationContext";
+import { CardPromptWithSpeak } from "@/components/play/CardPromptWithSpeak";
+import { SpeakButton } from "@/components/ui/SpeakButton";
 
 interface FeedCard {
   sub: string;
@@ -81,6 +88,8 @@ interface FeedCard {
     answered: number;
   };
   examples: string[];
+  promptLanguage?: LanguageCode;
+  answerLanguage?: LanguageCode;
 }
 
 const GRADE_COLORS: Record<number, string> = {
@@ -700,17 +709,25 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                       pt: 8,
                     }}
                   >
-                    <Typography
-                      variant="h3"
-                      fontWeight={600}
-                      gutterBottom
-                      sx={{
-                        userSelect: "none",
-                        pointerEvents: "none",
-                      }}
-                    >
-                      {card.text.join(", ")}
-                    </Typography>
+                    {isCurrent ? (
+                      <CardPromptWithSpeak
+                        text={card.text}
+                        language={card.promptLanguage ?? DEFAULT_FRONT_LANGUAGE}
+                        variant="h3"
+                      />
+                    ) : (
+                      <Typography
+                        variant="h3"
+                        fontWeight={600}
+                        gutterBottom
+                        sx={{
+                          userSelect: "none",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        {card.text.join(", ")}
+                      </Typography>
+                    )}
                     {isCurrent && (showAnswer || showTranslation) && (
                       <Collapse
                         in={showAnswer || showTranslation}
@@ -724,22 +741,41 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
                             my: 3,
                             bgcolor: "divider",
                           }}
-                        />{" "}
-                        <Typography
-                          variant="h5"
-                          color="text.secondary"
+                        />
+                        <Box
                           sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 0.5,
                             mt: 2,
-                            userSelect: "none",
-                            pointerEvents: "none",
                           }}
                         >
-                          {showTranslation && !showAnswer
-                            ? card.backVariants.join(", ")
-                            : result?.correctVariants.join(", ")}
-                        </Typography>{" "}
+                          <Typography
+                            variant="h5"
+                            color="text.secondary"
+                            sx={{
+                              userSelect: "none",
+                              pointerEvents: "none",
+                            }}
+                          >
+                            {showTranslation && !showAnswer
+                              ? card.backVariants.join(", ")
+                              : result?.correctVariants.join(", ")}
+                          </Typography>
+                          <SpeakButton
+                            text={
+                              showTranslation && !showAnswer
+                                ? card.backVariants
+                                : result?.correctVariants ?? []
+                            }
+                            language={card.answerLanguage ?? DEFAULT_BACK_LANGUAGE}
+                            label="Listen to answer"
+                            size="medium"
+                          />
+                        </Box>
                       </Collapse>
-                    )}{" "}
+                    )}
                   </CardContent>
                 </Card>
               </Box>

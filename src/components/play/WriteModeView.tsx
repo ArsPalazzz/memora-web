@@ -13,6 +13,12 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { NextCardResponse } from "@/services/games/games.types";
 import { GradeButtons } from "./GradeButtons";
 import { AnswerResult } from "./play.constants";
+import { CardPromptWithSpeak } from "./CardPromptWithSpeak";
+import { SpeakButton } from "@/components/ui/SpeakButton";
+import {
+  DEFAULT_BACK_LANGUAGE,
+  DEFAULT_FRONT_LANGUAGE,
+} from "@/constants/language.const";
 
 interface WriteModeViewProps {
   currentCard: NextCardResponse;
@@ -36,6 +42,10 @@ export function WriteModeView({
   onGrade,
 }: WriteModeViewProps) {
   const theme = useTheme();
+  const promptLanguage =
+    currentCard.card.promptLanguage ?? DEFAULT_FRONT_LANGUAGE;
+  const answerLanguage =
+    currentCard.card.answerLanguage ?? DEFAULT_BACK_LANGUAGE;
 
   const cardColor =
     result === null
@@ -69,9 +79,10 @@ export function WriteModeView({
                 px: 3,
               }}
             >
-              <Typography variant="h4" fontWeight={600}>
-                {currentCard.card.text.join(", ")}
-              </Typography>
+              <CardPromptWithSpeak
+                text={currentCard.card.text}
+                language={promptLanguage}
+              />
 
               {result !== null && (
                 <Box sx={{ height: 48, width: "100%", mt: 2 }}>
@@ -86,13 +97,27 @@ export function WriteModeView({
                           bgcolor: "divider",
                         }}
                       />
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ fontSize: "0.95rem" }}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 0.5,
+                        }}
                       >
-                        {result.correctVariants.join(", ")}
-                      </Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: "0.95rem" }}
+                        >
+                          {result.correctVariants.join(", ")}
+                        </Typography>
+                        <SpeakButton
+                          text={result.correctVariants}
+                          language={answerLanguage}
+                          label="Listen to answer"
+                        />
+                      </Box>
                     </Box>
                   </Fade>
                 </Box>
