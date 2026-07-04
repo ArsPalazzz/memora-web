@@ -1,6 +1,6 @@
 
 import { Typography, Box, Grid, IconButton, Button } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import AddIcon from "@mui/icons-material/Add";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
@@ -37,11 +37,18 @@ import { SortSelector } from "@/components/ui/SortSelector";
 import { FolderCard } from "./ui/FolterCard";
 import { useFolderSortSettings } from "@/hooks/useFolderSort";
 import { useNotification } from "@/context/NotificationContext";
+import {
+  FolderNavState,
+  getFolderPlaceholder,
+} from "@/utils/folder-placeholder";
 
 export default function FolderClient() {
   const params = useParams() as { id: string };
   const folderSub = params.id;
   const navigate = useNavigate();
+  const location = useLocation();
+  const folderTitleFromNav = (location.state as FolderNavState | null)
+    ?.folderTitle;
   const { accessToken } = useAuthContext();
   const queryClient = useQueryClient();
   const { call } = useProtectedRequest();
@@ -56,6 +63,8 @@ export default function FolderClient() {
     queryFn: async () =>
       call((token) => getFolderInfoRequest(folderSub, token)),
     enabled: !!folderSub,
+    placeholderData: () =>
+      getFolderPlaceholder(queryClient, folderSub, folderTitleFromNav),
   });
 
   const { data: contents, isLoading: isContentsLoading } = useQuery({
@@ -210,7 +219,7 @@ export default function FolderClient() {
         }}
       >
         <Header
-          title={folderInfo?.title || "Folder"}
+          title={folderInfo?.title ?? folderTitleFromNav ?? "Folder"}
           RightButton={<RightButtons />}
           onBack={() => navigate(-1)}
         />
@@ -283,7 +292,11 @@ export default function FolderClient() {
                       {item.type === "folder" ? (
                         <FolderCard
                           folder={item}
-                          onClick={() => navigate(`/folder/${item.sub}`)}
+                          onClick={() =>
+                            navigate(`/folder/${item.sub}`, {
+                              state: { folderTitle: item.title },
+                            })
+                          }
                         />
                       ) : (
                         <DeskCard

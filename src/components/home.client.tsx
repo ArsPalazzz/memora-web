@@ -349,7 +349,11 @@ export default function HomeClient() {
                         >
                           <FolderCard
                             folder={folder}
-                            onClick={() => navigate(`/folder/${folder.sub}`)}
+                            onClick={() =>
+                              navigate(`/folder/${folder.sub}`, {
+                                state: { folderTitle: folder.title },
+                              })
+                            }
                           />
                         </motion.div>
                       </Grid>
