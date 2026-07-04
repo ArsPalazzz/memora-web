@@ -10,7 +10,10 @@ import { useAuthContext } from "@/context/AuthContext";
 import {
   FOLDER_CONTENTS,
   FOLDER_INFO,
+  ROOT_FOLDERS,
+  USER_DESKS,
   USER_FOLDERS,
+  FOLDERS_FLAT,
 } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import { Loader } from "@/components/ui/Loader";
@@ -32,6 +35,8 @@ import {
   createFolderRequest,
   getFolderContentsRequest,
   getFolderInfoRequest,
+  moveDeskToFolderRequest,
+  moveFolderToParentRequest,
 } from "@/services/desk/desk";
 import { SortSelector } from "@/components/ui/SortSelector";
 import { FolderCard } from "./ui/FolterCard";
@@ -42,6 +47,7 @@ import {
   FolderNavState,
   getFolderPlaceholder,
 } from "@/utils/folder-placeholder";
+import MoveItemModal from "@/components/modals/MoveItem/MoveItem.modal";
 
 export default function FolderClient() {
   const params = useParams() as { id: string };
@@ -57,6 +63,12 @@ export default function FolderClient() {
 
   const [openDeskModal, setOpenDeskModal] = useState(false);
   const [openFolderModal, setOpenFolderModal] = useState(false);
+  const [moveTarget, setMoveTarget] = useState<{
+    type: "desk" | "folder";
+    sub: string;
+    title: string;
+    currentLocationSub: string | null;
+  } | null>(null);
   const [sortBy, updateSortBy] = useFolderSortSettings(folderSub);
 
   const { data: folderInfo, isLoading: isFolderInfoLoading } = useQuery({
@@ -185,6 +197,76 @@ export default function FolderClient() {
     createFolderMutation.mutate(data);
   };
 
+  const invalidateMoveQueries = () => {
+    queryClient.invalidateQueries({ queryKey: [FOLDER_CONTENTS] });
+    queryClient.invalidateQueries({ queryKey: [FOLDER_INFO] });
+    queryClient.invalidateQueries({ queryKey: [ROOT_FOLDERS] });
+    queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
+    queryClient.invalidateQueries({ queryKey: [USER_FOLDERS] });
+    queryClient.invalidateQueries({ queryKey: [FOLDERS_FLAT] });
+  };
+
+  const moveDeskMutation = useMutation({
+    mutationFn: (payload: {
+      deskSub: string;
+      folderSub: string | null;
+    }) =>
+      call((token) =>
+        moveDeskToFolderRequest(payload.deskSub, payload.folderSub, token)
+      ),
+    onSuccess: () => {
+      setMoveTarget(null);
+      invalidateMoveQueries();
+      notifySuccess("Deck moved successfully");
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const moveFolderMutation = useMutation({
+    mutationFn: (payload: {
+      folderSub: string;
+      parentFolderSub: string | null;
+    }) =>
+      call((token) =>
+        moveFolderToParentRequest(
+          payload.folderSub,
+          payload.parentFolderSub,
+          token
+        )
+      ),
+    onSuccess: () => {
+      setMoveTarget(null);
+      invalidateMoveQueries();
+      notifySuccess("Folder moved successfully");
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const handleMoveSubmit = (targetFolderSub: string | null) => {
+    if (!moveTarget) {
+      return;
+    }
+
+    if (moveTarget.type === "desk") {
+      moveDeskMutation.mutate({
+        deskSub: moveTarget.sub,
+        folderSub: targetFolderSub,
+      });
+      return;
+    }
+
+    moveFolderMutation.mutate({
+      folderSub: moveTarget.sub,
+      parentFolderSub: targetFolderSub,
+    });
+  };
+
   const getPriorityColor = (dueCards: number, totalCards: number) => {
     if (totalCards === 0) return "success";
     const ratio = dueCards / totalCards;
@@ -298,6 +380,14 @@ export default function FolderClient() {
                               state: { folderTitle: item.title },
                             })
                           }
+                          onMove={() =>
+                            setMoveTarget({
+                              type: "folder",
+                              sub: item.sub,
+                              title: item.title,
+                              currentLocationSub: folderSub,
+                            })
+                          }
                         />
                       ) : (
                         <DeskCard
@@ -316,6 +406,14 @@ export default function FolderClient() {
                               (item.newCards || 0)
                           )}
                           onClick={() => navigate(`/desk/${item.sub}`)}
+                          onMove={() =>
+                            setMoveTarget({
+                              type: "desk",
+                              sub: item.sub,
+                              title: item.title,
+                              currentLocationSub: folderSub,
+                            })
+                          }
                         />
                       )}
                     </motion.div>
@@ -347,6 +445,21 @@ export default function FolderClient() {
           onClose={() => setOpenFolderModal(false)}
           onSubmit={onSubmitFolder}
           isPending={createFolderMutation.isPending}
+        />
+      )}
+
+      {moveTarget && (
+        <MoveItemModal
+          open={!!moveTarget}
+          onClose={() => setMoveTarget(null)}
+          itemType={moveTarget.type}
+          itemTitle={moveTarget.title}
+          itemSub={moveTarget.sub}
+          currentLocationSub={moveTarget.currentLocationSub}
+          onSubmit={handleMoveSubmit}
+          isPending={
+            moveDeskMutation.isPending || moveFolderMutation.isPending
+          }
         />
       )}
     </WithBottomNav>

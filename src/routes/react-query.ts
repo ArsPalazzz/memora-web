@@ -9,6 +9,7 @@ export const USER_CARDS = "user-cards";
 export const USER_CARD = "user-card";
 
 export const ROOT_FOLDERS = "root-folders";
+export const FOLDERS_FLAT = "folders-flat";
 export const USER_FOLDERS = "user-folders";
 export const FOLDER_CONTENTS = "folder-contents";
 export const FOLDER_INFO = "folder-info";

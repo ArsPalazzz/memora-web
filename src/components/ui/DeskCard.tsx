@@ -1,4 +1,5 @@
-import { Box, Card, CardContent, Chip, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, IconButton, Typography } from "@mui/material";
+import DriveFileMoveOutlinedIcon from "@mui/icons-material/DriveFileMoveOutlined";
 import { MasteryProgress } from "./MasteryProgress";
 
 interface DeskStats {
@@ -15,6 +16,7 @@ export const DeskCard = ({
   priorityColor,
   onClick,
   onPointerDown,
+  onMove,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   desk: any;
@@ -22,6 +24,7 @@ export const DeskCard = ({
   priorityColor: string;
   onClick: () => void;
   onPointerDown?: () => void;
+  onMove?: (event: React.MouseEvent) => void;
 }) => (
   <Card
     variant="outlined"
@@ -71,6 +74,20 @@ export const DeskCard = ({
           variant="outlined"
           sx={{ ml: 1, flexShrink: 0 }}
         />
+
+        {onMove && (
+          <IconButton
+            size="small"
+            aria-label="Move deck"
+            onClick={(event) => {
+              event.stopPropagation();
+              onMove(event);
+            }}
+            sx={{ flexShrink: 0, ml: 0.5 }}
+          >
+            <DriveFileMoveOutlinedIcon fontSize="small" />
+          </IconButton>
+        )}
       </Box>
 
       {desk.description && (

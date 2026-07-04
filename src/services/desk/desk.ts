@@ -11,6 +11,7 @@ import {
   FetchDeskResponse,
   FetchDesksResponse,
   FetchDesksShortResponse,
+  FolderFlat,
   GetCardsToPlayResponse,
   RootFolder,
   UpdateCardParams,
@@ -99,6 +100,48 @@ export const getFoldersRequest = async (
     api.get("/folders", {
       headers: { Authorization: `Bearer ${token}` },
     })
+  );
+};
+
+export const getFoldersFlatRequest = async (
+  token: string
+): Promise<FolderFlat[]> => {
+  return handleApiRequest(
+    api.get("/folders/flat", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+};
+
+export const moveDeskToFolderRequest = async (
+  deskSub: string,
+  folderSub: string | null,
+  token: string
+): Promise<{ moved: boolean }> => {
+  return handleApiRequest(
+    api.put(
+      `/desks/${deskSub}/folder`,
+      { folder_sub: folderSub },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+  );
+};
+
+export const moveFolderToParentRequest = async (
+  folderSub: string,
+  parentFolderSub: string | null,
+  token: string
+): Promise<{ moved: boolean }> => {
+  return handleApiRequest(
+    api.put(
+      `/folders/${folderSub}/parent`,
+      { parent_folder_sub: parentFolderSub },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
   );
 };
 

@@ -1,9 +1,11 @@
-import { Box, Card, CardContent, Typography } from "@mui/material";
+import { Box, Card, CardContent, IconButton, Typography } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
+import DriveFileMoveOutlinedIcon from "@mui/icons-material/DriveFileMoveOutlined";
 
 export const FolderCard = ({
   folder,
   onClick,
+  onMove,
 }: {
   folder: {
     title: string;
@@ -12,6 +14,7 @@ export const FolderCard = ({
     description: string;
   };
   onClick: () => void;
+  onMove?: (event: React.MouseEvent) => void;
 }) => (
   <Card
     sx={{
@@ -30,10 +33,14 @@ export const FolderCard = ({
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
+            minWidth: 0,
           }}
         >
-          <Box>
-            <Typography variant="h6">{folder.title}</Typography>
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.5 }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="h6" noWrap>
+                {folder.title}
+              </Typography>
 
             {folder.description && (
               <Typography
@@ -49,6 +56,21 @@ export const FolderCard = ({
               >
                 {folder.description}
               </Typography>
+            )}
+            </Box>
+
+            {onMove && (
+              <IconButton
+                size="small"
+                aria-label="Move folder"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onMove(event);
+                }}
+                sx={{ flexShrink: 0 }}
+              >
+                <DriveFileMoveOutlinedIcon fontSize="small" />
+              </IconButton>
             )}
           </Box>
 

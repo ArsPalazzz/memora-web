@@ -99,6 +99,12 @@ export interface RootFolder {
   folderCount: number;
 }
 
+export interface FolderFlat {
+  sub: string;
+  title: string;
+  parentFolderSub: string | null;
+}
+
 export interface FetchDeskCardsResponse {
   sub: string;
   createdAt: string;
