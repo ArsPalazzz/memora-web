@@ -1,4 +1,5 @@
 import { CARD_ORIENTATION } from "../desk/desk.const";
+import { StudyMode } from "@/constants/studyMode.const";
 
 export interface SignUpParams {
   email: string;
@@ -22,8 +23,10 @@ export interface GetMyProfileResponse {
   };
   settings: {
     card_orientation: CARD_ORIENTATION;
+    study_mode: StudyMode;
     reviewSettings: {
       cards_per_session: number;
+      study_mode: StudyMode;
     };
   };
 }

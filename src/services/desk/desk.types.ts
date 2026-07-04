@@ -1,6 +1,7 @@
 import { UpdateDeskValues } from "@/schemas/updateDesk.schema";
 import { CARD_ORIENTATION } from "./desk.const";
 import { LanguageCode } from "@/constants/language.const";
+import { StudyMode } from "@/constants/studyMode.const";
 
 export interface FetchDesksResponse {
   sub: string;
@@ -35,10 +36,12 @@ export interface DeskSettings {
   front_language: LanguageCode;
   back_language: LanguageCode;
   example_language: LanguageCode;
+  study_mode: StudyMode;
 }
 
 export interface FeedSettings {
   card_orientation: CARD_ORIENTATION;
+  study_mode: StudyMode;
 }
 
 export interface FetchDeskResponse {
@@ -147,10 +150,12 @@ export interface UpdateDeskSettingsParams {
 
 export interface UpdateReviewSettingsParams {
   cards_per_session: number;
+  study_mode: StudyMode;
 }
 
 export interface UpdateFeedSettingsParams {
   card_orientation: CARD_ORIENTATION;
+  study_mode: StudyMode;
 }
 
 export interface UpdateDeskParams {

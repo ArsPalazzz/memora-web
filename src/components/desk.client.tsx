@@ -72,7 +72,13 @@ import DeskSettingsCardsPerSessionModal from "./modals/DeskSettings/DeskSettings
 import EditCardModal from "./modals/EditCard/EditCard.modal";
 import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettingsCardOrientation.modal";
 import DeskSettingsLanguagesModal from "./modals/DeskSettings/DeskSettingsLanguages.modal";
+import StudyModeSelectModal from "./modals/StudyModeSelect.modal";
 import { formatLanguagePair } from "@/constants/language.const";
+import {
+  DEFAULT_DESK_STUDY_MODE,
+  STUDY_MODE_LABELS,
+} from "@/constants/studyMode.const";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 import TranslateIcon from "@mui/icons-material/Translate";
 
 const PLAY_BUTTON_HEIGHT = 64;
@@ -335,6 +341,11 @@ export default function DeskClient() {
         )
       : "English → Russian";
 
+  const studyModeLabel =
+    desk?.settings?.study_mode != null
+      ? STUDY_MODE_LABELS[desk.settings.study_mode]
+      : STUDY_MODE_LABELS[DEFAULT_DESK_STUDY_MODE];
+
   const settingsItems = [
     {
       key: "cardsPerSession",
@@ -342,6 +353,13 @@ export default function DeskClient() {
       title: "Cards per session",
       subtitle: "How many cards to show each session",
       value: desk?.settings.cards_per_session,
+    },
+    {
+      key: "studyMode",
+      icon: <MenuBookIcon />,
+      title: "Study mode",
+      subtitle: "How you practice cards in this deck",
+      value: studyModeLabel,
     },
     {
       key: "cardOrientation",
@@ -897,6 +915,21 @@ export default function DeskClient() {
             onUpdateSettingsSubmit({
               ...desk.settings,
               card_orientation: value,
+            });
+          }}
+        />
+      )}
+
+      {desk && openSheet === "studyMode" && (
+        <StudyModeSelectModal
+          setOpenSheet={setOpenSheet}
+          currentValue={desk.settings.study_mode ?? DEFAULT_DESK_STUDY_MODE}
+          onClose={(value) => {
+            if (value === (desk.settings.study_mode ?? DEFAULT_DESK_STUDY_MODE)) return;
+
+            onUpdateSettingsSubmit({
+              ...desk.settings,
+              study_mode: value,
             });
           }}
         />

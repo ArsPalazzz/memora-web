@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Card,
@@ -40,8 +41,14 @@ import {
   answerCardFeedRequest,
   gradeCardFeedRequest,
 } from "@/services/games/games";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { USER_DESKS_SHORT } from "@/routes/react-query";
+import { MY_PROFILE, USER_DESKS_SHORT } from "@/routes/react-query";
+import { getMyProfileRequest } from "@/services/user/user";
+import { DEFAULT_FEED_STUDY_MODE } from "@/constants/studyMode.const";
+import FeedStudyPlay from "@/components/feedStudyPlay.client";
+import {
+  invalidateUserDaily,
+  shouldInvalidateDailyAfterWriteAnswer,
+} from "@/utils/invalidateUserDaily";
 import {
   addCardToDeskFeedRequest,
   fetchMyDesksShortRequest,
@@ -88,9 +95,50 @@ const GRADE_OPTIONS = [
 ] as const;
 
 export default function FeedPage() {
+  const { call } = useProtectedRequest();
+  const [browseMode, setBrowseMode] = useState(false);
+
+  const { data: feedStudyMode, isLoading: profileLoading } = useQuery({
+    queryKey: [MY_PROFILE],
+    queryFn: () => call((token) => getMyProfileRequest(token)),
+    select: (data) => data.settings.study_mode ?? DEFAULT_FEED_STUDY_MODE,
+  });
+
+  if (profileLoading) {
+    return <FullPageLoader />;
+  }
+
+  const studyMode = feedStudyMode ?? DEFAULT_FEED_STUDY_MODE;
+  const useSwipeUi = studyMode === "swipe" || browseMode;
+
+  if (!useSwipeUi) {
+    return (
+      <FeedStudyPlay
+        preferredMode={studyMode}
+        onBrowseMode={() => setBrowseMode(true)}
+      />
+    );
+  }
+
+  return (
+    <FeedSwipePage
+      showReturnToStudy={studyMode !== "swipe"}
+      onReturnToStudy={() => setBrowseMode(false)}
+    />
+  );
+}
+
+function FeedSwipePage({
+  showReturnToStudy = false,
+  onReturnToStudy,
+}: {
+  showReturnToStudy?: boolean;
+  onReturnToStudy?: () => void;
+}) {
   const navigate = useNavigate();
   const { call } = useProtectedRequest();
   const { accessToken } = useAuthContext();
+  const queryClient = useQueryClient();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [cards, setCards] = useState<FeedCard[]>([]);
@@ -322,6 +370,9 @@ export default function FeedPage() {
         isCorrect: response.isCorrect,
         correctVariants: response.correctVariants,
       });
+      if (shouldInvalidateDailyAfterWriteAnswer(response.isCorrect)) {
+        invalidateUserDaily(queryClient);
+      }
       setShowAnswer(true);
 
       setShowGrades(true);
@@ -418,7 +469,30 @@ export default function FeedPage() {
 
   return (
     <Box sx={VIEWPORT_SHELL_SX}>
-      <Header title="Feed" onBack={() => navigate(ROUTES.HOME)} />
+      <Header
+        title="Feed"
+        onBack={() => navigate(ROUTES.HOME)}
+        RightButton={
+          showReturnToStudy && onReturnToStudy ? (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={onReturnToStudy}
+              sx={{
+                color: "white",
+                borderColor: "rgba(255,255,255,0.6)",
+                minHeight: 36,
+                "&:hover": {
+                  borderColor: "white",
+                  bgcolor: "rgba(255,255,255,0.08)",
+                },
+              }}
+            >
+              Study
+            </Button>
+          ) : undefined
+        }
+      />
       <Box
         ref={containerRef}
         sx={{

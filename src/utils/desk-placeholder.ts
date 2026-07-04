@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { CARD_ORIENTATION } from "@/services/desk/desk.const";
 import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
+import { DEFAULT_DESK_STUDY_MODE } from "@/constants/studyMode.const";
 import {
   FetchDeskResponse,
   FetchDesksResponse,
@@ -29,6 +30,7 @@ export function deskSummaryToPlaceholder(
     settings: {
       cards_per_session: 20,
       card_orientation: CARD_ORIENTATION.NORMAL,
+      study_mode: DEFAULT_DESK_STUDY_MODE,
       ...DEFAULT_DESK_LANGUAGE_SETTINGS,
     },
     stats: {

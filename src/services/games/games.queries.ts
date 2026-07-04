@@ -1,6 +1,6 @@
 import { useProtectedRequest } from "@/utils/protected";
 import { useMutation } from "@tanstack/react-query";
-import { answerCardRequest, getNextCardRequest } from "./games";
+import { answerCardRequest, getMatchBoardRequest, getNextCardRequest, revealCardRequest, submitMatchRequest } from "./games";
 
 export function useNextCard() {
   const { call } = useProtectedRequest();
@@ -8,6 +8,35 @@ export function useNextCard() {
   return useMutation({
     mutationFn: (sessionId: string) =>
       call((token) => getNextCardRequest(sessionId, token)),
+  });
+}
+
+export function useRevealCard() {
+  const { call } = useProtectedRequest();
+
+  return useMutation({
+    mutationFn: (sessionId: string) =>
+      call((token) => revealCardRequest(sessionId, token)),
+  });
+}
+
+export function useMatchBoard() {
+  const { call } = useProtectedRequest();
+
+  return useMutation({
+    mutationFn: (sessionId: string) =>
+      call((token) => getMatchBoardRequest(sessionId, token)),
+  });
+}
+
+export function useSubmitMatch() {
+  const { call } = useProtectedRequest();
+
+  return useMutation({
+    mutationFn: (payload: {
+      sessionId: string;
+      pairs: { leftCardSub: string; rightSlotId: number }[];
+    }) => call((token) => submitMatchRequest(payload, token)),
   });
 }
 

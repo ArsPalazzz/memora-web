@@ -2,7 +2,10 @@ import { api, handleApiRequest } from "@/lib/axios";
 import {
   AnswerResult,
   GetFeedNextCardResult,
+  MatchBoardResponse,
+  MatchSubmitResponse,
   NextCardResponse,
+  RevealResult,
   StartReviewSessionResult,
   StartSessionResponse,
 } from "./games.types";
@@ -69,8 +72,48 @@ export async function answerInGameSessionRequest(
   );
 }
 
+export async function revealCardRequest(
+  sessionId: string,
+  token: string
+): Promise<RevealResult> {
+  return handleApiRequest(
+    api.post(
+      "/games/reveal",
+      { sessionId },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+  );
+}
+
+export async function getMatchBoardRequest(
+  sessionId: string,
+  token: string
+): Promise<MatchBoardResponse> {
+  return handleApiRequest(
+    api.get(`/games/match-board/${sessionId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function submitMatchRequest(
+  payload: {
+    sessionId: string;
+    pairs: { leftCardSub: string; rightSlotId: number }[];
+  },
+  token: string
+): Promise<MatchSubmitResponse> {
+  return handleApiRequest(
+    api.post("/games/match-submit", payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
 export async function gradeCardRequest(
-  payload: { sessionId: string; quality: number },
+  payload: { sessionId: string; quality: number; cardSub?: string },
   token: string
 ): Promise<AnswerResult> {
   return handleApiRequest(

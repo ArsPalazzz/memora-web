@@ -40,6 +40,9 @@ import WithBottomNav from "./layout/WithBottomNav";
 import { useState } from "react";
 import FeedSettingsCardOrientationModal from "./modals/FeedSettings/FeedSettingsCardOrientation.modal";
 import { CARD_ORIENTATION } from "@/services/desk/desk.const";
+import { DEFAULT_FEED_STUDY_MODE, DEFAULT_REVIEW_STUDY_MODE, STUDY_MODE_LABELS, StudyMode } from "@/constants/studyMode.const";
+import StudyModeSelectModal from "./modals/StudyModeSelect.modal";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 import React from "react";
 import { useThemeContext } from "@/context/ThemeContext";
 import ThemeTogglerModal from "./modals/FeedSettings/ThemeTogglermodal";
@@ -115,6 +118,14 @@ export default function ProfileClient() {
     },
   ];
 
+  const feedStudyModeLabel = profileInfo?.settings?.study_mode
+    ? STUDY_MODE_LABELS[profileInfo.settings.study_mode]
+    : STUDY_MODE_LABELS[DEFAULT_FEED_STUDY_MODE];
+
+  const reviewStudyModeLabel = profileInfo?.settings?.reviewSettings?.study_mode
+    ? STUDY_MODE_LABELS[profileInfo.settings.reviewSettings.study_mode]
+    : STUDY_MODE_LABELS[DEFAULT_REVIEW_STUDY_MODE];
+
   const feedItems = [
     {
       key: "cardOrientation",
@@ -122,6 +133,13 @@ export default function ProfileClient() {
       title: "Card orientation",
       subtitle: "How cards should be displayed",
       value: cardOrientation,
+    },
+    {
+      key: "studyModeFeed",
+      icon: <MenuBookIcon sx={{ color: "primary.main", fontSize: 20 }} />,
+      title: "Study mode",
+      subtitle: "How you practice cards in the feed",
+      value: feedStudyModeLabel,
     },
   ];
 
@@ -133,11 +151,18 @@ export default function ProfileClient() {
       subtitle: "How many cards to show in review",
       value: cardsPerSession,
     },
+    {
+      key: "studyModeReview",
+      icon: <MenuBookIcon sx={{ color: "primary.main", fontSize: 20 }} />,
+      title: "Study mode",
+      subtitle: "How you practice cards in review",
+      value: reviewStudyModeLabel,
+    },
   ];
 
   const updateReviewSettingsMutation = useMutation({
     mutationFn: (payload: {
-      data: { cards_per_session: number };
+      data: { cards_per_session: number; study_mode: StudyMode };
       token: string;
     }) => {
       return call(() =>
@@ -155,7 +180,10 @@ export default function ProfileClient() {
     },
   });
 
-  const onUpdateReviewSubmit = (data: { cards_per_session: number }) => {
+  const onUpdateReviewSubmit = (data: {
+    cards_per_session: number;
+    study_mode: StudyMode;
+  }) => {
     updateReviewSettingsMutation.mutate({ data, token: accessToken! });
   };
 
@@ -768,7 +796,11 @@ export default function ProfileClient() {
           onClose={(value: CARD_ORIENTATION) => {
             if (value === profileInfo.settings.card_orientation) return;
 
-            onUpdateFeedSettingsSubmit({ card_orientation: value });
+            onUpdateFeedSettingsSubmit({
+              card_orientation: value,
+              study_mode:
+                profileInfo.settings.study_mode ?? DEFAULT_FEED_STUDY_MODE,
+            });
           }}
         />
       )}
@@ -783,7 +815,49 @@ export default function ProfileClient() {
 
             if (value === perSession) return;
 
-            onUpdateReviewSubmit({ cards_per_session: value });
+            onUpdateReviewSubmit({
+              cards_per_session: value,
+              study_mode:
+                profileInfo.settings.reviewSettings.study_mode ??
+                DEFAULT_REVIEW_STUDY_MODE,
+            });
+          }}
+        />
+      )}
+
+      {profileInfo && openSheet === "studyModeFeed" && (
+        <StudyModeSelectModal
+          title="Feed study mode"
+          includeSwipe
+          setOpenSheet={setOpenSheet}
+          currentValue={profileInfo.settings.study_mode ?? DEFAULT_FEED_STUDY_MODE}
+          onClose={(value) => {
+            if (value === (profileInfo.settings.study_mode ?? DEFAULT_FEED_STUDY_MODE)) return;
+
+            onUpdateFeedSettingsSubmit({
+              card_orientation: profileInfo.settings.card_orientation,
+              study_mode: value,
+            });
+          }}
+        />
+      )}
+
+      {profileInfo && openSheet === "studyModeReview" && (
+        <StudyModeSelectModal
+          setOpenSheet={setOpenSheet}
+          currentValue={
+            profileInfo.settings.reviewSettings.study_mode ?? DEFAULT_REVIEW_STUDY_MODE
+          }
+          onClose={(value) => {
+            const current =
+              profileInfo.settings.reviewSettings.study_mode ?? DEFAULT_REVIEW_STUDY_MODE;
+
+            if (value === current) return;
+
+            onUpdateReviewSubmit({
+              cards_per_session: profileInfo.settings.reviewSettings.cards_per_session,
+              study_mode: value,
+            });
           }}
         />
       )}

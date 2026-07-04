@@ -1,8 +1,40 @@
 export type StartSessionResponse = {
   sessionId: string;
+  mode?: "write" | "reveal" | "match" | "swipe";
+};
+
+export type MatchBoardCard = {
+  sub: string;
+  front: string[];
+  backVariants: string[];
+};
+
+export type MatchBoardRightSlot = {
+  slotId: number;
+  text: string;
+};
+
+export type MatchCardResult = {
+  cardSub: string;
+  isCorrect: boolean;
+};
+
+export type MatchBoardResponse = {
+  sessionId: string;
+  cards: MatchBoardCard[];
+  rightSlots: MatchBoardRightSlot[];
+  progress: { total: number };
+  submitted: boolean;
+  results?: MatchCardResult[];
+};
+
+export type MatchSubmitResponse = {
+  sessionId: string;
+  results: MatchCardResult[];
 };
 
 export type NextCardResponse = {
+  mode?: "write" | "reveal" | "match" | "swipe";
   card: {
     sub: string;
     text: string[];
@@ -13,6 +45,13 @@ export type NextCardResponse = {
   };
 };
 
+export type RevealResult = {
+  finished: boolean;
+  answerVariants: string[];
+  examples: string[];
+  frontVariants: string[];
+};
+
 export type AnswerResult = {
   isCorrect: boolean;
   finished: boolean;
@@ -21,6 +60,7 @@ export type AnswerResult = {
 
 export type StartReviewSessionResult = {
   sessionId: string;
+  mode?: "write" | "reveal" | "match" | "swipe";
 };
 
 export type GetFeedNextCardResult = {

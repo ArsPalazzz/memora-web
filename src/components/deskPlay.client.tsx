@@ -1,77 +1,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Box,
-  Card,
-  CardContent,
-  TextField,
-  Typography,
-  Fade,
-  useTheme,
-  InputAdornment,
-  IconButton,
-  LinearProgress,
-  Skeleton,
-} from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
 import { useProtectedRequest } from "@/utils/protected";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
-import { NextCardResponse } from "@/services/games/games.types";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import {
-  gradeCardRequest,
-  startDeskSessionRequest,
-} from "@/services/games/games";
-import { USER_DAILY } from "@/routes/react-query";
-import { FINISH_GAME_API } from "@/routes/api";
+import { startDeskSessionRequest } from "@/services/games/games";
 import { FullPageLoader } from "./ui/Loader";
-import { VIEWPORT_SHELL_SX, VIEWPORT_TOP_SAFE_PADDING } from "./layout/viewport.constants";
-
-type AnswerResult = {
-  isCorrect: boolean;
-  finished: boolean;
-  correctVariants: string[];
-};
-
-const GRADE_COLORS: Record<number, string> = {
-  0: "#e53935",
-  1: "#fb8c00",
-  2: "#fbc02d",
-  3: "#43a047",
-  4: "#2e7d32",
-};
-
-const GRADE_OPTIONS = [
-  { quality: 0, label: "Forgot" },
-  { quality: 1, label: "Hard" },
-  { quality: 2, label: "Okay" },
-  { quality: 3, label: "Good" },
-  { quality: 4, label: "Easy" },
-] as const;
+import { PlayScreen } from "./play/PlayScreen";
 
 export default function PlayDeskPage() {
   const params = useParams() as { id: string };
   const deskSub = params.id;
 
   const navigate = useNavigate();
-  const theme = useTheme();
   const { call } = useProtectedRequest();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [answer, setAnswer] = useState("");
-  const [result, setResult] = useState<AnswerResult | null>(null);
-
-  const queryClient = useQueryClient();
-
-  const [currentCard, setCurrentCard] = useState<NextCardResponse | null>(null);
-  const [cardLoading, setCardLoading] = useState<boolean>(false);
-
-  const [token, setToken] = useState<string | null>(null);
   const startedRef = useRef(false);
-
-  const nextCardMutation = useNextCard();
-  const answerMutation = useAnswerCard();
 
   const startSessionMutation = useMutation({
     mutationFn: async (deskSub: string) => {
@@ -81,351 +25,26 @@ export default function PlayDeskPage() {
     onError: (err) => console.log("ERROR", err),
   });
 
-  const handleStartSession = () => {
-    startSessionMutation.mutate(deskSub);
-  };
-
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    handleStartSession();
+    startSessionMutation.mutate(deskSub);
   }, [deskSub]);
 
-  useEffect(() => {
-    if (!sessionId) return;
-    setCardLoading(true);
-    nextCardMutation.mutate(sessionId, {
-      onSuccess: (res) => {
-        setCurrentCard(res);
-        setCardLoading(false);
-      },
-    });
-  }, [sessionId]);
+  const handleFinished = () => {
+    const currentState = window.history.state;
 
-  const submitAnswer = () => {
-    if (!sessionId || !answer.trim()) return;
+    window.history.back();
+    window.history.replaceState(currentState, "", `/desk/${deskSub}`);
 
-    answerMutation.mutate(
-      { sessionId, answer },
-      {
-        onSuccess: (res) => {
-          setResult(res);
-        },
-      }
-    );
+    setTimeout(() => {
+      navigate(`/desk/${deskSub}`, { replace: true });
+    }, 0);
   };
 
-  const gradeMutation = useMutation({
-    mutationFn: ({
-      sessionId,
-      quality,
-    }: {
-      sessionId: string;
-      quality: number;
-    }) => call((token) => gradeCardRequest({ sessionId, quality }, token)),
-  });
+  if (!sessionId && startSessionMutation.isPending) {
+    return <FullPageLoader />;
+  }
 
-  const submitGrade = (quality: number) => {
-    if (!sessionId) return;
-
-    gradeMutation.mutate(
-      { sessionId, quality },
-      {
-        onSuccess: () => {
-          nextCard();
-        },
-      }
-    );
-  };
-
-  const nextCard = async () => {
-    if (!sessionId) return;
-
-    if (result?.finished) {
-      const currentState = window.history.state;
-
-      window.history.back();
-
-      window.history.replaceState(currentState, "", `/desk/${deskSub}`);
-
-      setTimeout(() => {
-        navigate(`/desk/${deskSub}`, { replace: true });
-      }, 0);
-
-      return;
-    }
-
-    setAnswer("");
-    setResult(null);
-    setCardLoading(true);
-    nextCardMutation.mutate(sessionId, {
-      onSuccess: (res) => {
-        setCurrentCard(res);
-        setCardLoading(false);
-      },
-    });
-  };
-
-  useEffect(() => {
-    call((token) => {
-      setToken(token);
-      return Promise.resolve();
-    });
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (!sessionId || result?.finished || !token) return;
-
-      queryClient.invalidateQueries({ queryKey: [USER_DAILY] });
-
-      fetch(`/api${FINISH_GAME_API}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ sessionId }),
-        credentials: "include",
-        keepalive: true,
-      });
-    };
-  }, []);
-
-  if (cardLoading && !currentCard) return <FullPageLoader />;
-
-  const cardColor =
-    result === null
-      ? theme.palette.background.paper
-      : result.isCorrect
-      ? theme.palette.successBg
-      : theme.palette.errorBg;
-
-  return (
-    <Box
-      sx={{
-        ...VIEWPORT_SHELL_SX,
-        pb: 2,
-        pt: VIEWPORT_TOP_SAFE_PADDING,
-        boxSizing: "border-box",
-      }}
-    >
-      {currentCard && (
-        <Box sx={{ px: 3, mb: 2 }}>
-          <Box
-            sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              {currentCard.progress.current} / {currentCard.progress.total}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {Math.round(
-                (currentCard.progress.current / currentCard.progress.total) *
-                  100
-              )}
-              %
-            </Typography>
-          </Box>
-          <LinearProgress
-            variant="determinate"
-            value={
-              (currentCard.progress.current / currentCard.progress.total) * 100
-            }
-            sx={{
-              height: 9,
-              borderRadius: 8,
-              backgroundColor: "grey.200",
-              "& .MuiLinearProgress-bar": {
-                backgroundColor: "primary.main",
-                borderRadius: 4,
-              },
-            }}
-          />
-        </Box>
-      )}
-
-      {currentCard && (
-        <>
-          <Fade in key={currentCard.card.sub}>
-            <Box sx={{ flex: 1, minHeight: 0, display: "flex", px: 2 }}>
-              <Card
-                sx={{
-                  flex: 1,
-                  display: "flex",
-                  bgcolor: cardColor,
-                  transition: "background-color 0.3s",
-                  boxShadow: 4,
-                  borderRadius: 3,
-                }}
-              >
-                <CardContent
-                  sx={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    px: 3,
-                  }}
-                >
-                  <Typography variant="h4" fontWeight={600}>
-                    {currentCard.card.text.join(", ")}
-                  </Typography>
-
-                  {result !== null && (
-                    <Box sx={{ height: 48, width: "100%", mt: 2 }}>
-                      <Fade in={result !== null}>
-                        <Box>
-                          <Box
-                            sx={{
-                              height: "1px",
-                              width: "40%",
-                              mx: "auto",
-                              mb: 1,
-                              bgcolor: "divider",
-                            }}
-                          />
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontSize: "0.95rem" }}
-                          >
-                            {result?.correctVariants.join(", ")}
-                          </Typography>
-                        </Box>
-                      </Fade>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Box>
-          </Fade>
-
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              mt: 2,
-              mb: 2,
-              px: 2,
-            }}
-          >
-            {result === null ? (
-              <TextField
-                fullWidth
-                placeholder="Type your answer"
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && answer.trim()) {
-                    submitAnswer();
-                  }
-                }}
-                sx={{
-                  "& .MuiInputBase-root": {
-                    height: 48,
-                    minHeight: 48,
-                    px: 2,
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                  "& .MuiInputBase-input": {
-                    padding: 0,
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={submitAnswer}
-                        disabled={!answer.trim() || answerMutation.isPending}
-                      >
-                        <ArrowForwardIosIcon
-                          fontSize="small"
-                          color={
-                            answer.trim() && !answerMutation.isPending
-                              ? "primary"
-                              : "disabled"
-                          }
-                        />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            ) : (
-              <Fade in>
-                <Box
-                  sx={{
-                    display: "flex",
-                    width: "100%",
-                    overflow: "hidden",
-                  }}
-                >
-                  {GRADE_OPTIONS.map(({ quality, label }) => (
-                    <Box
-                      key={quality}
-                      onClick={() => {
-                        if (gradeMutation.isPending) return;
-                        submitGrade(quality);
-                      }}
-                      sx={{
-                        flex: 1,
-                        cursor: gradeMutation.isPending
-                          ? "not-allowed"
-                          : "pointer",
-                        textAlign: "center",
-                        py: 1.5,
-                        position: "relative",
-                        transition: "background-color 0.2s",
-                        "&:hover": {
-                          bgcolor: gradeMutation.isPending
-                            ? "transparent"
-                            : "action.hover",
-                        },
-                        opacity: gradeMutation.isPending ? 0.6 : 1,
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: 4,
-                          bgcolor: gradeMutation.isPending
-                            ? "#9e9e9e"
-                            : GRADE_COLORS[quality],
-                        }}
-                      />
-
-                      <Typography
-                        variant="body2"
-                        fontWeight={500}
-                        sx={{
-                          fontSize: "1.05rem",
-                          userSelect: "none",
-                          color: gradeMutation.isPending
-                            ? "#9e9e9e"
-                            : GRADE_COLORS[quality],
-                        }}
-                      >
-                        {label}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </Fade>
-            )}
-          </Box>
-        </>
-      )}
-    </Box>
-  );
+  return <PlayScreen sessionId={sessionId} onFinished={handleFinished} />;
 }
