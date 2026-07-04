@@ -20,16 +20,27 @@ export default function NewDeskModal(props: NewDeskModalProps) {
     <Dialog
       open={open}
       onClose={onClose}
+      scroll="paper"
       PaperProps={{
         sx: {
           maxWidth: isMobile ? "80vw" : "40vw",
           width: isMobile ? "80vw" : "40vw",
-          maxHeight: isMobile ? "90vh" : "40vw",
+          maxHeight: isMobile ? "min(520px, 85vh)" : "min(480px, 72vh)",
+          display: "flex",
+          flexDirection: "column",
         },
       }}
     >
-      <DialogTitle>Create New Deck</DialogTitle>
-      <DialogContent>
+      <DialogTitle sx={{ flexShrink: 0 }}>Create New Deck</DialogTitle>
+      <DialogContent
+        dividers
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          px: 3,
+        }}
+      >
         <CreateDesk
           onClose={onClose}
           onSubmit={onSubmit}
