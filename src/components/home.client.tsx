@@ -1,5 +1,5 @@
 
-import { Typography, Box, Grid, IconButton, Button, Menu, MenuItem } from "@mui/material";
+import { Typography, Box, Grid, IconButton, Button } from "@mui/material";
 import { useAuth } from "../utils/auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -13,7 +13,6 @@ import {
   moveFolderToParentRequest,
 } from "../services/desk/desk";
 import AddIcon from "@mui/icons-material/Add";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -68,8 +67,6 @@ export default function HomeClient() {
     title: string;
     currentLocationSub: string | null;
   } | null>(null);
-  const [anchorMenu, setAnchorMenu] = useState<HTMLElement | null>(null);
-  const openMenu = Boolean(anchorMenu);
 
   const handleTabChange = (newTab: number) => {
     setActiveTab(newTab);
@@ -271,28 +268,12 @@ export default function HomeClient() {
   const RightButton = () => {
     return (
       <Box sx={{ display: "flex", alignItems: "center" }}>
-        <IconButton onClick={(event) => setAnchorMenu(event.currentTarget)}>
-          <MoreHorizIcon sx={{ color: "white", fontSize: 30 }} />
-        </IconButton>
-
-        <Menu
-          anchorEl={anchorMenu}
-          open={openMenu}
-          onClose={() => setAnchorMenu(null)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
+        <IconButton
+          aria-label="Import from Anki"
+          onClick={() => navigate("/import/anki")}
         >
-          <MenuItem
-            sx={{ display: "flex", gap: 1, alignItems: "center" }}
-            onClick={() => {
-              setAnchorMenu(null);
-              navigate("/import/anki");
-            }}
-          >
-            <UploadFileIcon sx={{ fontSize: 20 }} />
-            <Typography>Import from Anki</Typography>
-          </MenuItem>
-        </Menu>
+          <UploadFileIcon sx={{ color: "white", fontSize: 28 }} />
+        </IconButton>
 
         {activeTab === 0 ? (
           <IconButton onClick={() => setOpenDeskModal(true)}>
