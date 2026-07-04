@@ -15,6 +15,7 @@ import {
   STUDY_MODE_LABELS,
   StudyMode,
   normalizeFeedStudyMode,
+  studyModeLabelSx,
 } from "@/constants/studyMode.const";
 
 const DESK_STUDY_MODES: StudyMode[] = ["write", "reveal", "match"];
@@ -88,7 +89,9 @@ export default function StudyModeSelectModal({
                 minHeight: 44,
               }}
             >
-              <Typography>{STUDY_MODE_LABELS[mode]}</Typography>
+              <Typography sx={studyModeLabelSx}>
+                {STUDY_MODE_LABELS[mode]}
+              </Typography>
               {selectedValue === mode && <CheckIcon />}
             </ListItemButton>
             {index < modes.length - 1 && <Divider />}

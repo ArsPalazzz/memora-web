@@ -11,10 +11,15 @@ export const DEFAULT_FEED_STUDY_MODE: FeedStudyMode = "write";
 
 export const STUDY_MODE_LABELS: Record<StudyMode, string> = {
   write: "Type answer",
-  reveal: "Reveal & grade",
+  reveal: "Reveal & Grade",
   match: "Match pairs",
   swipe: "Swipe browse",
 };
+
+export const studyModeLabelSx = {
+  whiteSpace: "nowrap",
+  flexShrink: 0,
+} as const;
 
 export function normalizeFeedStudyMode(mode: StudyMode | undefined | null): FeedStudyMode {
   return mode === "reveal" ? "reveal" : "write";

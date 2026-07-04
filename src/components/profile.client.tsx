@@ -40,7 +40,7 @@ import WithBottomNav from "./layout/WithBottomNav";
 import { useState } from "react";
 import FeedSettingsCardOrientationModal from "./modals/FeedSettings/FeedSettingsCardOrientation.modal";
 import { CARD_ORIENTATION } from "@/services/desk/desk.const";
-import { DEFAULT_FEED_STUDY_MODE, DEFAULT_REVIEW_STUDY_MODE, STUDY_MODE_LABELS, StudyMode, normalizeFeedStudyMode } from "@/constants/studyMode.const";
+import { DEFAULT_FEED_STUDY_MODE, DEFAULT_REVIEW_STUDY_MODE, STUDY_MODE_LABELS, StudyMode, normalizeFeedStudyMode, studyModeLabelSx } from "@/constants/studyMode.const";
 import StudyModeSelectModal from "./modals/StudyModeSelect.modal";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import React from "react";
@@ -483,7 +483,15 @@ export default function ProfileClient() {
                           />
                         </Box>
 
-                        <Typography color="text.secondary" fontWeight={600}>
+                        <Typography
+                          color="text.secondary"
+                          fontWeight={600}
+                          sx={
+                            item.key === "studyModeFeed"
+                              ? studyModeLabelSx
+                              : undefined
+                          }
+                        >
                           {item.value}
                         </Typography>
                       </ListItemButton>
@@ -550,7 +558,15 @@ export default function ProfileClient() {
                           />
                         </Box>
 
-                        <Typography color="text.secondary" fontWeight={600}>
+                        <Typography
+                          color="text.secondary"
+                          fontWeight={600}
+                          sx={
+                            item.key === "studyModeReview"
+                              ? studyModeLabelSx
+                              : undefined
+                          }
+                        >
                           {item.value}
                         </Typography>
                       </ListItemButton>

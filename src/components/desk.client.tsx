@@ -78,6 +78,7 @@ import { formatLanguagePair } from "@/constants/language.const";
 import {
   DEFAULT_DESK_STUDY_MODE,
   STUDY_MODE_LABELS,
+  studyModeLabelSx,
 } from "@/constants/studyMode.const";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import TranslateIcon from "@mui/icons-material/Translate";
@@ -796,6 +797,11 @@ export default function DeskClient() {
                               <Typography
                                 color="text.secondary"
                                 fontWeight={600}
+                                sx={
+                                  item.key === "studyMode"
+                                    ? studyModeLabelSx
+                                    : undefined
+                                }
                               >
                                 {item.value}
                               </Typography>
