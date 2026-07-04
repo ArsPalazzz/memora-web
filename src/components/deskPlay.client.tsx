@@ -26,7 +26,7 @@ import {
 import { USER_DAILY } from "@/routes/react-query";
 import { FINISH_GAME_API } from "@/routes/api";
 import { FullPageLoader } from "./ui/Loader";
-import { VIEWPORT_SHELL_SX } from "./layout/viewport.constants";
+import { VIEWPORT_SHELL_SX, VIEWPORT_TOP_SAFE_PADDING } from "./layout/viewport.constants";
 
 type AnswerResult = {
   isCorrect: boolean;
@@ -206,7 +206,7 @@ export default function PlayDeskPage() {
       sx={{
         ...VIEWPORT_SHELL_SX,
         pb: 2,
-        pt: 2,
+        pt: VIEWPORT_TOP_SAFE_PADDING,
         boxSizing: "border-box",
       }}
     >

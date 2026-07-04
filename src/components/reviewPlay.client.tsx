@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader } from "@/components/ui/Loader";
-import { VIEWPORT_SHELL_SX } from "@/components/layout/viewport.constants";
+import { VIEWPORT_SHELL_SX, VIEWPORT_TOP_SAFE_PADDING } from "@/components/layout/viewport.constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAnswerCard, useNextCard } from "@/services/games/games.queries";
 import { NextCardResponse } from "@/services/games/games.types";
@@ -193,7 +193,7 @@ export default function ReviewPlayClient() {
       sx={{
         ...VIEWPORT_SHELL_SX,
         pb: 2,
-        pt: 2,
+        pt: VIEWPORT_TOP_SAFE_PADDING,
         boxSizing: "border-box",
       }}
     >
