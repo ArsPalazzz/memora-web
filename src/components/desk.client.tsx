@@ -436,6 +436,10 @@ export default function DeskClient() {
         <Box
           sx={{
             position: "relative",
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Header
@@ -509,13 +513,16 @@ export default function DeskClient() {
               </>
             }
           />
-          {!desk && (loading || isDeskLoading) && (
-            <SectionLoader minHeight="50vh" />
-          )}
-
+          {!desk && (loading || isDeskLoading) ? (
+            <SectionLoader />
+          ) : (
+            <>
           {desk && (
           <Box
             sx={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
               paddingBottom: `calc(${PLAY_BUTTON_HEIGHT + 16}px + ${BOTTOM_NAV_HEIGHT})`,
             }}
           >
@@ -864,6 +871,8 @@ export default function DeskClient() {
                 )}
               </Card>
             </Box>
+          )}
+            </>
           )}
         </Box>
       </WithBottomNav>
