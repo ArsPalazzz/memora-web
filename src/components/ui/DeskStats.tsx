@@ -1,16 +1,7 @@
 
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { Box, Typography, Stack, IconButton } from "@mui/material";
-import { useState } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  ResponsiveContainer,
-} from "recharts";
+import { useMemo, useState } from "react";
 
 interface DeskStatsProps {
   stats: {
@@ -87,10 +78,157 @@ function EmptyPieRing() {
   );
 }
 
+const PIE_RADIUS = 32.5;
+const PIE_STROKE = 15;
+const PIE_CIRCUMFERENCE = 2 * Math.PI * PIE_RADIUS;
+
+function AnimatedDonut({
+  segments,
+  durationMs,
+}: {
+  segments: { value: number; color: string }[];
+  durationMs: number;
+}) {
+  const arcs = useMemo(() => {
+    const total = segments.reduce((sum, segment) => sum + segment.value, 0);
+    if (total === 0) return [];
+
+    let angle = -90;
+    return segments
+      .filter((segment) => segment.value > 0)
+      .map((segment, index) => {
+        const sweep = (segment.value / total) * 360;
+        const length = (segment.value / total) * PIE_CIRCUMFERENCE;
+        const gap = PIE_CIRCUMFERENCE - length;
+        const arc = {
+          key: index,
+          color: segment.color,
+          length,
+          gap,
+          rotation: angle,
+        };
+        angle += sweep;
+        return arc;
+      });
+  }, [segments]);
+
+  if (arcs.length === 0) return <EmptyPieRing />;
+
+  return (
+    <Box
+      component="svg"
+      viewBox="0 0 100 100"
+      sx={{ width: "100%", height: "100%", display: "block" }}
+    >
+      {arcs.map((arc) => (
+        <Box
+          key={arc.key}
+          component="circle"
+          cx={50}
+          cy={50}
+          r={PIE_RADIUS}
+          fill="none"
+          stroke={arc.color}
+          strokeWidth={PIE_STROKE}
+          strokeDasharray={`0 ${PIE_CIRCUMFERENCE}`}
+          sx={{
+            transformOrigin: "50px 50px",
+            transform: `rotate(${arc.rotation}deg)`,
+            animation: `deskStatsPieSegment${arc.key} ${durationMs}ms ease forwards`,
+            [`@keyframes deskStatsPieSegment${arc.key}`]: {
+              to: {
+                strokeDasharray: `${arc.length} ${arc.gap}`,
+              },
+            },
+          }}
+        />
+      ))}
+    </Box>
+  );
+}
+
+function AnimatedBarChart({
+  data,
+  durationMs,
+  animationKey,
+}: {
+  data: { day: string; count: number }[];
+  durationMs: number;
+  animationKey: string;
+}) {
+  const maxCount = Math.max(...data.map((item) => item.count), 1);
+  const plotHeight = 62;
+
+  return (
+    <Box
+      key={animationKey}
+      sx={{
+        display: "flex",
+        alignItems: "flex-end",
+        height: "100%",
+        pt: "13px",
+        pb: "5px",
+        "@keyframes deskStatsBarGrow": {
+          from: { transform: "scaleY(0)" },
+          to: { transform: "scaleY(1)" },
+        },
+      }}
+    >
+      {data.map((item) => {
+        const barHeight =
+          item.count > 0 ? Math.max(2, (item.count / maxCount) * plotHeight) : 0;
+
+        return (
+          <Box
+            key={item.day}
+            sx={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              minWidth: 0,
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 9,
+                lineHeight: 1,
+                color: "#666",
+                mb: 0.25,
+                minHeight: 10,
+              }}
+            >
+              {item.count > 0 ? item.count : ""}
+            </Typography>
+            <Box
+              sx={{
+                width: "70%",
+                height: barHeight,
+                bgcolor: "#5961d3",
+                opacity: 0.6,
+                borderRadius: "2px 2px 0 0",
+                transformOrigin: "bottom",
+                transform: "scaleY(0)",
+                animation:
+                  item.count > 0
+                    ? `deskStatsBarGrow ${durationMs}ms ease forwards`
+                    : "none",
+              }}
+            />
+            <Typography sx={{ fontSize: 10, lineHeight: 1, mt: 0.5 }}>
+              {item.day}
+            </Typography>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
 export function AnkiStyleStats({ stats }: DeskStatsProps) {
   const [week, setWeek] = useState<"current" | "previous">("current");
-  const touchDevice = isTouchDevice();
-  const chartAnimationMs = touchDevice ? 800 : 1200;
+  const chartAnimationMs = isTouchDevice() ? 800 : 1200;
 
   const pieData = [
     { name: "Due", value: stats.due_today, color: PIE_COLORS.due },
@@ -152,25 +290,10 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
           {pieTotal === 0 ? (
             <EmptyPieRing />
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={25}
-                  outerRadius={40}
-                  dataKey="value"
-                  stroke="none"
-                  animationBegin={0}
-                  animationDuration={chartAnimationMs}
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+            <AnimatedDonut
+              segments={pieData}
+              durationMs={chartAnimationMs}
+            />
           )}
         </Box>
 
@@ -206,32 +329,11 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
       </Stack>
 
       <Box sx={{ mt: 2, height: 90, ...chartContainerSx }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={barData}
-            margin={{ top: 13, right: 0, left: 0, bottom: 5 }}
-          >
-            <XAxis
-              dataKey="day"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10 }}
-            />
-            <Bar
-              dataKey="count"
-              radius={[2, 2, 0, 0]}
-              fill="#5961d3"
-              fillOpacity={0.6}
-              animationDuration={pieTotal === 0 ? 0 : chartAnimationMs}
-              label={{
-                position: "top",
-                formatter: (value) => (value === 0 ? "" : value),
-                fontSize: 9,
-                fill: "#666",
-              }}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+        <AnimatedBarChart
+          data={barData}
+          durationMs={pieTotal === 0 ? 0 : chartAnimationMs}
+          animationKey={week}
+        />
       </Box>
 
       <Stack
