@@ -149,8 +149,17 @@ export default function DeskCardsClient() {
   if (loading) {
     return (
       <WithBottomNav>
-        <Header title="Deck Cards" onBack={() => navigate(-1)} />
-        <SectionLoader minHeight="50vh" />
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Header title="Deck Cards" onBack={() => navigate(-1)} />
+          <SectionLoader />
+        </Box>
       </WithBottomNav>
     );
   }
@@ -162,26 +171,25 @@ export default function DeskCardsClient() {
         <Box
           sx={{
             position: "relative",
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Header title="Deck Cards" onBack={() => navigate(-1)} />
-          <Box
-            sx={{
-              flex: 1,
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
+
+          {isDeskLoading && !cards ? (
+            <SectionLoader />
+          ) : (
             <Box
               sx={{
                 flex: 1,
+                minHeight: 0,
                 overflowY: "auto",
                 paddingBottom: `calc(${PLAY_BUTTON_HEIGHT + 16}px + ${BOTTOM_NAV_HEIGHT})`,
               }}
             >
-              {isDeskLoading && !cards && <SectionLoader minHeight="50vh" />}
-
               {cards && !!cards.length && (
                 <Box sx={{ pt: 2, px: 2 }}>
                   <Box
@@ -332,7 +340,7 @@ export default function DeskCardsClient() {
                 </Box>
               )}
             </Box>
-          </Box>
+          )}
         </Box>
       </WithBottomNav>
 
