@@ -16,7 +16,7 @@ import {
   FOLDERS_FLAT,
 } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
-import { Loader } from "@/components/ui/Loader";
+import { SectionLoader } from "@/components/ui/Loader";
 import Header, { APP_HEADER_HEIGHT } from "@/components/layout/Header";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import { motion } from "framer-motion";
@@ -301,16 +301,7 @@ export default function FolderClient() {
       />
 
       {isLoading ? (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            py: 8,
-          }}
-        >
-          <Loader />
-        </Box>
+        <SectionLoader minHeight="50vh" />
       ) : (
         <Box sx={{ px: 2, pt: 2, pb: 2 }}>
           {!!contents?.length && (

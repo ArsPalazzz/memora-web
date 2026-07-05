@@ -90,8 +90,16 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
       return;
     }
 
+    if (parsed === accentColor) {
+      return;
+    }
+
     applyColor(parsed, true);
   };
+
+  const parsedCustomColor = parseColorInput(customInput);
+  const canApplyCustom =
+    parsedCustomColor !== null && parsedCustomColor !== accentColor;
 
   return (
     <Drawer
@@ -204,7 +212,10 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
           placeholder="#5961d3 or rgb(89, 97, 211)"
           value={customInput}
           error={Boolean(inputError)}
-          helperText={inputError ?? " "}
+          helperText={
+            inputError ??
+            (canApplyCustom ? " " : "Enter a new hex or rgb value below")
+          }
           onChange={(event) => {
             setCustomInput(event.target.value);
             if (inputError) {
@@ -212,7 +223,7 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
             }
           }}
           onKeyDown={(event) => {
-            if (event.key === "Enter") {
+            if (event.key === "Enter" && canApplyCustom) {
               handleApplyCustom();
             }
           }}
@@ -222,10 +233,11 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
       <Button
         variant="contained"
         fullWidth
+        disabled={!canApplyCustom}
         sx={{ mt: 1 }}
         onClick={handleApplyCustom}
       >
-        Apply & save
+        Apply custom color
       </Button>
     </Drawer>
   );
