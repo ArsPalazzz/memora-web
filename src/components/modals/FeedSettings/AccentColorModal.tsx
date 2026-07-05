@@ -11,13 +11,14 @@ import {
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import PaletteIcon from "@mui/icons-material/Palette";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useThemeContext } from "@/context/ThemeContext";
 import {
   ACCENT_PRESETS,
   parseColorInput,
 } from "@/theme/accentColor";
 import { AccentColorModalProps } from "./FeedSettings.types";
+import { AccentColorPicker } from "./AccentColorPicker";
 import { bottomSheetSlotProps } from "@/components/layout/overlay.constants";
 
 function ColorSwatch({
@@ -76,6 +77,7 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
   } = useThemeContext();
   const [customInput, setCustomInput] = useState(accentColor);
   const [inputError, setInputError] = useState<string | null>(null);
+  const lastValidPickerColorRef = useRef(accentColor);
 
   const applyColor = (color: string, save = true) => {
     setAccentColor(color, { save });
@@ -98,8 +100,19 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
   };
 
   const parsedCustomColor = parseColorInput(customInput);
+  if (parsedCustomColor) {
+    lastValidPickerColorRef.current = parsedCustomColor;
+  }
+  const pickerColor = parsedCustomColor ?? lastValidPickerColorRef.current;
   const canApplyCustom =
     parsedCustomColor !== null && parsedCustomColor !== accentColor;
+
+  const handlePickerChange = (hex: string) => {
+    setCustomInput(hex);
+    if (inputError) {
+      setInputError(null);
+    }
+  };
 
   return (
     <Drawer
@@ -193,13 +206,16 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
       <Typography variant="body2" color="text.secondary" mb={1.5}>
         Custom color
       </Typography>
-      <Stack direction="row" spacing={1.5} alignItems="flex-start">
+
+      <AccentColorPicker color={pickerColor} onChange={handlePickerChange} />
+
+      <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ mt: 2 }}>
         <Box
           sx={{
             width: 44,
             height: 44,
             borderRadius: 2,
-            bgcolor: parseColorInput(customInput) ?? accentColor,
+            bgcolor: pickerColor,
             border: 1,
             borderColor: "divider",
             flexShrink: 0,
@@ -214,7 +230,7 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
           error={Boolean(inputError)}
           helperText={
             inputError ??
-            (canApplyCustom ? " " : "Enter a new hex or rgb value below")
+            (canApplyCustom ? " " : "Adjust the picker or enter hex / rgb")
           }
           onChange={(event) => {
             setCustomInput(event.target.value);

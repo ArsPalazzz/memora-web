@@ -61,6 +61,118 @@ export function normalizeAccentColor(color: string): string {
   return parseColorInput(color) ?? DEFAULT_ACCENT_COLOR;
 }
 
+export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const parsed = parseColorInput(hex);
+  if (!parsed) {
+    return null;
+  }
+
+  const value = parsed.slice(1);
+  return {
+    r: Number.parseInt(value.slice(0, 2), 16),
+    g: Number.parseInt(value.slice(2, 4), 16),
+    b: Number.parseInt(value.slice(4, 6), 16),
+  };
+}
+
+export function rgbToHex(r: number, g: number, b: number): string {
+  return `#${[r, g, b]
+    .map((channel) =>
+      Math.max(0, Math.min(255, Math.round(channel)))
+        .toString(16)
+        .padStart(2, "0")
+    )
+    .join("")}`;
+}
+
+export function rgbToHsv(
+  r: number,
+  g: number,
+  b: number
+): { h: number; s: number; v: number } {
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const delta = max - min;
+
+  let h = 0;
+  if (delta !== 0) {
+    if (max === rn) {
+      h = 60 * (((gn - bn) / delta) % 6);
+    } else if (max === gn) {
+      h = 60 * ((bn - rn) / delta + 2);
+    } else {
+      h = 60 * ((rn - gn) / delta + 4);
+    }
+  }
+  if (h < 0) {
+    h += 360;
+  }
+
+  const s = max === 0 ? 0 : (delta / max) * 100;
+  const v = max * 100;
+
+  return { h, s, v };
+}
+
+export function hsvToRgb(
+  h: number,
+  s: number,
+  v: number
+): { r: number; g: number; b: number } {
+  const saturation = Math.max(0, Math.min(100, s)) / 100;
+  const value = Math.max(0, Math.min(100, v)) / 100;
+  const chroma = value * saturation;
+  const huePrime = (h % 360) / 60;
+  const x = chroma * (1 - Math.abs((huePrime % 2) - 1));
+  const m = value - chroma;
+
+  let rp = 0;
+  let gp = 0;
+  let bp = 0;
+
+  if (huePrime >= 0 && huePrime < 1) {
+    rp = chroma;
+    gp = x;
+  } else if (huePrime < 2) {
+    rp = x;
+    gp = chroma;
+  } else if (huePrime < 3) {
+    gp = chroma;
+    bp = x;
+  } else if (huePrime < 4) {
+    gp = x;
+    bp = chroma;
+  } else if (huePrime < 5) {
+    rp = x;
+    bp = chroma;
+  } else {
+    rp = chroma;
+    bp = x;
+  }
+
+  return {
+    r: (rp + m) * 255,
+    g: (gp + m) * 255,
+    b: (bp + m) * 255,
+  };
+}
+
+export function hexToHsv(hex: string): { h: number; s: number; v: number } | null {
+  const rgb = hexToRgb(hex);
+  if (!rgb) {
+    return null;
+  }
+  return rgbToHsv(rgb.r, rgb.g, rgb.b);
+}
+
+export function hsvToHex(h: number, s: number, v: number): string {
+  const rgb = hsvToRgb(h, s, v);
+  return rgbToHex(rgb.r, rgb.g, rgb.b);
+}
+
 export function getContrastText(background: string): string {
   const whiteContrast = getContrastRatio(background, "#ffffff");
   const blackContrast = getContrastRatio(background, "#000000");
