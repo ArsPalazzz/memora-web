@@ -3,6 +3,7 @@ import { DeskSettingsLanguagesModalProps } from "./DeskSettings.types";
 import { useState } from "react";
 import LanguageSelect from "@/components/ui/LanguageSelect";
 import { LanguageCode } from "@/constants/language.const";
+import { bottomSheetSlotProps } from "@/components/layout/overlay.constants";
 
 export default function DeskSettingsLanguagesModal(
   props: DeskSettingsLanguagesModalProps
@@ -32,6 +33,7 @@ export default function DeskSettingsLanguagesModal(
       open={true}
       anchor="bottom"
       onClose={() => setOpenSheet(null)}
+      slotProps={bottomSheetSlotProps}
       PaperProps={{
         sx: {
           borderTopLeftRadius: 16,

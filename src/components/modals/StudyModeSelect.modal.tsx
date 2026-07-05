@@ -17,6 +17,7 @@ import {
   normalizeFeedStudyMode,
   studyModeLabelSx,
 } from "@/constants/studyMode.const";
+import { bottomSheetSlotProps } from "@/components/layout/overlay.constants";
 
 const DESK_STUDY_MODES: StudyMode[] = ["write", "reveal", "match"];
 
@@ -62,6 +63,7 @@ export default function StudyModeSelectModal({
       open
       anchor="bottom"
       onClose={handleClose}
+      slotProps={bottomSheetSlotProps}
       PaperProps={{
         sx: {
           borderTopLeftRadius: 16,

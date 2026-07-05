@@ -18,6 +18,7 @@ import {
   parseColorInput,
 } from "@/theme/accentColor";
 import { AccentColorModalProps } from "./FeedSettings.types";
+import { bottomSheetSlotProps } from "@/components/layout/overlay.constants";
 
 function ColorSwatch({
   color,
@@ -97,6 +98,7 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
       open
       anchor="bottom"
       onClose={onClose}
+      slotProps={bottomSheetSlotProps}
       PaperProps={{
         sx: {
           borderTopLeftRadius: 16,

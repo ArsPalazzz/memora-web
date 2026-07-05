@@ -9,6 +9,7 @@ import { ThemeTogglerModalProps } from "./FeedSettings.types";
 import CheckIcon from "@mui/icons-material/Check";
 import React from "react";
 import { useThemeContext } from "@/context/ThemeContext";
+import { bottomSheetSlotProps } from "@/components/layout/overlay.constants";
 
 const PREDEFINED_VALUES = [
   { title: "Light", key: "light" },
@@ -24,6 +25,7 @@ export default function ThemeTogglerModal(props: ThemeTogglerModalProps) {
       open={true}
       anchor="bottom"
       onClose={onClose}
+      slotProps={bottomSheetSlotProps}
       PaperProps={{
         sx: {
           borderTopLeftRadius: 16,

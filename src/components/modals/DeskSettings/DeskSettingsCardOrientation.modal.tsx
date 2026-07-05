@@ -10,6 +10,7 @@ import { useState } from "react";
 import CheckIcon from "@mui/icons-material/Check";
 import React from "react";
 import { CARD_ORIENTATION } from "@/services/desk/desk.const";
+import { bottomSheetSlotProps } from "@/components/layout/overlay.constants";
 
 const PREDEFINED_VALUES = [
   CARD_ORIENTATION.NORMAL,
@@ -34,6 +35,7 @@ export default function DeskSettingsCardOrientationModal(
       open={true}
       anchor="bottom"
       onClose={handleClose}
+      slotProps={bottomSheetSlotProps}
       PaperProps={{
         sx: {
           borderTopLeftRadius: 16,

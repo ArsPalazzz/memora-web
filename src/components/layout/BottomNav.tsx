@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { ROUTES } from "@/routes/paths";
 import ExploreIcon from "@mui/icons-material/Explore";
 import { BOTTOM_NAV_BAR_HEIGHT } from "./bottom-nav.constants";
+import { BOTTOM_NAV_Z_INDEX } from "./overlay.constants";
 
 export { BOTTOM_NAV_HEIGHT } from "./bottom-nav.constants";
 
@@ -37,7 +38,7 @@ export default function BottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        zIndex: 1300,
+        zIndex: BOTTOM_NAV_Z_INDEX,
         height: BOTTOM_NAV_BAR_HEIGHT,
         bgcolor: "background.paper",
         borderTop: 1,

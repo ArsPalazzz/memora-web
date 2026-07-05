@@ -12,6 +12,7 @@ import { useState } from "react";
 import CheckIcon from "@mui/icons-material/Check";
 import React from "react";
 import { CARDS_PER_SESSION_LIMIT } from "@/services/desk/desk.const";
+import { bottomSheetSlotProps } from "@/components/layout/overlay.constants";
 
 const PREDEFINED_VALUES = [10, 25, 50, 75, 100, 125, 150, 175, 200];
 
@@ -49,6 +50,7 @@ export default function DeskSettingsCardsPerSessionModal(
       open={true}
       anchor="bottom"
       onClose={handleClose}
+      slotProps={bottomSheetSlotProps}
       PaperProps={{
         sx: {
           borderTopLeftRadius: 16,

@@ -3,6 +3,7 @@ import { Box, IconButton, Typography } from "@mui/material";
 import React, { useCallback, useRef } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { APP_HEADER_HEIGHT } from "./header.constants";
+import { APP_HEADER_Z_INDEX } from "./overlay.constants";
 
 export { APP_HEADER_HEIGHT };
 
@@ -53,7 +54,7 @@ export default function Header({
           pt: "env(safe-area-inset-top, 0px)",
           pb: 1,
           px: 2,
-          zIndex: 1400,
+          zIndex: APP_HEADER_Z_INDEX,
           isolation: "isolate",
           touchAction: "manipulation",
         }}
