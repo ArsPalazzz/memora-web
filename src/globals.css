@@ -51,10 +51,14 @@ a {
   }
 }
 
-/* Recharts SVG can capture touches on iOS PWA despite parent pointer-events */
+/* Decorative charts must never intercept taps/clicks (incl. iOS PWA). */
 .recharts-wrapper,
+.recharts-wrapper *,
 .recharts-surface,
 .recharts-layer,
-.recharts-responsive-container {
+.recharts-responsive-container,
+.recharts-responsive-container *,
+.recharts-pie-sector,
+.recharts-bar-rectangle {
   pointer-events: none !important;
 }
