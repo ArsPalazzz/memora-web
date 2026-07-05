@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/auth";
-import { FullPageLoader, Loader } from "./ui/Loader";
+import { SectionLoader } from "./ui/Loader";
 import { Box, Card, IconButton, Typography } from "@mui/material";
 import Header from "./layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -146,7 +146,14 @@ export default function DeskCardsClient() {
     }
   }, [cards, updateCardModalSub, resetUpdateCard]);
 
-  if (loading) return <FullPageLoader />;
+  if (loading) {
+    return (
+      <WithBottomNav>
+        <Header title="Deck Cards" onBack={() => navigate(-1)} />
+        <SectionLoader minHeight="50vh" />
+      </WithBottomNav>
+    );
+  }
   if (!authenticated) return null;
 
   return (
@@ -171,11 +178,9 @@ export default function DeskCardsClient() {
                 flex: 1,
                 overflowY: "auto",
                 paddingBottom: `calc(${PLAY_BUTTON_HEIGHT + 16}px + ${BOTTOM_NAV_HEIGHT})`,
-                display: isDeskLoading ? "flex" : undefined,
-                alignItems: isDeskLoading ? "center" : undefined,
               }}
             >
-              {isDeskLoading && <Loader />}
+              {isDeskLoading && !cards && <SectionLoader minHeight="50vh" />}
 
               {cards && !!cards.length && (
                 <Box sx={{ pt: 2, px: 2 }}>
