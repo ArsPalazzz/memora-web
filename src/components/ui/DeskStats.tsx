@@ -55,6 +55,13 @@ const chartContainerSx = {
   overflow: "hidden" as const,
 };
 
+function isTouchDevice() {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window
+  );
+}
+
 function EmptyPieRing() {
   return (
     <Box
@@ -82,6 +89,8 @@ function EmptyPieRing() {
 
 export function AnkiStyleStats({ stats }: DeskStatsProps) {
   const [week, setWeek] = useState<"current" | "previous">("current");
+  const touchDevice = isTouchDevice();
+  const chartAnimationMs = touchDevice ? 800 : 1200;
 
   const pieData = [
     { name: "Due", value: stats.due_today, color: PIE_COLORS.due },
@@ -153,7 +162,8 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
                   outerRadius={40}
                   dataKey="value"
                   stroke="none"
-                  isAnimationActive={false}
+                  animationBegin={0}
+                  animationDuration={chartAnimationMs}
                 >
                   {pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -212,7 +222,7 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
               radius={[2, 2, 0, 0]}
               fill="#5961d3"
               fillOpacity={0.6}
-              isAnimationActive={false}
+              animationDuration={pieTotal === 0 ? 0 : chartAnimationMs}
               label={{
                 position: "top",
                 formatter: (value) => (value === 0 ? "" : value),
