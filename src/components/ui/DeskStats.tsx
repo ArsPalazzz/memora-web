@@ -81,6 +81,25 @@ function EmptyPieRing() {
 const PIE_RADIUS = 32.5;
 const PIE_STROKE = 15;
 const PIE_CIRCUMFERENCE = 2 * Math.PI * PIE_RADIUS;
+const PIE_CENTER = 50;
+
+function describeArcPath(
+  startAngleDeg: number,
+  endAngleDeg: number,
+  radius = PIE_RADIUS,
+  cx = PIE_CENTER,
+  cy = PIE_CENTER
+) {
+  const toRad = (deg: number) => ((deg - 90) * Math.PI) / 180;
+  const startX = cx + radius * Math.cos(toRad(startAngleDeg));
+  const startY = cy + radius * Math.sin(toRad(startAngleDeg));
+  const endX = cx + radius * Math.cos(toRad(endAngleDeg));
+  const endY = cy + radius * Math.sin(toRad(endAngleDeg));
+  const sweep = endAngleDeg - startAngleDeg;
+  const largeArc = sweep > 180 ? 1 : 0;
+
+  return `M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}`;
+}
 
 function AnimatedDonut({
   segments,
@@ -90,26 +109,39 @@ function AnimatedDonut({
   durationMs: number;
 }) {
   const arcs = useMemo(() => {
-    const total = segments.reduce((sum, segment) => sum + segment.value, 0);
+    const activeSegments = segments.filter((segment) => segment.value > 0);
+    const total = activeSegments.reduce((sum, segment) => sum + segment.value, 0);
     if (total === 0) return [];
 
-    let angle = -90;
-    return segments
-      .filter((segment) => segment.value > 0)
-      .map((segment, index) => {
-        const sweep = (segment.value / total) * 360;
-        const length = (segment.value / total) * PIE_CIRCUMFERENCE;
-        const gap = PIE_CIRCUMFERENCE - length;
-        const arc = {
-          key: index,
-          color: segment.color,
-          length,
-          gap,
-          rotation: angle,
-        };
-        angle += sweep;
-        return arc;
-      });
+    if (activeSegments.length === 1) {
+      return [
+        {
+          key: 0,
+          color: activeSegments[0].color,
+          arcLength: PIE_CIRCUMFERENCE,
+          fullCircle: true,
+        },
+      ];
+    }
+
+    let angle = 0;
+    return activeSegments.map((segment, index) => {
+      const isLast = index === activeSegments.length - 1;
+      const sweep = isLast
+        ? 360 - angle
+        : (segment.value / total) * 360;
+      const startAngle = angle;
+      const endAngle = angle + sweep;
+      angle += sweep;
+
+      return {
+        key: index,
+        color: segment.color,
+        arcLength: (sweep / 360) * PIE_CIRCUMFERENCE,
+        fullCircle: false,
+        path: describeArcPath(startAngle, endAngle),
+      };
+    });
   }, [segments]);
 
   if (arcs.length === 0) return <EmptyPieRing />;
@@ -120,29 +152,58 @@ function AnimatedDonut({
       viewBox="0 0 100 100"
       sx={{ width: "100%", height: "100%", display: "block" }}
     >
-      {arcs.map((arc) => (
-        <Box
-          key={arc.key}
-          component="circle"
-          cx={50}
-          cy={50}
-          r={PIE_RADIUS}
-          fill="none"
-          stroke={arc.color}
-          strokeWidth={PIE_STROKE}
-          strokeDasharray={`0 ${PIE_CIRCUMFERENCE}`}
-          sx={{
-            transformOrigin: "50px 50px",
-            transform: `rotate(${arc.rotation}deg)`,
-            animation: `deskStatsPieSegment${arc.key} ${durationMs}ms ease forwards`,
-            [`@keyframes deskStatsPieSegment${arc.key}`]: {
-              to: {
-                strokeDasharray: `${arc.length} ${arc.gap}`,
-              },
-            },
-          }}
-        />
-      ))}
+      {arcs.map((arc) => {
+        const animationName = `deskStatsPieDraw${arc.key}`;
+
+        if (arc.fullCircle) {
+          return (
+            <Box
+              key={arc.key}
+              component="circle"
+              cx={PIE_CENTER}
+              cy={PIE_CENTER}
+              r={PIE_RADIUS}
+              fill="none"
+              stroke={arc.color}
+              strokeWidth={PIE_STROKE}
+              sx={{
+                strokeDasharray: arc.arcLength,
+                strokeDashoffset: arc.arcLength,
+                transformOrigin: "50px 50px",
+                transform: "rotate(-90deg)",
+                animation: `${animationName} ${durationMs}ms ease forwards`,
+                [`@keyframes ${animationName}`]: {
+                  to: { strokeDashoffset: 0 },
+                },
+              }}
+            />
+          );
+        }
+
+        if ("path" in arc) {
+          return (
+            <Box
+              key={arc.key}
+              component="path"
+              d={arc.path}
+              fill="none"
+              stroke={arc.color}
+              strokeWidth={PIE_STROKE}
+              strokeLinecap="butt"
+              sx={{
+                strokeDasharray: arc.arcLength,
+                strokeDashoffset: arc.arcLength,
+                animation: `${animationName} ${durationMs}ms ease forwards`,
+                [`@keyframes ${animationName}`]: {
+                  to: { strokeDashoffset: 0 },
+                },
+              }}
+            />
+          );
+        }
+
+        return null;
+      })}
     </Box>
   );
 }
