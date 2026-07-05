@@ -487,6 +487,7 @@ function FeedSwipePage() {
   if (!currentCard && cards.length === 0) {
     return (
       <WithBottomNav>
+        <Header title="Feed" onBack={() => navigate(ROUTES.HOME)} />
         <Box sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6" gutterBottom>
             No more cards to discover right now
