@@ -27,7 +27,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
-import { FullPageLoader } from "@/components/ui/Loader";
+import { SectionLoader } from "@/components/ui/Loader";
 import {
   Favorite,
   ArrowUpward,
@@ -42,8 +42,7 @@ import {
   gradeCardFeedRequest,
   revealCardFeedRequest,
 } from "@/services/games/games";
-import { MY_PROFILE, USER_DESKS_SHORT } from "@/routes/react-query";
-import { getMyProfileRequest } from "@/services/user/user";
+import { USER_DESKS_SHORT } from "@/routes/react-query";
 import {
   DEFAULT_BACK_LANGUAGE,
   DEFAULT_FRONT_LANGUAGE,
@@ -109,28 +108,17 @@ const GRADE_OPTIONS = [
 ] as const;
 
 export default function FeedPage() {
-  const { call } = useProtectedRequest();
-
-  const { data: feedStudyMode, isLoading: profileLoading } = useQuery({
-    queryKey: [MY_PROFILE],
-    queryFn: () => call((token) => getMyProfileRequest(token)),
-    select: (data) => normalizeFeedStudyMode(data.settings.study_mode),
-  });
-
-  if (profileLoading) {
-    return <FullPageLoader />;
-  }
-
-  const studyMode = normalizeFeedStudyMode(feedStudyMode ?? DEFAULT_FEED_STUDY_MODE);
-
-  return <FeedSwipePage key={studyMode} feedStudyMode={studyMode} />;
+  return <FeedSwipePage />;
 }
 
-function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
+function FeedSwipePage() {
   const navigate = useNavigate();
   const { call } = useProtectedRequest();
   const { accessToken } = useAuthContext();
   const queryClient = useQueryClient();
+  const [feedStudyMode, setFeedStudyMode] = useState<FeedStudyMode>(
+    DEFAULT_FEED_STUDY_MODE
+  );
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [cards, setCards] = useState<FeedCard[]>([]);
@@ -181,21 +169,20 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
 
   const startSession = useCallback(async () => {
     try {
-      const { sessionId } = await call((token) =>
-        startFeedSessionRequest(token)
-      );
-      setSessionId(sessionId);
-
-      const data = await call((token) =>
-        getFeedNextCardRequest({ sessionId }, token)
-      );
-
-      setCards(data.cards);
+      const data = await call((token) => startFeedSessionRequest(token));
+      setSessionId(data.sessionId);
+      setFeedStudyMode(normalizeFeedStudyMode(data.mode ?? DEFAULT_FEED_STUDY_MODE));
+      setCards(data.cards ?? []);
       setCurrentIndex(0);
 
-      await call((token) =>
-        shownCardRequest({ sessionId, cardSub: data.cards[0].sub }, token)
-      );
+      const firstCard = data.cards?.[0];
+      if (firstCard) {
+        void call((token) =>
+          shownCardRequest({ sessionId: data.sessionId, cardSub: firstCard.sub }, token)
+        ).catch((err) => {
+          console.error("Failed to record card shown:", err);
+        });
+      }
     } catch (err) {
       console.error("Failed to start session:", err);
     } finally {
@@ -488,7 +475,14 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
     },
   });
 
-  if (loading) return <FullPageLoader />;
+  if (loading) {
+    return (
+      <WithBottomNav>
+        <Header title="Feed" onBack={() => navigate(ROUTES.HOME)} />
+        <SectionLoader minHeight="50vh" />
+      </WithBottomNav>
+    );
+  }
 
   if (!currentCard && cards.length === 0) {
     return (

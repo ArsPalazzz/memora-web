@@ -85,3 +85,9 @@ export type GetFeedNextCardResult = {
     answerLanguage?: LanguageCode;
   }[];
 };
+
+export type StartFeedSessionResult = {
+  sessionId: string;
+  mode?: "write" | "reveal" | "match" | "swipe";
+  cards: GetFeedNextCardResult["cards"];
+};

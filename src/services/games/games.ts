@@ -7,6 +7,7 @@ import {
   NextCardResponse,
   RevealResult,
   StartReviewSessionResult,
+  StartFeedSessionResult,
   StartSessionResponse,
 } from "./games.types";
 
@@ -162,7 +163,7 @@ export async function startReviewSessionRequest(
 
 export async function startFeedSessionRequest(
   token: string
-): Promise<StartReviewSessionResult> {
+): Promise<StartFeedSessionResult> {
   return handleApiRequest(
     api.post(
       "/games/start-feed-session",
