@@ -17,7 +17,7 @@ import {
 } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import { Loader } from "@/components/ui/Loader";
-import Header from "@/components/layout/Header";
+import Header, { APP_HEADER_HEIGHT } from "@/components/layout/Header";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import { motion } from "framer-motion";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -294,138 +294,110 @@ export default function FolderClient() {
 
   return (
     <WithBottomNav>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100dvh",
-        }}
-      >
-        <Header
-          title={folderInfo?.title ?? folderTitleFromNav ?? "Folder"}
-          RightButton={<RightButtons />}
-          onBack={() => navigate(-1)}
-        />
+      <Header
+        title={folderInfo?.title ?? folderTitleFromNav ?? "Folder"}
+        RightButton={<RightButtons />}
+        onBack={() => navigate(-1)}
+      />
 
+      {isLoading ? (
         <Box
           sx={{
-            flex: 1,
             display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
+            alignItems: "center",
+            justifyContent: "center",
+            py: 8,
           }}
         >
-          {isLoading ? (
+          <Loader />
+        </Box>
+      ) : (
+        <Box sx={{ px: 2, pt: 2, pb: 2 }}>
+          {!!contents?.length && (
             <Box
               sx={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                position: "sticky",
+                top: APP_HEADER_HEIGHT,
+                zIndex: 1,
+                bgcolor: "background.default",
+                py: 1,
+                mb: 2,
               }}
             >
-              <Loader />
-            </Box>
-          ) : (
-          <>
-          {!!contents?.length && (
-            <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mt: 2,
-                  mb: 2,
-                }}
-              >
-                <SortSelector sortBy={sortBy} onChange={handleSortChange} />
-              </Box>
+              <SortSelector sortBy={sortBy} onChange={handleSortChange} />
             </Box>
           )}
 
-          <Box
-            sx={{
-              flex: 1,
-              overflowY: "auto",
-              px: 2,
-              pb: 2,
-              pt: 1,
-            }}
-          >
-            {!sortedContents?.length ? (
-              <EmptyState
-                onAddDesk={() => setOpenDeskModal(true)}
-                onAddFolder={() => setOpenFolderModal(true)}
-                title="Folder is empty"
-                description="Add decks or subfolders to organize your learning materials"
-              />
-            ) : (
-              <Grid container spacing={2}>
-                {sortedContents.map((item, index) => (
-                  <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={item.sub}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.3,
-                        delay: index * 0.05,
-                      }}
-                    >
-                      {item.type === "folder" ? (
-                        <FolderCard
-                          folder={item}
-                          onClick={() =>
-                            navigate(`/folder/${item.sub}`, {
-                              state: { folderTitle: item.title },
-                            })
-                          }
-                          onMove={() =>
-                            setMoveTarget({
-                              type: "folder",
-                              sub: item.sub,
-                              title: item.title,
-                              currentLocationSub: folderSub,
-                            })
-                          }
-                        />
-                      ) : (
-                        <DeskCard
-                          desk={item}
-                          stats={{
-                            learningCards: item.learningCards || 0,
-                            dueCards: item.dueCards || 0,
-                            newCards: item.newCards || 0,
-                            masteredCards: item.masteredCards || 0,
-                          }}
-                          priorityColor={getPriorityColor(
-                            item.dueCards || 0,
-                            (item.dueCards || 0) +
-                              (item.learningCards || 0) +
-                              (item.masteredCards || 0) +
-                              (item.newCards || 0)
-                          )}
-                          onClick={() => navigate(`/desk/${item.sub}`)}
-                          onMove={() =>
-                            setMoveTarget({
-                              type: "desk",
-                              sub: item.sub,
-                              title: item.title,
-                              currentLocationSub: folderSub,
-                            })
-                          }
-                        />
-                      )}
-                    </motion.div>
-                  </Grid>
-                ))}
-              </Grid>
-            )}
-          </Box>
-          </>
+          {!sortedContents?.length ? (
+            <EmptyState
+              onAddDesk={() => setOpenDeskModal(true)}
+              onAddFolder={() => setOpenFolderModal(true)}
+              title="Folder is empty"
+              description="Add decks or subfolders to organize your learning materials"
+            />
+          ) : (
+            <Grid container spacing={2}>
+              {sortedContents.map((item, index) => (
+                <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={item.sub}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.3,
+                      delay: index * 0.05,
+                    }}
+                  >
+                    {item.type === "folder" ? (
+                      <FolderCard
+                        folder={item}
+                        onClick={() =>
+                          navigate(`/folder/${item.sub}`, {
+                            state: { folderTitle: item.title },
+                          })
+                        }
+                        onMove={() =>
+                          setMoveTarget({
+                            type: "folder",
+                            sub: item.sub,
+                            title: item.title,
+                            currentLocationSub: folderSub,
+                          })
+                        }
+                      />
+                    ) : (
+                      <DeskCard
+                        desk={item}
+                        stats={{
+                          learningCards: item.learningCards || 0,
+                          dueCards: item.dueCards || 0,
+                          newCards: item.newCards || 0,
+                          masteredCards: item.masteredCards || 0,
+                        }}
+                        priorityColor={getPriorityColor(
+                          item.dueCards || 0,
+                          (item.dueCards || 0) +
+                            (item.learningCards || 0) +
+                            (item.masteredCards || 0) +
+                            (item.newCards || 0)
+                        )}
+                        onClick={() => navigate(`/desk/${item.sub}`)}
+                        onMove={() =>
+                          setMoveTarget({
+                            type: "desk",
+                            sub: item.sub,
+                            title: item.title,
+                            currentLocationSub: folderSub,
+                          })
+                        }
+                      />
+                    )}
+                  </motion.div>
+                </Grid>
+              ))}
+            </Grid>
           )}
         </Box>
-      </Box>
+      )}
 
       {openDeskModal && (
         <NewDeskModal

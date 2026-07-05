@@ -30,6 +30,8 @@ export const DeskCard = ({
     variant="outlined"
     sx={{
       height: "153px",
+      display: "flex",
+      flexDirection: "column",
       transition: "0.3s",
       cursor: "pointer",
       "&:hover": {
@@ -41,7 +43,17 @@ export const DeskCard = ({
     onClick={onClick}
     onPointerDown={onPointerDown}
   >
-    <CardContent>
+    <CardContent
+      sx={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        p: 2,
+        "&:last-child": { pb: 2 },
+        overflow: "hidden",
+      }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -94,19 +106,19 @@ export const DeskCard = ({
         <Typography
           variant="body2"
           color="text.secondary"
-          mb={3}
           sx={{
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
+            mt: 0.5,
           }}
         >
           {desk.description}
         </Typography>
       )}
 
-      <Box>
+      <Box sx={{ mt: "auto", pt: 1 }}>
         <MasteryProgress {...stats} />
         <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
           {stats.masteredCards} mastered • {stats.learningCards} learning •{" "}

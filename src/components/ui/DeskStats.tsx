@@ -218,17 +218,17 @@ function AnimatedBarChart({
   animationKey: string;
 }) {
   const maxCount = Math.max(...data.map((item) => item.count), 1);
-  const plotHeight = 62;
+  const labelHeight = 12;
+  const dayLabelHeight = 14;
+  const plotHeight = 64;
 
   return (
     <Box
       key={animationKey}
       sx={{
         display: "flex",
-        alignItems: "flex-end",
         height: "100%",
-        pt: "13px",
-        pb: "5px",
+        overflow: "visible",
         "@keyframes deskStatsBarGrow": {
           from: { transform: "scaleY(0)" },
           to: { transform: "scaleY(1)" },
@@ -247,39 +247,71 @@ function AnimatedBarChart({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justifyContent: "flex-end",
+              height: "100%",
               minWidth: 0,
             }}
           >
-            <Typography
-              sx={{
-                fontSize: 9,
-                lineHeight: 1,
-                color: "#666",
-                mb: 0.25,
-                minHeight: 10,
-              }}
-            >
-              {item.count > 0 ? item.count : ""}
-            </Typography>
             <Box
               sx={{
-                width: "70%",
-                height: barHeight,
-                bgcolor: "#5961d3",
-                opacity: 0.6,
-                borderRadius: "2px 2px 0 0",
-                transformOrigin: "bottom",
-                transform: "scaleY(0)",
-                animation:
-                  item.count > 0
-                    ? `deskStatsBarGrow ${durationMs}ms ease forwards`
-                    : "none",
+                height: labelHeight,
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "center",
               }}
-            />
-            <Typography sx={{ fontSize: 10, lineHeight: 1, mt: 0.5 }}>
-              {item.day}
-            </Typography>
+            >
+              <Typography
+                sx={{
+                  fontSize: 9,
+                  lineHeight: 1,
+                  color: "#666",
+                }}
+              >
+                {item.count > 0 ? item.count : ""}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                flex: 1,
+                width: "100%",
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "center",
+                minHeight: 0,
+              }}
+            >
+              <Box
+                sx={{
+                  width: "70%",
+                  height: barHeight,
+                  bgcolor: "#5961d3",
+                  opacity: 0.6,
+                  borderRadius: "2px 2px 0 0",
+                  transformOrigin: "bottom",
+                  transform: "scaleY(0)",
+                  animation:
+                    item.count > 0
+                      ? `deskStatsBarGrow ${durationMs}ms ease forwards`
+                      : "none",
+                }}
+              />
+            </Box>
+
+            <Box
+              sx={{
+                height: dayLabelHeight,
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "center",
+                pt: 0.5,
+              }}
+            >
+              <Typography sx={{ fontSize: 10, lineHeight: 1 }}>
+                {item.day}
+              </Typography>
+            </Box>
           </Box>
         );
       })}
@@ -389,7 +421,14 @@ export function AnkiStyleStats({ stats }: DeskStatsProps) {
         </Box>
       </Stack>
 
-      <Box sx={{ mt: 2, height: 90, ...chartContainerSx }}>
+      <Box
+        sx={{
+          mt: 2,
+          height: 90,
+          pointerEvents: "none",
+          userSelect: "none",
+        }}
+      >
         <AnimatedBarChart
           data={barData}
           durationMs={pieTotal === 0 ? 0 : chartAnimationMs}
