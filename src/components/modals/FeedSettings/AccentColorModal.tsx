@@ -124,24 +124,45 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
         sx: {
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
-          px: 2.5,
-          pt: 2,
-          pb: 2.5,
           maxHeight: "72vh",
-          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
         },
       }}
     >
-      <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
-        <PaletteIcon color="primary" sx={{ fontSize: 22 }} />
-        <Typography variant="h6" fontWeight={600} flex={1} sx={{ fontSize: "1.05rem" }}>
-          Accent color
-        </Typography>
-        <IconButton aria-label="Close" onClick={onClose} edge="end" size="small">
-          <CloseIcon />
-        </IconButton>
-      </Stack>
+      <Box
+        sx={{
+          flexShrink: 0,
+          px: 2.5,
+          pt: 2,
+          pb: 1.5,
+          borderBottom: 1,
+          borderColor: "divider",
+          bgcolor: "background.paper",
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <PaletteIcon color="primary" sx={{ fontSize: 22 }} />
+          <Typography variant="h6" fontWeight={600} flex={1} sx={{ fontSize: "1.05rem" }}>
+            Accent color
+          </Typography>
+          <IconButton aria-label="Close" onClick={onClose} edge="end" size="small">
+            <CloseIcon />
+          </IconButton>
+        </Stack>
+      </Box>
 
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          px: 2.5,
+          pt: 1.5,
+          pb: 2.5,
+        }}
+      >
       <Typography variant="body2" color="text.secondary" mb={1}>
         Palette
       </Typography>
@@ -260,6 +281,7 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
       >
         Apply custom color
       </Button>
+      </Box>
     </Drawer>
   );
 }
