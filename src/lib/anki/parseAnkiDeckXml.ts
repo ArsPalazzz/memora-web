@@ -2,6 +2,7 @@ import { v4 as uuidV4 } from "uuid";
 import { ParsedAnkiDeck } from "./ankiImport.types";
 import { htmlToPlainText, parseAnkiTagsToFolderPath, splitBackVariants } from "./htmlToPlainText";
 import { resolveAnkiFields } from "./resolveAnkiFields";
+import { restoreAnkiSanitizedDeckTitle } from "./restoreAnkiDeckTitle";
 
 function readFieldRawContent(fieldEl: Element): string {
   if (!fieldEl.childNodes.length) {
@@ -40,6 +41,67 @@ function readFieldValue(cardEl: Element, fieldName: string): string {
   return htmlToPlainText(readFieldRawContent(fieldEl));
 }
 
+function readPrefixedAttribute(deckEl: Element, ...localNames: string[]): string {
+  const wanted = new Set(localNames.map((name) => name.toLowerCase()));
+
+  for (let index = 0; index < deckEl.attributes.length; index += 1) {
+    const attribute = deckEl.attributes[index];
+    if (!wanted.has(attribute.localName.toLowerCase())) continue;
+
+    const value = attribute.value.trim();
+    if (value) return value;
+  }
+
+  return "";
+}
+
+function readDeckChildText(deckEl: Element, tagName: string): string {
+  return (
+    deckEl.querySelector(`:scope > ${tagName}`)?.textContent?.trim() ?? ""
+  );
+}
+
+function readDeckTitle(deckEl: Element, sourceName?: string): string {
+  const originalName = readPrefixedAttribute(
+    deckEl,
+    "original-name",
+    "originalName",
+    "display-name",
+    "displayName"
+  );
+  if (originalName) {
+    return originalName;
+  }
+
+  const fromAttribute = readPrefixedAttribute(
+    deckEl,
+    "name",
+    "title",
+    "deck-name",
+    "deckName"
+  );
+  if (fromAttribute) {
+    return restoreAnkiSanitizedDeckTitle(fromAttribute);
+  }
+
+  const fromChild =
+    readDeckChildText(deckEl, "name") ||
+    readDeckChildText(deckEl, "title") ||
+    readDeckChildText(deckEl, "deck-name");
+
+  if (fromChild) {
+    return restoreAnkiSanitizedDeckTitle(fromChild);
+  }
+
+  if (sourceName) {
+    return restoreAnkiSanitizedDeckTitle(
+      sourceName.replace(/\.xml$/i, "").trim()
+    );
+  }
+
+  return "Imported deck";
+}
+
 export function parseAnkiDeckXml(xml: string, sourceName?: string): ParsedAnkiDeck {
   const doc = new DOMParser().parseFromString(xml, "text/xml");
   const parserError = doc.querySelector("parsererror");
@@ -52,7 +114,7 @@ export function parseAnkiDeckXml(xml: string, sourceName?: string): ParsedAnkiDe
     throw new Error(`No <deck> element found${sourceName ? ` in ${sourceName}` : ""}`);
   }
 
-  const title = deckEl.getAttribute("name")?.trim() || sourceName || "Imported deck";
+  const title = readDeckTitle(deckEl, sourceName);
   const tags = deckEl.getAttribute("tags")?.trim() || "";
   const folderPath = parseAnkiTagsToFolderPath(tags);
 

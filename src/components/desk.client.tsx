@@ -21,7 +21,11 @@ import {
 } from "@mui/material";
 import Header from "./layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { USER_CARDS, USER_DESK, USER_DESKS } from "@/routes/react-query";
+import { USER_CARDS, USER_DESK } from "@/routes/react-query";
+import {
+  invalidateDeskListQueries,
+  patchDeskMetadataInCaches,
+} from "@/utils/invalidateDeskQueries";
 import { useProtectedRequest } from "@/utils/protected";
 import ScreenRotationIcon from "@mui/icons-material/ScreenRotation";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -252,13 +256,13 @@ export default function DeskClient() {
 
       return call(() => updateDeskRequest(data, payload.token));
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       resetUpdateDesk();
       setUpdateDeskModal(false);
       notifySuccess(`Deck updated successfully`);
 
-      queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
-      queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
+      patchDeskMetadataInCaches(queryClient, sub, variables.data);
+      void invalidateDeskListQueries(queryClient);
     },
     onError: (err) => {
       console.warn(err);
@@ -304,7 +308,7 @@ export default function DeskClient() {
       notifySuccess(`Deck archived successfully`);
 
       queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
-      queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
+      void invalidateDeskListQueries(queryClient);
     },
     onError: (err) => {
       console.warn(err);
