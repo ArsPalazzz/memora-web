@@ -27,7 +27,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MY_PROFILE } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
-import { FullPageLoader, Loader } from "@/components/ui/Loader";
+import { SectionLoader, Loader } from "@/components/ui/Loader";
 import { getMyProfileRequest } from "@/services/user/user";
 import { logoutRequest } from "@/services/auth/auth";
 import { ROUTES } from "@/routes/paths";
@@ -227,7 +227,14 @@ export default function ProfileClient() {
 
   const handleLogout = () => logoutMutation.mutate();
 
-  if (isProfileLoading) return <FullPageLoader />;
+  if (isProfileLoading) {
+    return (
+      <WithBottomNav>
+        <Header title="Profile" />
+        <SectionLoader minHeight="50vh" />
+      </WithBottomNav>
+    );
+  }
   if (!authenticated) return null;
 
   return (
