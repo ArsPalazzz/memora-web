@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/auth";
-import { Loader } from "./ui/Loader";
+import { SectionLoader } from "./ui/Loader";
 import { getDeskPlaceholder } from "@/utils/desk-placeholder";
 import {
   Box,
@@ -509,18 +509,17 @@ export default function DeskClient() {
               </>
             }
           />
+          {!desk && (loading || isDeskLoading) && (
+            <SectionLoader minHeight="50vh" />
+          )}
+
+          {desk && (
           <Box
             sx={{
               paddingBottom: `calc(${PLAY_BUTTON_HEIGHT + 16}px + ${BOTTOM_NAV_HEIGHT})`,
-              display: !desk && (loading || isDeskLoading) ? "flex" : undefined,
-              alignItems: !desk && (loading || isDeskLoading) ? "center" : undefined,
-              minHeight: !desk && (loading || isDeskLoading) ? "40vh" : undefined,
             }}
           >
-              {!desk && (loading || isDeskLoading) && <Loader />}
-
-              {desk && (
-                <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>
+              <Grid container spacing={2} sx={{ pt: 2, px: 2 }}>
                   <Box
                     sx={{
                       display: "flex",
@@ -577,7 +576,7 @@ export default function DeskClient() {
                             sx={{
                               display: "inline",
                               cursor: "pointer",
-                              color: "#5961d3",
+                              color: "primary.main",
                             }}
                             fontWeight={700}
                             onClick={() => {
@@ -816,8 +815,8 @@ export default function DeskClient() {
                     )}
                   </Box>
                 </Grid>
-              )}
           </Box>
+          )}
 
           {desk && !!desk.cards.length && (
             <Box
@@ -838,7 +837,7 @@ export default function DeskClient() {
                   fontWeight: 700,
                   boxShadow: 4,
                   borderRadius: 2,
-                  bgcolor: desk?.cards.length ? "#5961d3" : "#5a5a5a",
+                  bgcolor: desk?.cards.length ? "primary.main" : "#5a5a5a",
                   color: "white",
                   "&:active": {
                     transform: desk?.cards.length ? "scale(0.98)" : "scale(1)",

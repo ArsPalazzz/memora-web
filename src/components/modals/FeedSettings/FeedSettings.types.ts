@@ -7,5 +7,9 @@ export interface FeedSettingsCardOrientationModalProps {
 }
 
 export interface ThemeTogglerModalProps {
-  onClose: (arg: CARD_ORIENTATION) => void;
+  onClose: () => void;
+}
+
+export interface AccentColorModalProps {
+  onClose: () => void;
 }

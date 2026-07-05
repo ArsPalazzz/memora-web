@@ -1,5 +1,6 @@
 import { FullPageLoader } from "@/components/ui/Loader";
 import { PlaySessionShell } from "./PlaySessionShell";
+import { PlayCardTransition } from "./PlayCardTransition";
 import { RevealModeView } from "./RevealModeView";
 import { useRevealModeSession } from "./useRevealModeSession";
 import { NextCardResponse } from "@/services/games/games.types";
@@ -41,14 +42,18 @@ export function RevealPlayScreen({
       total={currentCard.progress.total}
       nested={nested}
     >
-      <RevealModeView
-        currentCard={currentCard}
-        result={result}
-        isRevealing={isRevealing}
-        isGrading={isGrading}
-        onReveal={revealAnswer}
-        onGrade={submitGrade}
-      />
+      {cardLoading || isGrading ? (
+        <PlayCardTransition />
+      ) : (
+        <RevealModeView
+          currentCard={currentCard}
+          result={result}
+          isRevealing={isRevealing}
+          isGrading={isGrading}
+          onReveal={revealAnswer}
+          onGrade={submitGrade}
+        />
+      )}
     </PlaySessionShell>
   );
 }

@@ -1,6 +1,6 @@
 
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { Box, Typography, Stack, IconButton } from "@mui/material";
+import { Box, Typography, Stack, IconButton, useTheme, alpha } from "@mui/material";
 import { useMemo, useState } from "react";
 
 interface DeskStatsProps {
@@ -217,6 +217,7 @@ function AnimatedBarChart({
   durationMs: number;
   animationKey: string;
 }) {
+  const theme = useTheme();
   const maxCount = Math.max(...data.map((item) => item.count), 1);
   const labelHeight = 12;
   const dayLabelHeight = 14;
@@ -285,8 +286,7 @@ function AnimatedBarChart({
                 sx={{
                   width: "70%",
                   height: barHeight,
-                  bgcolor: "#5961d3",
-                  opacity: 0.6,
+                  bgcolor: alpha(theme.palette.primary.main, 0.6),
                   borderRadius: "2px 2px 0 0",
                   transformOrigin: "bottom",
                   transform: "scaleY(0)",

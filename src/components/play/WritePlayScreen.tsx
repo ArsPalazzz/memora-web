@@ -1,5 +1,6 @@
 import { FullPageLoader } from "@/components/ui/Loader";
 import { PlaySessionShell } from "./PlaySessionShell";
+import { PlayCardTransition } from "./PlayCardTransition";
 import { WriteModeView } from "./WriteModeView";
 import { useWriteModeSession } from "./useWriteModeSession";
 
@@ -44,16 +45,20 @@ export function WritePlayScreen({
       total={currentCard.progress.total}
       nested={nested}
     >
-      <WriteModeView
-        currentCard={currentCard}
-        answer={answer}
-        result={result}
-        isAnswering={isAnswering}
-        isGrading={isGrading}
-        onAnswerChange={setAnswer}
-        onSubmitAnswer={submitAnswer}
-        onGrade={submitGrade}
-      />
+      {cardLoading || isGrading ? (
+        <PlayCardTransition />
+      ) : (
+        <WriteModeView
+          currentCard={currentCard}
+          answer={answer}
+          result={result}
+          isAnswering={isAnswering}
+          isGrading={isGrading}
+          onAnswerChange={setAnswer}
+          onSubmitAnswer={submitAnswer}
+          onGrade={submitGrade}
+        />
+      )}
     </PlaySessionShell>
   );
 }

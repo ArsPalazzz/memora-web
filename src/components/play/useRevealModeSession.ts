@@ -105,8 +105,17 @@ export function useRevealModeSession({
       return;
     }
 
+    setCardLoading(true);
     setResult(null);
-    loadNextCard(sessionId);
+    nextCardMutation.mutate(sessionId, {
+      onSuccess: (res) => {
+        setCurrentCard(res);
+        setCardLoading(false);
+      },
+      onError: () => {
+        setCardLoading(false);
+      },
+    });
   };
 
   const submitGrade = (quality: number) => {

@@ -34,7 +34,7 @@ export default function ThemeTogglerModal(props: ThemeTogglerModalProps) {
       }}
     >
       <Typography variant="h6" fontWeight={600} mb={2}>
-        Theme toggler
+        Theme
       </Typography>
 
       <List>
@@ -42,7 +42,9 @@ export default function ThemeTogglerModal(props: ThemeTogglerModalProps) {
           <React.Fragment key={val.key}>
             <ListItemButton
               selected={mode === val.key}
-              onClick={() => setMode(val.key as "light" | "dark")}
+              onClick={() => {
+                setMode(val.key as "light" | "dark");
+              }}
               sx={{
                 display: "flex",
                 justifyContent: "space-between",

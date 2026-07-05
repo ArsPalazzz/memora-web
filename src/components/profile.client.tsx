@@ -46,6 +46,9 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import React from "react";
 import { useThemeContext } from "@/context/ThemeContext";
 import ThemeTogglerModal from "./modals/FeedSettings/ThemeTogglermodal";
+import AccentColorModal from "./modals/FeedSettings/AccentColorModal";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import PaletteIcon from "@mui/icons-material/Palette";
 import { FeedSettings } from "@/services/desk/desk.types";
 import {
   updateFeedSettingsRequest,
@@ -63,7 +66,7 @@ export default function ProfileClient() {
   const theme = useTheme();
 
   const [openSheet, setOpenSheet] = useState<null | string>(null);
-  const { mode } = useThemeContext();
+  const { mode, accentColor } = useThemeContext();
   const queryClient = useQueryClient();
   const { notifySuccess, notifyError } = useNotification();
 
@@ -110,11 +113,19 @@ export default function ProfileClient() {
 
   const settingsItems = [
     {
-      key: "themeColor",
-      icon: <SettingsIcon sx={{ color: "primary.main", fontSize: 20 }} />,
-      title: "Theme color",
-      subtitle: "Main theme of application",
+      key: "themeMode",
+      icon: <Brightness4Icon sx={{ color: "primary.main", fontSize: 20 }} />,
+      title: "Theme",
+      subtitle: "Light or dark appearance",
       value: mode?.[0]?.toUpperCase() + mode?.slice(1),
+    },
+    {
+      key: "accentColor",
+      icon: <PaletteIcon sx={{ color: "primary.main", fontSize: 20 }} />,
+      title: "Accent color",
+      subtitle: "Buttons, links, and highlights",
+      value: accentColor.toUpperCase(),
+      swatch: accentColor,
     },
   ];
 
@@ -697,9 +708,24 @@ export default function ProfileClient() {
                           />
                         </Box>
 
-                        <Typography color="text.secondary" fontWeight={600}>
-                          {item.value}
-                        </Typography>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          {"swatch" in item && item.swatch && (
+                            <Box
+                              sx={{
+                                width: 18,
+                                height: 18,
+                                borderRadius: "50%",
+                                bgcolor: item.swatch,
+                                border: 1,
+                                borderColor: "divider",
+                                flexShrink: 0,
+                              }}
+                            />
+                          )}
+                          <Typography color="text.secondary" fontWeight={600}>
+                            {item.value}
+                          </Typography>
+                        </Stack>
                       </ListItemButton>
 
                       {index !== settingsItems.length - 1 && (
@@ -892,8 +918,12 @@ export default function ProfileClient() {
         />
       )}
 
-      {profileInfo && openSheet === "themeColor" && (
+      {openSheet === "themeMode" && (
         <ThemeTogglerModal onClose={() => setOpenSheet(null)} />
+      )}
+
+      {openSheet === "accentColor" && (
+        <AccentColorModal onClose={() => setOpenSheet(null)} />
       )}
     </WithBottomNav>
   );

@@ -1,5 +1,6 @@
 import { FullPageLoader } from "@/components/ui/Loader";
 import { PlaySessionShell } from "./PlaySessionShell";
+import { PlayCardTransition } from "./PlayCardTransition";
 import { MatchModeView } from "./MatchModeView";
 import { MatchResultsView } from "./MatchResultsView";
 import { MatchGradingView } from "./MatchGradingView";
@@ -100,13 +101,17 @@ export function MatchPlayScreen({
       )}
 
       {phase === "grading" && board.cards[gradingIndex] && (
-        <MatchGradingView
-          card={board.cards[gradingIndex]}
-          gradingIndex={gradingIndex}
-          total={board.progress.total}
-          isGrading={isGrading}
-          onGrade={submitGrade}
-        />
+        isGrading ? (
+          <PlayCardTransition />
+        ) : (
+          <MatchGradingView
+            card={board.cards[gradingIndex]}
+            gradingIndex={gradingIndex}
+            total={board.progress.total}
+            isGrading={isGrading}
+            onGrade={submitGrade}
+          />
+        )
       )}
     </PlaySessionShell>
   );

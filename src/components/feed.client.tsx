@@ -424,12 +424,7 @@ function FeedSwipePage({ feedStudyMode }: { feedStudyMode: FeedStudyMode }) {
         invalidateUserDaily(queryClient);
       }
 
-      setShowGrades(false);
-      setIsGradingRequired(false);
-      setShowTranslation(false);
-      setTimeout(() => {
-        goToNextCard();
-      }, 300);
+      goToNextCard();
     } catch (error) {
       console.error("Grade failed:", error);
     }
