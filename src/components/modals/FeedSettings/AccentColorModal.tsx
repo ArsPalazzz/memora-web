@@ -39,8 +39,8 @@ function ColorSwatch({
       aria-label={label ?? color}
       onClick={onClick}
       sx={{
-        width: 44,
-        height: 44,
+        width: 40,
+        height: 40,
         borderRadius: "50%",
         border: "2px solid",
         borderColor: selected ? "text.primary" : "divider",
@@ -124,28 +124,33 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
         sx: {
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
-          p: 3,
-          maxHeight: "85vh",
+          px: 2.5,
+          pt: 2,
+          pb: 2.5,
+          maxHeight: "72vh",
           overflowY: "auto",
         },
       }}
     >
-      <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-        <PaletteIcon color="primary" />
-        <Typography variant="h6" fontWeight={600} flex={1}>
+      <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+        <PaletteIcon color="primary" sx={{ fontSize: 22 }} />
+        <Typography variant="h6" fontWeight={600} flex={1} sx={{ fontSize: "1.05rem" }}>
           Accent color
         </Typography>
+        <IconButton aria-label="Close" onClick={onClose} edge="end" size="small">
+          <CloseIcon />
+        </IconButton>
       </Stack>
 
-      <Typography variant="body2" color="text.secondary" mb={1.5}>
+      <Typography variant="body2" color="text.secondary" mb={1}>
         Palette
       </Typography>
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-          gap: 1.5,
-          mb: 2,
+          gap: 1,
+          mb: 1.5,
         }}
       >
         {ACCENT_PRESETS.map((preset) => (
@@ -165,11 +170,11 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
 
       {savedAccentColors.length > 0 && (
         <>
-          <Divider sx={{ my: 2 }} />
-          <Typography variant="body2" color="text.secondary" mb={1.5}>
+          <Divider sx={{ my: 1.5 }} />
+          <Typography variant="body2" color="text.secondary" mb={1}>
             Saved
           </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 2 }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 1.5 }}>
             {savedAccentColors.map((color) => (
               <Box key={color} sx={{ position: "relative" }}>
                 <ColorSwatch
@@ -201,19 +206,19 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
         </>
       )}
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ my: 1.5 }} />
 
-      <Typography variant="body2" color="text.secondary" mb={1.5}>
+      <Typography variant="body2" color="text.secondary" mb={1}>
         Custom color
       </Typography>
 
       <AccentColorPicker color={pickerColor} onChange={handlePickerChange} />
 
-      <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ mt: 2 }}>
+      <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ mt: 1.5 }}>
         <Box
           sx={{
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             borderRadius: 2,
             bgcolor: pickerColor,
             border: 1,
@@ -250,7 +255,7 @@ export default function AccentColorModal({ onClose }: AccentColorModalProps) {
         variant="contained"
         fullWidth
         disabled={!canApplyCustom}
-        sx={{ mt: 1 }}
+        sx={{ mt: 1.5 }}
         onClick={handleApplyCustom}
       >
         Apply custom color

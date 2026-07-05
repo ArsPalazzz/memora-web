@@ -90,14 +90,14 @@ export function AccentColorPicker({ color, onChange }: AccentColorPickerProps) {
   );
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
       <Box
         ref={svAreaRef}
         onPointerDown={bindDrag(updateFromSv)}
         sx={{
           position: "relative",
           width: "100%",
-          height: 160,
+          height: 120,
           borderRadius: 2,
           overflow: "hidden",
           cursor: "crosshair",
@@ -124,7 +124,7 @@ export function AccentColorPicker({ color, onChange }: AccentColorPickerProps) {
         sx={{
           position: "relative",
           width: "100%",
-          height: 14,
+          height: 12,
           borderRadius: 999,
           cursor: "pointer",
           touchAction: "none",
