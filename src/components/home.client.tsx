@@ -52,9 +52,7 @@ import {
 import { DeskCard } from "./ui/DeskCard";
 import { DailyStreakCard } from "./ui/DailyStreakCard";
 import { ReviewDueCard } from "./ui/ReviewDueCard";
-import { FriendsTodayCard } from "./ui/FriendsTodayCard";
-import { WeeklyLeagueCard } from "./ui/WeeklyLeagueCard";
-import { ChallengeBanner } from "./ui/ChallengeBanner";
+import { SocialHomeCard } from "./ui/SocialHomeCard";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import { FolderCard } from "./ui/FolterCard";
 import NewFolderModal from "./modals/NewFolder/NewFolder.modal";
@@ -365,7 +363,7 @@ export default function HomeClient() {
         >
           <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
             {daily && (
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 2 }}>
                 <DailyStreakCard
                   streak={daily.currentStreak}
                   cardsReviewedToday={daily.cardsReviewed}
@@ -374,28 +372,28 @@ export default function HomeClient() {
               </Box>
             )}
 
-            {friendsActivity && (
-              <Box sx={{ mb: 3 }}>
-                <FriendsTodayCard
-                  friends={friendsActivity}
-                  onFriendClick={(nickname) =>
-                    navigate(ROUTES.userProfile(nickname))
-                  }
+            {reviewSummary && inboxSummary && (
+              <Box sx={{ mb: 2 }}>
+                <ReviewDueCard
+                  totalDueCount={reviewSummary.totalDueCount}
+                  inboxCount={inboxSummary.count}
+                  onStartStudy={() => startStudyMutation.mutate()}
+                  isStarting={startStudyMutation.isPending}
                 />
               </Box>
             )}
 
-            {friendsLeague && (
-              <Box sx={{ mb: 3 }}>
-                <WeeklyLeagueCard league={friendsLeague} />
-              </Box>
-            )}
-
-            {currentChallenge && (
-              <Box sx={{ mb: 3 }}>
-                <ChallengeBanner
+            {(friendsActivity || friendsLeague || currentChallenge) && (
+              <Box sx={{ mb: 2 }}>
+                <SocialHomeCard
+                  friends={friendsActivity}
+                  league={friendsLeague}
                   challenge={currentChallenge}
-                  onOpen={() => {
+                  onFriendClick={(nickname) =>
+                    navigate(ROUTES.userProfile(nickname))
+                  }
+                  onChallengeOpen={() => {
+                    if (!currentChallenge) return;
                     const myEntry = currentChallenge.leaderboard.find(
                       (entry) => entry.isMe
                     );
@@ -410,17 +408,6 @@ export default function HomeClient() {
                       )
                     );
                   }}
-                />
-              </Box>
-            )}
-
-            {reviewSummary && inboxSummary && (
-              <Box sx={{ mb: 3 }}>
-                <ReviewDueCard
-                  totalDueCount={reviewSummary.totalDueCount}
-                  inboxCount={inboxSummary.count}
-                  onStartStudy={() => startStudyMutation.mutate()}
-                  isStarting={startStudyMutation.isPending}
                 />
               </Box>
             )}
