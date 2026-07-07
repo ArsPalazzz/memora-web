@@ -402,10 +402,7 @@ export default function HomeClient() {
                       return;
                     }
                     navigate(
-                      ROUTES.publicDesk(
-                        currentChallenge.desk.creatorNickname,
-                        currentChallenge.desk.sub
-                      )
+                      ROUTES.publicDeskBySub(currentChallenge.desk.sub)
                     );
                   }}
                 />

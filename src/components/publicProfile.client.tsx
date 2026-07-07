@@ -166,7 +166,7 @@ export default function PublicProfileClient() {
 
   const handleDeskClick = (deskSub: string) => {
     if (!nickname) return;
-    navigate(ROUTES.publicDesk(nickname, deskSub));
+    navigate(ROUTES.publicDesk(nickname, deskSub), { state: { fromProfile: true } });
   };
 
   const renderFriendAction = () => {

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Header from "@/components/layout/Header";
@@ -36,6 +36,7 @@ export default function PublicDeskClient() {
   const deskSub = params.sub ?? params.id;
   const nickname = params.nickname;
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const { call } = useProtectedRequest();
   const queryClient = useQueryClient();
@@ -75,11 +76,24 @@ export default function PublicDeskClient() {
   });
 
   const handleBack = () => {
+    const state = location.state as { fromProfile?: boolean } | null;
+
+    if (state?.fromProfile && nickname) {
+      navigate(ROUTES.userProfile(nickname));
+      return;
+    }
+
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
     if (nickname) {
       navigate(ROUTES.userProfile(nickname));
       return;
     }
-    navigate(-1);
+
+    navigate(ROUTES.HOME);
   };
 
   const handleCreatorClick = () => {
