@@ -35,7 +35,7 @@ import {
 } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
-import { DeskCardSkeleton, Loader, SectionLoader } from "@/components/ui/Loader";
+import { FullPageLoader, Loader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import { v4 as uuidV4 } from "uuid";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -136,13 +136,6 @@ export default function HomeClient() {
     queryFn: async () => call((token) => getFriendsLeagueRequest(token)),
   });
 
-  const isHomeHeaderLoading =
-    isDailyLoading ||
-    isReviewSummaryLoading ||
-    isInboxSummaryLoading ||
-    isFriendsActivityLoading ||
-    isFriendsLeagueLoading;
-
   const startStudyMutation = useMutation({
     mutationFn: () =>
       call(async (token) => {
@@ -181,6 +174,15 @@ export default function HomeClient() {
     queryFn: async () => call((token) => getFoldersRequest(token)),
     enabled: activeTab === 1,
   });
+
+  const isHomeLoading =
+    isDailyLoading ||
+    isReviewSummaryLoading ||
+    isInboxSummaryLoading ||
+    isFriendsActivityLoading ||
+    isFriendsLeagueLoading ||
+    (isDesksLoading && desks === undefined) ||
+    (activeTab === 1 && isFoldersLoading && folders === undefined);
 
   const {
     handleSubmit,
@@ -320,6 +322,10 @@ export default function HomeClient() {
 
   if (!authenticated) return null;
 
+  if (isHomeLoading) {
+    return <FullPageLoader />;
+  }
+
   const RightButton = () => {
     return (
       <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -372,34 +378,28 @@ export default function HomeClient() {
         >
           <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
             <Stack spacing={1} sx={{ mb: 1 }}>
-              {isHomeHeaderLoading ? (
-                <SectionLoader minHeight={200} imageSize={72} />
-              ) : (
-                <>
-                  <DailyStreakCard
-                    streak={daily!.currentStreak}
-                    cardsReviewedToday={daily!.cardsReviewed}
-                    dailyGoal={daily!.dailyGoal}
-                  />
+              <DailyStreakCard
+                streak={daily!.currentStreak}
+                cardsReviewedToday={daily!.cardsReviewed}
+                dailyGoal={daily!.dailyGoal}
+              />
 
-                  <ReviewDueCard
-                    totalDueCount={reviewSummary!.totalDueCount}
-                    inboxCount={inboxSummary!.count}
-                    onStartStudy={() => startStudyMutation.mutate()}
-                    isStarting={startStudyMutation.isPending}
-                  />
+              <ReviewDueCard
+                totalDueCount={reviewSummary!.totalDueCount}
+                inboxCount={inboxSummary!.count}
+                onStartStudy={() => startStudyMutation.mutate()}
+                isStarting={startStudyMutation.isPending}
+              />
 
-                  <WeeklyLeagueCard league={friendsLeague!} compact />
+              <WeeklyLeagueCard league={friendsLeague!} compact />
 
-                  {!!friendsActivity?.length && (
-                    <SocialHomeSection
-                      friends={friendsActivity}
-                      onFriendClick={(nickname) =>
-                        navigate(ROUTES.userProfile(nickname))
-                      }
-                    />
-                  )}
-                </>
+              {!!friendsActivity?.length && (
+                <SocialHomeSection
+                  friends={friendsActivity}
+                  onFriendClick={(nickname) =>
+                    navigate(ROUTES.userProfile(nickname))
+                  }
+                />
               )}
             </Stack>
 
@@ -418,17 +418,7 @@ export default function HomeClient() {
           >
             {activeTab === 0 ? (
               <>
-                {isDesksLoading && !desks && (
-                  <Grid container spacing={2}>
-                    {Array.from({ length: 4 }).map((_, index) => (
-                      <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={index}>
-                        <DeskCardSkeleton />
-                      </Grid>
-                    ))}
-                  </Grid>
-                )}
-
-                {!isDesksLoading && desks && !desks.length && (
+                {desks && !desks.length && (
                   <EmptyState
                     onCreate={() => setOpenDeskModal(true)}
                     title="No decks yet"
