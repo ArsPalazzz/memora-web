@@ -1,4 +1,4 @@
-import { Flag } from "@mui/icons-material";
+import { ChevronRight, Flag } from "@mui/icons-material";
 import {
   Box,
   Card,
@@ -11,19 +11,51 @@ import { CurrentChallengeResponse } from "@/services/challenge/challenge.types";
 interface ChallengeBannerProps {
   challenge: CurrentChallengeResponse;
   onOpen: () => void;
+  compact?: boolean;
 }
 
-export function ChallengeBanner({ challenge, onOpen }: ChallengeBannerProps) {
-  const miniLeaderboard = challenge.leaderboard.slice(0, 3);
+export function ChallengeBanner({
+  challenge,
+  onOpen,
+  compact = false,
+}: ChallengeBannerProps) {
   const myEntry = challenge.leaderboard.find((entry) => entry.isMe);
+  const leaderLabel = challenge.leaderNickname
+    ? `@${challenge.leaderNickname}`
+    : null;
+
+  if (compact) {
+    const detail = myEntry
+      ? `#${myEntry.rank}`
+      : leaderLabel ?? "join";
+
+    return (
+      <Card variant="outlined" sx={{ borderColor: "warning.light" }}>
+        <CardActionArea onClick={onOpen}>
+          <CardContent
+            sx={{
+              py: 1,
+              "&:last-child": { pb: 1 },
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Flag sx={{ fontSize: 18, color: "warning.main", flexShrink: 0 }} />
+            <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }} noWrap>
+              Challenge · {challenge.desk.title} · {detail}
+            </Typography>
+            <ChevronRight sx={{ fontSize: 18, color: "text.disabled" }} />
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    );
+  }
+
+  const miniLeaderboard = challenge.leaderboard.slice(0, 3);
 
   return (
-    <Card
-      variant="outlined"
-      sx={{
-        borderColor: "warning.light",
-      }}
-    >
+    <Card variant="outlined" sx={{ borderColor: "warning.light" }}>
       <CardActionArea onClick={onOpen}>
         <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
           <Typography

@@ -1,9 +1,11 @@
-import { EmojiEvents } from "@mui/icons-material";
+import {
+  EmojiEvents,
+  ChevronRight,
+} from "@mui/icons-material";
 import {
   Card,
   CardActionArea,
   CardContent,
-  Link,
   Typography,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
@@ -12,10 +14,38 @@ import { ROUTES } from "@/routes/paths";
 
 interface WeeklyLeagueCardProps {
   league: WeeklyLeagueResponse;
+  compact?: boolean;
 }
 
-export function WeeklyLeagueCard({ league }: WeeklyLeagueCardProps) {
+export function WeeklyLeagueCard({ league, compact = false }: WeeklyLeagueCardProps) {
   const hasLeague = league.totalParticipants >= 2;
+
+  if (compact) {
+    return (
+      <Card variant="outlined">
+        <CardActionArea component={RouterLink} to={ROUTES.FRIENDS_LEAGUE}>
+          <CardContent
+            sx={{
+              py: 1,
+              "&:last-child": { pb: 1 },
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <EmojiEvents sx={{ fontSize: 18, color: "warning.main", flexShrink: 0 }} />
+            <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }} noWrap>
+              Weekly league
+              {hasLeague
+                ? ` · #${league.myRank} of ${league.totalParticipants}`
+                : " · add friends to join"}
+            </Typography>
+            <ChevronRight sx={{ fontSize: 18, color: "text.disabled" }} />
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    );
+  }
 
   return (
     <Card variant="outlined">
@@ -41,15 +71,7 @@ export function WeeklyLeagueCard({ league }: WeeklyLeagueCardProps) {
             </>
           ) : (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-              Add a friend with public stats to unlock the league.{" "}
-              <Link
-                component={RouterLink}
-                to={ROUTES.FRIENDS}
-                underline="hover"
-                onClick={(event) => event.stopPropagation()}
-              >
-                Find friends
-              </Link>
+              Add a friend with public stats to unlock the league.
             </Typography>
           )}
         </CardContent>

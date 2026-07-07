@@ -1,10 +1,8 @@
-import { School } from "@mui/icons-material";
 import {
   Box,
   Button,
   Card,
   CardContent,
-  CircularProgress,
   Typography,
 } from "@mui/material";
 
@@ -25,88 +23,35 @@ export function ReviewDueCard({
   const hasStudyCards = totalStudyCount > 0;
 
   return (
-    <Card
-      sx={{
-        border: "2px solid",
-        borderColor: hasStudyCards ? "primary.main" : "success.main",
-        bgcolor: "background.paper",
-      }}
-    >
-      <CardContent>
+    <Card variant="outlined">
+      <CardContent sx={{ py: 1.25, "&:last-child": { pb: 1.25 } }}>
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
-            gap: 2,
+            justifyContent: "space-between",
+            gap: 1.5,
           }}
         >
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h6" fontWeight={700}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <School sx={{ color: hasStudyCards ? "primary.main" : "success.main" }} />
-                {hasStudyCards ? "Today's practice" : "All caught up"}
-              </Box>
+            <Typography variant="subtitle2" fontWeight={700}>
+              {hasStudyCards ? "Today's practice" : "All caught up"}
             </Typography>
-
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Due for review: {totalDueCount}
-              {" · "}
-              From feed: {inboxCount}
+            <Typography variant="caption" color="text.secondary" display="block">
+              Due {totalDueCount} · Feed {inboxCount}
             </Typography>
           </Box>
 
-          <Box
-            sx={{
-              position: "relative",
-              display: "inline-flex",
-              flexShrink: 0,
-            }}
+          <Button
+            size="small"
+            variant="contained"
+            disabled={!hasStudyCards || isStarting}
+            onClick={onStartStudy}
+            sx={{ flexShrink: 0, minWidth: 72 }}
           >
-            <CircularProgress
-              variant="determinate"
-              value={100}
-              size={56}
-              thickness={4}
-              sx={{
-                color: "grey.300",
-                position: "absolute",
-              }}
-            />
-            <CircularProgress
-              variant="determinate"
-              value={hasStudyCards ? 100 : 0}
-              size={56}
-              thickness={4}
-              sx={{
-                color: hasStudyCards ? "primary.main" : "success.main",
-                position: "relative",
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              <Typography variant="body2" fontWeight={700}>
-                {totalStudyCount}
-              </Typography>
-            </Box>
-          </Box>
+            {isStarting ? "..." : "Study"}
+          </Button>
         </Box>
-
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{ mt: 2 }}
-          disabled={!hasStudyCards || isStarting}
-          onClick={onStartStudy}
-        >
-          {isStarting ? "Starting..." : `Study (${totalStudyCount})`}
-        </Button>
       </CardContent>
     </Card>
   );

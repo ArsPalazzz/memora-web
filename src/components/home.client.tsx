@@ -1,5 +1,5 @@
 
-import { Typography, Box, Grid, IconButton, Button } from "@mui/material";
+import { Typography, Box, Grid, IconButton, Button, Stack } from "@mui/material";
 import { useAuth } from "../utils/auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -31,8 +31,6 @@ import {
   USER_REVIEW_SUMMARY,
   USER_INBOX_SUMMARY,
   FRIENDS_ACTIVITY,
-  FRIENDS_LEAGUE,
-  CURRENT_CHALLENGE,
 } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
@@ -62,8 +60,7 @@ import { TabsSwitcher } from "./ui/TabSwitcher";
 import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
 import { useNotification } from "@/context/NotificationContext";
 import { invalidateDeskListQueries } from "@/utils/invalidateDeskQueries";
-import { getFriendsActivityRequest, getFriendsLeagueRequest } from "@/services/friends/friends";
-import { getCurrentChallengeRequest } from "@/services/challenge/challenge";
+import { getFriendsActivityRequest } from "@/services/friends/friends";
 import { ROUTES } from "@/routes/paths";
 
 export default function HomeClient() {
@@ -130,17 +127,6 @@ export default function HomeClient() {
   const { data: friendsActivity } = useQuery({
     queryKey: [FRIENDS_ACTIVITY],
     queryFn: async () => call((token) => getFriendsActivityRequest(token)),
-  });
-
-  const { data: friendsLeague } = useQuery({
-    queryKey: [FRIENDS_LEAGUE],
-    queryFn: async () => call((token) => getFriendsLeagueRequest(token)),
-  });
-
-  const { data: currentChallenge } = useQuery({
-    queryKey: [CURRENT_CHALLENGE],
-    queryFn: async () => call((token) => getCurrentChallengeRequest(token)),
-    retry: false,
   });
 
   const startStudyMutation = useMutation({
@@ -371,54 +357,33 @@ export default function HomeClient() {
           }}
         >
           <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
-            {daily && (
-              <Box sx={{ mb: 2 }}>
+            <Stack spacing={1} sx={{ mb: 1 }}>
+              {daily && (
                 <DailyStreakCard
                   streak={daily.currentStreak}
                   cardsReviewedToday={daily.cardsReviewed}
                   dailyGoal={daily.dailyGoal}
                 />
-              </Box>
-            )}
+              )}
 
-            {reviewSummary && inboxSummary && (
-              <Box sx={{ mb: 2 }}>
+              {reviewSummary && inboxSummary && (
                 <ReviewDueCard
                   totalDueCount={reviewSummary.totalDueCount}
                   inboxCount={inboxSummary.count}
                   onStartStudy={() => startStudyMutation.mutate()}
                   isStarting={startStudyMutation.isPending}
                 />
-              </Box>
-            )}
+              )}
 
-            {(friendsActivity?.length ||
-              currentChallenge ||
-              friendsLeague) && (
-              <Box sx={{ mb: 2 }}>
+              {!!friendsActivity?.length && (
                 <SocialHomeSection
                   friends={friendsActivity}
-                  league={friendsLeague}
-                  challenge={currentChallenge}
                   onFriendClick={(nickname) =>
                     navigate(ROUTES.userProfile(nickname))
                   }
-                  onChallengeOpen={() => {
-                    if (!currentChallenge) return;
-                    const myEntry = currentChallenge.leaderboard.find(
-                      (entry) => entry.isMe
-                    );
-                    if (myEntry) {
-                      navigate(`/desk/${myEntry.localDeskSub}`);
-                      return;
-                    }
-                    navigate(
-                      ROUTES.publicDeskBySub(currentChallenge.desk.sub)
-                    );
-                  }}
                 />
-              </Box>
-            )}
+              )}
+            </Stack>
 
             <TabsSwitcher activeTab={activeTab} onChange={handleTabChange} />
           </Box>
