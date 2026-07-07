@@ -22,7 +22,7 @@ import { ROUTES } from "@/routes/paths";
 function formatWeekRange(weekStart: string, weekEnd: string) {
   const start = new Date(`${weekStart}T00:00:00.000Z`);
   const end = new Date(`${weekEnd}T00:00:00.000Z`);
-  const formatter = new Intl.DateTimeFormat("ru-RU", {
+  const formatter = new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
     timeZone: "UTC",
@@ -61,13 +61,13 @@ export default function FriendsLeagueClient() {
                   sx={{ fontSize: 56, color: "grey.400", mb: 2 }}
                 />
                 <Typography variant="h6" gutterBottom>
-                  Добавь друзей для league
+                  Add friends to unlock the league
                 </Typography>
                 <Typography color="text.secondary" sx={{ mb: 2 }}>
-                  Нужен хотя бы один друг с публичной статистикой
+                  You need at least one friend with public stats
                 </Typography>
                 <Link component={RouterLink} to={ROUTES.FRIENDS} underline="hover">
-                  Найти друзей
+                  Find friends
                 </Link>
               </Box>
             ) : (
@@ -105,7 +105,7 @@ export default function FriendsLeagueClient() {
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography variant="body1" fontWeight={700} noWrap>
                           {participant.isMe
-                            ? "Ты"
+                            ? "You"
                             : `@${participant.nickname}`}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">

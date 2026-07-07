@@ -27,28 +27,28 @@ export function WeeklyLeagueCard({ league }: WeeklyLeagueCardProps) {
             sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.25 }}
           >
             <EmojiEvents sx={{ fontSize: 18, color: "warning.main" }} />
-            Рейтинг недели
+            Weekly league
           </Typography>
 
           {hasLeague ? (
             <>
               <Typography variant="caption" color="text.secondary" display="block">
-                Соревнование с друзьями за эту неделю
+                Compete with friends this week
               </Typography>
               <Typography variant="body2" fontWeight={600} sx={{ mt: 0.75 }}>
-                Ты #{league.myRank} из {league.totalParticipants}
+                You are #{league.myRank} of {league.totalParticipants}
               </Typography>
             </>
           ) : (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-              Нужен хотя бы один друг с публичной статистикой.{" "}
+              Add a friend with public stats to unlock the league.{" "}
               <Link
                 component={RouterLink}
                 to={ROUTES.FRIENDS}
                 underline="hover"
                 onClick={(event) => event.stopPropagation()}
               >
-                Добавить
+                Find friends
               </Link>
             </Typography>
           )}

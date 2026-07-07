@@ -32,11 +32,11 @@ export function ChallengeBanner({ challenge, onOpen }: ChallengeBannerProps) {
             sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.25 }}
           >
             <Flag sx={{ fontSize: 18, color: "warning.main" }} />
-            Challenge недели
+            Weekly challenge
           </Typography>
 
           <Typography variant="caption" color="text.secondary" display="block">
-            Кто больше повторит одну колоду за неделю
+            Most reviews on one shared deck this week
           </Typography>
 
           <Typography variant="body2" fontWeight={600} sx={{ mt: 0.75 }} noWrap>
@@ -45,11 +45,11 @@ export function ChallengeBanner({ challenge, onOpen }: ChallengeBannerProps) {
 
           {myEntry ? (
             <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.25 }}>
-              Твоё место: #{myEntry.rank} · {myEntry.cardsReviewed} cards
+              Your rank: #{myEntry.rank} · {myEntry.cardsReviewed} cards
             </Typography>
           ) : (
             <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.25 }}>
-              Добавь колоду в библиотеку, чтобы участвовать
+              Add this deck to your library to join
             </Typography>
           )}
 
@@ -62,7 +62,7 @@ export function ChallengeBanner({ challenge, onOpen }: ChallengeBannerProps) {
                   color="text.secondary"
                 >
                   #{entry.rank}{" "}
-                  {entry.isMe ? "Ты" : `@${entry.nickname}`} · {entry.cardsReviewed} cards
+                  {entry.isMe ? "You" : `@${entry.nickname}`} · {entry.cardsReviewed} cards
                 </Typography>
               ))}
             </Box>

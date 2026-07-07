@@ -2,6 +2,7 @@
 import { BottomNavigation, BottomNavigationAction, Box } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
+import PeopleIcon from "@mui/icons-material/People";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ROUTES } from "@/routes/paths";
@@ -11,23 +12,41 @@ import { BOTTOM_NAV_Z_INDEX } from "./overlay.constants";
 
 export { BOTTOM_NAV_HEIGHT } from "./bottom-nav.constants";
 
+function getBottomNavValue(pathname: string) {
+  if (pathname.startsWith(ROUTES.FRIENDS)) {
+    return ROUTES.FRIENDS;
+  }
+
+  if (pathname === ROUTES.FEED) {
+    return ROUTES.FEED;
+  }
+
+  if (pathname === ROUTES.PROFILE) {
+    return ROUTES.PROFILE;
+  }
+
+  if (pathname === ROUTES.HOME) {
+    return ROUTES.HOME;
+  }
+
+  return false;
+}
+
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location.pathname;
-  const [value, setValue] = useState(pathname || ROUTES.HOME);
+  const [value, setValue] = useState<string | false>(
+    getBottomNavValue(pathname) || ROUTES.HOME
+  );
 
   useEffect(() => {
-    setValue(pathname || ROUTES.HOME);
+    setValue(getBottomNavValue(pathname) || false);
   }, [pathname]);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
     navigate(newValue);
-  };
-
-  const handleFeedClick = () => {
-    navigate(ROUTES.FEED);
   };
 
   return (
@@ -64,7 +83,12 @@ export default function BottomNav() {
           label="Discover"
           value={ROUTES.FEED}
           icon={<ExploreIcon />}
-          onClick={handleFeedClick}
+        />
+
+        <BottomNavigationAction
+          label="Friends"
+          value={ROUTES.FRIENDS}
+          icon={<PeopleIcon />}
         />
 
         <BottomNavigationAction

@@ -383,29 +383,33 @@ export default function HomeClient() {
               </Box>
             )}
 
-            <Box sx={{ mb: 2 }}>
-              <SocialHomeSection
-                friends={friendsActivity}
-                league={friendsLeague}
-                challenge={currentChallenge}
-                onFriendClick={(nickname) =>
-                  navigate(ROUTES.userProfile(nickname))
-                }
-                onChallengeOpen={() => {
-                  if (!currentChallenge) return;
-                  const myEntry = currentChallenge.leaderboard.find(
-                    (entry) => entry.isMe
-                  );
-                  if (myEntry) {
-                    navigate(`/desk/${myEntry.localDeskSub}`);
-                    return;
+            {(friendsActivity?.length ||
+              currentChallenge ||
+              friendsLeague) && (
+              <Box sx={{ mb: 2 }}>
+                <SocialHomeSection
+                  friends={friendsActivity}
+                  league={friendsLeague}
+                  challenge={currentChallenge}
+                  onFriendClick={(nickname) =>
+                    navigate(ROUTES.userProfile(nickname))
                   }
-                  navigate(
-                    ROUTES.publicDeskBySub(currentChallenge.desk.sub)
-                  );
-                }}
-              />
-            </Box>
+                  onChallengeOpen={() => {
+                    if (!currentChallenge) return;
+                    const myEntry = currentChallenge.leaderboard.find(
+                      (entry) => entry.isMe
+                    );
+                    if (myEntry) {
+                      navigate(`/desk/${myEntry.localDeskSub}`);
+                      return;
+                    }
+                    navigate(
+                      ROUTES.publicDeskBySub(currentChallenge.desk.sub)
+                    );
+                  }}
+                />
+              </Box>
+            )}
 
             <TabsSwitcher activeTab={activeTab} onChange={handleTabChange} />
           </Box>

@@ -20,15 +20,25 @@ export function SocialHomeSection({
   onFriendClick,
   onChallengeOpen,
 }: SocialHomeSectionProps) {
+  const hasFriendsToday = friends.length > 0;
+  const hasChallenge = !!challenge;
+  const hasLeague = !!league;
+
+  if (!hasFriendsToday && !hasChallenge && !hasLeague) {
+    return null;
+  }
+
   return (
     <Stack spacing={1.5}>
-      <FriendsTodayCard friends={friends} onFriendClick={onFriendClick} />
+      {hasFriendsToday && (
+        <FriendsTodayCard friends={friends} onFriendClick={onFriendClick} />
+      )}
 
-      {challenge && (
+      {hasChallenge && (
         <ChallengeBanner challenge={challenge} onOpen={onChallengeOpen} />
       )}
 
-      {league && <WeeklyLeagueCard league={league} />}
+      {hasLeague && <WeeklyLeagueCard league={league} />}
     </Stack>
   );
 }
