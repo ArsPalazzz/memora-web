@@ -28,7 +28,7 @@ function formatWeekRange(weekStart: string, weekEnd: string) {
     timeZone: "UTC",
   });
 
-  return `${formatter.format(start)} – ${formatter.format(end)} UTC`;
+  return `${formatter.format(start)} – ${formatter.format(end)}`;
 }
 
 export default function FriendsLeagueClient() {
@@ -110,7 +110,7 @@ export default function FriendsLeagueClient() {
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           {participant.cardsReviewed} cards · {participant.goalsHit}{" "}
-                          goals
+                          daily goals
                         </Typography>
                       </Box>
 

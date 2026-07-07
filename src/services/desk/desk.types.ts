@@ -29,6 +29,7 @@ export interface FetchArchivedDesksResponse {
 export interface FetchDesksShortResponse {
   sub: string;
   title: string;
+  folderSub: string | null;
 }
 
 export interface DeskSettings {

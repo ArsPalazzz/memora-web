@@ -8,23 +8,13 @@ import {
   CardContent,
   Typography,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
   Snackbar,
   Alert,
   TextField,
   InputAdornment,
   Fade,
   Collapse,
-  CircularProgress,
-  ListItemIcon,
-  ListItem,
-  List,
-  Checkbox,
-  ListItemText,
+  Button,
 } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
 import { SectionLoader } from "@/components/ui/Loader";
@@ -44,7 +34,7 @@ import {
   gradeCardFeedRequest,
   revealCardFeedRequest,
 } from "@/services/games/games";
-import { USER_DESKS_SHORT, USER_INBOX_SUMMARY } from "@/routes/react-query";
+import { USER_DESKS_SHORT, USER_INBOX_SUMMARY, FOLDERS_FLAT } from "@/routes/react-query";
 import {
   DEFAULT_BACK_LANGUAGE,
   DEFAULT_FRONT_LANGUAGE,
@@ -63,6 +53,7 @@ import {
 import {
   addCardToDeskFeedRequest,
   fetchMyDesksShortRequest,
+  getFoldersFlatRequest,
   regenerateCardExamplesRequest,
 } from "@/services/desk/desk";
 import { addCardToInboxRequest } from "@/services/review/review";
@@ -72,6 +63,7 @@ import { VIEWPORT_SHELL_SX } from "./layout/viewport.constants";
 import { ROUTES } from "@/routes/paths";
 import { useSwipeable } from "react-swipeable";
 import CardExamplesModal from "./modals/CardExamples/CardExamples.modal";
+import SaveToDeskModal from "./modals/SaveToDesk/SaveToDesk.modal";
 import { useAuthContext } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { useNotification } from "@/context/NotificationContext";
@@ -172,6 +164,12 @@ function FeedSwipePage() {
   const { data: myDesks, isLoading: isDesksLoading } = useQuery({
     queryKey: [USER_DESKS_SHORT],
     queryFn: async () => call((token) => fetchMyDesksShortRequest(token)),
+  });
+
+  const { data: folders, isLoading: isFoldersLoading } = useQuery({
+    queryKey: [FOLDERS_FLAT],
+    queryFn: async () => call((token) => getFoldersFlatRequest(token)),
+    enabled: addToDeskDialog,
   });
 
   const startSession = useCallback(async () => {
@@ -1120,110 +1118,28 @@ function FeedSwipePage() {
         </Snackbar>
       </Box>
 
-      <Dialog
+      <SaveToDeskModal
         open={addToDeskDialog}
         onClose={() => setAddToDeskDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Save to deck…</DialogTitle>
-        <DialogContent>
-          {isDesksLoading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
-              <CircularProgress />
-            </Box>
-          ) : myDesks?.length === 0 ? (
-            <Typography color="text.secondary" sx={{ py: 2 }}>
-              You don&apos;t have any decks yet. Create one first!
-            </Typography>
-          ) : (
-            <List sx={{ pt: 2 }}>
-              {myDesks?.map((desk) => {
-                const alreadyAdded =
-                  addedToDesks[currentCard.sub]?.includes(desk.sub) || false;
-                const isSelected = selectedDesks.includes(desk.sub);
+        desks={myDesks}
+        folders={folders}
+        isLoading={isDesksLoading || isFoldersLoading}
+        selectedDesks={selectedDesks}
+        onSelectedDesksChange={setSelectedDesks}
+        addedDeskSubs={addedToDesks[currentCard?.sub ?? ""] || []}
+        onSave={async () => {
+          if (!accessToken || !currentCard) return;
 
-                return (
-                  <ListItem
-                    key={desk.sub}
-                    disablePadding
-                    onClick={() => {
-                      setSelectedDesks((prev) =>
-                        prev.includes(desk.sub)
-                          ? prev.filter((sub) => sub !== desk.sub)
-                          : [...prev, desk.sub]
-                      );
-                    }}
-                    sx={{
-                      cursor: "pointer",
-                      "&:hover": {
-                        bgcolor: "action.hover",
-                      },
-                      borderRadius: 1,
-                      mb: 1,
-                    }}
-                  >
-                    <ListItemIcon>
-                      <Checkbox
-                        edge="start"
-                        checked={isSelected}
-                        tabIndex={-1}
-                        disableRipple
-                        sx={{
-                          "&.Mui-checked": {
-                            color:
-                              alreadyAdded && !isSelected
-                                ? "grey.500"
-                                : "primary.main",
-                          },
-                        }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          {desk.title}
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                );
-              })}
-            </List>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddToDeskDialog(false)}>Cancel</Button>
-          <Button
-            onClick={async () => {
-              if (!accessToken || !currentCard) return;
-
-              await addCardToDeskMutation.mutateAsync({
-                data: {
-                  cardSub: currentCard.sub,
-                  deskSubs: selectedDesks,
-                },
-                token: accessToken,
-              });
-            }}
-            disabled={
-              !selectedDesks ||
-              addCardToDeskMutation.isPending ||
-              JSON.stringify(selectedDesks.sort()) ===
-                JSON.stringify((addedToDesks[currentCard.sub] || []).sort())
-            }
-            variant="contained"
-          >
-            {addCardToDeskMutation.isPending ? (
-              <CircularProgress size={24} />
-            ) : (
-              `Save to deck`
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
+          await addCardToDeskMutation.mutateAsync({
+            data: {
+              cardSub: currentCard.sub,
+              deskSubs: selectedDesks,
+            },
+            token: accessToken,
+          });
+        }}
+        isSaving={addCardToDeskMutation.isPending}
+      />
 
       {showExamples && currentCard && (
         <CardExamplesModal
