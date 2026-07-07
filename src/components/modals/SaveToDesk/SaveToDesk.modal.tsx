@@ -67,19 +67,34 @@ export default function SaveToDeskModal({
     JSON.stringify([...addedDeskSubs].sort());
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Save to deck…</DialogTitle>
-      <DialogContent>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      scroll="paper"
+      PaperProps={{ sx: { maxHeight: "min(420px, 72vh)" } }}
+    >
+      <DialogTitle sx={{ pb: 1 }}>Save to deck…</DialogTitle>
+      <DialogContent
+        dividers
+        sx={{
+          px: 1.5,
+          py: 1,
+          maxHeight: "min(280px, 50vh)",
+          overflowY: "auto",
+        }}
+      >
         {isLoading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
             <Loader />
           </Box>
         ) : hasNoDesks ? (
-          <Typography color="text.secondary" sx={{ py: 2 }}>
+          <Typography color="text.secondary" sx={{ py: 1 }}>
             You don&apos;t have any decks yet. Create one first!
           </Typography>
         ) : (
-          <List dense sx={{ pt: 1 }}>
+          <List dense disablePadding sx={{ py: 0 }}>
             {rows.map((row) => {
               if (row.type === "folder") {
                 return (
@@ -88,8 +103,8 @@ export default function SaveToDeskModal({
                     disablePadding
                     sx={{
                       pl: 1 + row.depth * 2,
-                      py: 0.75,
-                      minHeight: 36,
+                      py: 0.5,
+                      minHeight: 30,
                     }}
                   >
                     <FolderIcon
@@ -117,7 +132,8 @@ export default function SaveToDeskModal({
                   onClick={() => toggleDesk(row.sub)}
                   sx={{
                     pl: 1 + row.depth * 2,
-                    py: 0.25,
+                    py: 0.125,
+                    minHeight: 36,
                     cursor: "pointer",
                     borderRadius: 1,
                     "&:hover": {
@@ -159,7 +175,7 @@ export default function SaveToDeskModal({
           </List>
         )}
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ px: 2, py: 1.25 }}>
         <Button onClick={onClose}>Cancel</Button>
         <Button
           onClick={onSave}
