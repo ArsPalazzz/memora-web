@@ -73,7 +73,7 @@ export default function SaveToDeskModal({
       maxWidth="sm"
       fullWidth
       scroll="paper"
-      PaperProps={{ sx: { maxHeight: "min(420px, 72vh)" } }}
+      PaperProps={{ sx: { maxHeight: "min(500px, 78vh)" } }}
     >
       <DialogTitle sx={{ pb: 1 }}>Save to deck…</DialogTitle>
       <DialogContent
@@ -81,7 +81,7 @@ export default function SaveToDeskModal({
         sx={{
           px: 1.5,
           py: 1,
-          maxHeight: "min(280px, 50vh)",
+          maxHeight: "min(340px, 58vh)",
           overflowY: "auto",
         }}
       >
