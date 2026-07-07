@@ -7,6 +7,7 @@ export const LOGOUT_API = "/auth/logout";
 // USERS
 export const CREATE_USER_API = "/users/create";
 export const GET_MY_PROFILE_API = "/users/my-profile";
+export const SEARCH_USERS_API = "/users/search";
 export const PATCH_MY_PROFILE_API = "/users/my-profile";
 export const GET_USER_DAILY_API = "/users/daily";
 export const GET_REVIEW_SUMMARY_API = "/users/review-summary";

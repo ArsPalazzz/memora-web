@@ -1,9 +1,11 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   Box,
   Button,
   Card,
+  CardActionArea,
   CardContent,
+  CircularProgress,
   IconButton,
   InputAdornment,
   Stack,
@@ -25,11 +27,15 @@ import {
   getFriendsRequest,
   getIncomingFriendRequestsRequest,
 } from "@/services/friends/friends";
-import { FRIENDS, FRIENDS_REQUESTS } from "@/routes/react-query";
+import { searchUsersByNicknameRequest } from "@/services/user/user";
+import { FRIENDS, FRIENDS_REQUESTS, USER_SEARCH } from "@/routes/react-query";
 import { ROUTES } from "@/routes/paths";
 import { useNotification } from "@/context/NotificationContext";
-
-import { NICKNAME_HINT, NICKNAME_PATTERN } from "@/constants/nickname.const";
+import {
+  NICKNAME_HINT,
+  NICKNAME_PATTERN,
+  NICKNAME_SEARCH_PREFIX_PATTERN,
+} from "@/constants/nickname.const";
 
 export default function FriendsClient() {
   const navigate = useNavigate();
@@ -37,7 +43,27 @@ export default function FriendsClient() {
   const queryClient = useQueryClient();
   const { notifySuccess, notifyError } = useNotification();
   const [searchNickname, setSearchNickname] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedQuery(searchNickname.trim().toLowerCase());
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [searchNickname]);
+
+  const canSearch =
+    debouncedQuery.length >= 1 &&
+    NICKNAME_SEARCH_PREFIX_PATTERN.test(debouncedQuery);
+
+  const { data: searchResults = [], isFetching: isSearching } = useQuery({
+    queryKey: [USER_SEARCH, debouncedQuery],
+    queryFn: async () =>
+      call((token) => searchUsersByNicknameRequest(debouncedQuery, token)),
+    enabled: canSearch,
+  });
 
   const { data: friends = [], isLoading: isFriendsLoading } = useQuery({
     queryKey: [FRIENDS],
@@ -75,6 +101,11 @@ export default function FriendsClient() {
     onError: (err) => notifyError(err.message),
   });
 
+  const openProfile = (nickname: string) => {
+    setSearchError(null);
+    navigate(ROUTES.userProfile(nickname));
+  };
+
   const handleSearch = (event: FormEvent) => {
     event.preventDefault();
     const nickname = searchNickname.trim().toLowerCase();
@@ -84,12 +115,12 @@ export default function FriendsClient() {
       return;
     }
 
-    setSearchError(null);
-    navigate(ROUTES.userProfile(nickname));
+    openProfile(nickname);
   };
 
   const isLoading = isFriendsLoading || isRequestsLoading;
   const isMutating = acceptMutation.isPending || declineMutation.isPending;
+  const showSearchResults = canSearch;
 
   return (
     <WithBottomNav>
@@ -108,15 +139,55 @@ export default function FriendsClient() {
               if (searchError) setSearchError(null);
             }}
             error={!!searchError}
-            helperText={searchError ?? "Enter @nickname to open profile"}
+            helperText={searchError ?? "Start typing to see matching profiles"}
             slotProps={{
               input: {
                 startAdornment: (
                   <InputAdornment position="start">@</InputAdornment>
                 ),
+                endAdornment: isSearching ? (
+                  <InputAdornment position="end">
+                    <CircularProgress size={16} />
+                  </InputAdornment>
+                ) : undefined,
               },
             }}
           />
+
+          {showSearchResults && (
+            <Card variant="outlined" sx={{ mt: 1 }}>
+              {searchResults.length === 0 && !isSearching ? (
+                <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No profiles found
+                  </Typography>
+                </CardContent>
+              ) : (
+                searchResults.map((result) => (
+                  <CardActionArea
+                    key={result.sub}
+                    onClick={() => openProfile(result.nickname)}
+                  >
+                    <CardContent
+                      sx={{
+                        py: 1,
+                        "&:last-child": { pb: 1 },
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                    >
+                      <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }} noWrap>
+                        @{result.nickname}
+                      </Typography>
+                      <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+                    </CardContent>
+                  </CardActionArea>
+                ))
+              )}
+            </Card>
+          )}
+
           <Button
             type="submit"
             variant="contained"
@@ -153,9 +224,7 @@ export default function FriendsClient() {
                         fontWeight={700}
                         noWrap
                         sx={{ cursor: "pointer" }}
-                        onClick={() =>
-                          navigate(ROUTES.userProfile(request.nickname))
-                        }
+                        onClick={() => openProfile(request.nickname)}
                       >
                         @{request.nickname}
                       </Typography>
@@ -213,7 +282,7 @@ export default function FriendsClient() {
                         gap: 1,
                         cursor: "pointer",
                       }}
-                      onClick={() => navigate(ROUTES.userProfile(friend.nickname))}
+                      onClick={() => openProfile(friend.nickname)}
                     >
                       <Typography variant="body1" fontWeight={600} sx={{ flex: 1 }} noWrap>
                         @{friend.nickname}

@@ -17,6 +17,7 @@ export const FOLDER_CONTENTS = "folder-contents";
 export const FOLDER_INFO = "folder-info";
 
 export const MY_PROFILE = "my-profile";
+export const USER_SEARCH = "user-search";
 export const PUBLIC_PROFILE = "public-profile";
 export const PUBLIC_DESK = "public-desk";
 export const LIBRARY_SOURCES = "library-sources";
