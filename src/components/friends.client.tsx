@@ -28,13 +28,9 @@ import {
   getIncomingFriendRequestsRequest,
 } from "@/services/friends/friends";
 import { searchUsersByNicknameRequest } from "@/services/user/user";
-import { FRIENDS, FRIENDS_REQUESTS, FRIENDS_LEAGUE, CURRENT_CHALLENGE, USER_SEARCH } from "@/routes/react-query";
+import { FRIENDS, FRIENDS_REQUESTS, USER_SEARCH } from "@/routes/react-query";
 import { ROUTES } from "@/routes/paths";
 import { useNotification } from "@/context/NotificationContext";
-import { getFriendsLeagueRequest } from "@/services/friends/friends";
-import { getCurrentChallengeRequest } from "@/services/challenge/challenge";
-import { WeeklyLeagueCard } from "@/components/ui/WeeklyLeagueCard";
-import { ChallengeBanner } from "@/components/ui/ChallengeBanner";
 import {
   NICKNAME_HINT,
   NICKNAME_PATTERN,
@@ -72,17 +68,6 @@ export default function FriendsClient() {
   const { data: friends = [], isLoading: isFriendsLoading } = useQuery({
     queryKey: [FRIENDS],
     queryFn: async () => call((token) => getFriendsRequest(token)),
-  });
-
-  const { data: friendsLeague } = useQuery({
-    queryKey: [FRIENDS_LEAGUE],
-    queryFn: async () => call((token) => getFriendsLeagueRequest(token)),
-  });
-
-  const { data: currentChallenge } = useQuery({
-    queryKey: [CURRENT_CHALLENGE],
-    queryFn: async () => call((token) => getCurrentChallengeRequest(token)),
-    retry: false,
   });
 
   const { data: incomingRequests = [], isLoading: isRequestsLoading } =
@@ -137,34 +122,11 @@ export default function FriendsClient() {
   const isMutating = acceptMutation.isPending || declineMutation.isPending;
   const showSearchResults = canSearch;
 
-  const handleChallengeOpen = () => {
-    if (!currentChallenge) return;
-    const myEntry = currentChallenge.leaderboard.find((entry) => entry.isMe);
-    if (myEntry) {
-      navigate(`/desk/${myEntry.localDeskSub}`);
-      return;
-    }
-    navigate(ROUTES.publicDeskBySub(currentChallenge.desk.sub));
-  };
-
   return (
     <WithBottomNav>
       <Header title="Friends" />
 
       <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2, py: 2 }}>
-        {(friendsLeague || currentChallenge) && (
-          <Stack spacing={1} sx={{ mb: 2 }}>
-            {friendsLeague && <WeeklyLeagueCard league={friendsLeague} compact />}
-            {currentChallenge && (
-              <ChallengeBanner
-                challenge={currentChallenge}
-                onOpen={handleChallengeOpen}
-                compact
-              />
-            )}
-          </Stack>
-        )}
-
         <Box component="form" onSubmit={handleSearch} sx={{ mb: 3 }}>
           <TextField
             fullWidth

@@ -23,7 +23,6 @@ export const FRIENDS_LIST_API = "/friends";
 export const FRIENDS_REQUESTS_API = "/friends/requests";
 export const FRIENDS_ACTIVITY_API = "/friends/activity";
 export const FRIENDS_LEAGUE_API = "/friends/league";
-export const CURRENT_CHALLENGE_API = "/challenges/current";
 export const getFriendshipStatusApi = (nickname: string) =>
   `/friends/status/${encodeURIComponent(nickname)}`;
 export const removeFriendApi = (friendSub: string) =>

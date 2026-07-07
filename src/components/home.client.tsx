@@ -31,6 +31,7 @@ import {
   USER_REVIEW_SUMMARY,
   USER_INBOX_SUMMARY,
   FRIENDS_ACTIVITY,
+  FRIENDS_LEAGUE,
 } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
@@ -60,8 +61,9 @@ import { TabsSwitcher } from "./ui/TabSwitcher";
 import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
 import { useNotification } from "@/context/NotificationContext";
 import { invalidateDeskListQueries } from "@/utils/invalidateDeskQueries";
-import { getFriendsActivityRequest } from "@/services/friends/friends";
+import { getFriendsActivityRequest, getFriendsLeagueRequest } from "@/services/friends/friends";
 import { ROUTES } from "@/routes/paths";
+import { WeeklyLeagueCard } from "./ui/WeeklyLeagueCard";
 
 export default function HomeClient() {
   const { authenticated } = useAuth();
@@ -127,6 +129,11 @@ export default function HomeClient() {
   const { data: friendsActivity } = useQuery({
     queryKey: [FRIENDS_ACTIVITY],
     queryFn: async () => call((token) => getFriendsActivityRequest(token)),
+  });
+
+  const { data: friendsLeague } = useQuery({
+    queryKey: [FRIENDS_LEAGUE],
+    queryFn: async () => call((token) => getFriendsLeagueRequest(token)),
   });
 
   const startStudyMutation = useMutation({
@@ -373,6 +380,10 @@ export default function HomeClient() {
                   onStartStudy={() => startStudyMutation.mutate()}
                   isStarting={startStudyMutation.isPending}
                 />
+              )}
+
+              {friendsLeague && (
+                <WeeklyLeagueCard league={friendsLeague} compact />
               )}
 
               {!!friendsActivity?.length && (

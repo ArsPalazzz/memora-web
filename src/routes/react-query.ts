@@ -25,7 +25,6 @@ export const FRIENDS = "friends";
 export const FRIENDS_REQUESTS = "friends-requests";
 export const FRIENDS_ACTIVITY = "friends-activity";
 export const FRIENDS_LEAGUE = "friends-league";
-export const CURRENT_CHALLENGE = "current-challenge";
 export const FRIENDSHIP_STATUS = "friendship-status";
 
 export const REFRESH_TOKEN = "refresh-token";
