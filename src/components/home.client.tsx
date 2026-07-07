@@ -35,7 +35,7 @@ import {
 } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
-import { DeskCardSkeleton, Loader } from "@/components/ui/Loader";
+import { DeskCardSkeleton, Loader, SectionLoader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import { v4 as uuidV4 } from "uuid";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -111,30 +111,37 @@ export default function HomeClient() {
 
   const { notifySuccess, notifyError } = useNotification();
 
-  const { data: daily } = useQuery({
+  const { data: daily, isLoading: isDailyLoading } = useQuery({
     queryKey: [USER_DAILY],
     queryFn: async () => call((token) => getUserDailyRequest(token)),
   });
 
-  const { data: reviewSummary } = useQuery({
+  const { data: reviewSummary, isLoading: isReviewSummaryLoading } = useQuery({
     queryKey: [USER_REVIEW_SUMMARY],
     queryFn: async () => call((token) => getReviewSummaryRequest(token)),
   });
 
-  const { data: inboxSummary } = useQuery({
+  const { data: inboxSummary, isLoading: isInboxSummaryLoading } = useQuery({
     queryKey: [USER_INBOX_SUMMARY],
     queryFn: async () => call((token) => getInboxSummaryRequest(token)),
   });
 
-  const { data: friendsActivity } = useQuery({
+  const { data: friendsActivity, isLoading: isFriendsActivityLoading } = useQuery({
     queryKey: [FRIENDS_ACTIVITY],
     queryFn: async () => call((token) => getFriendsActivityRequest(token)),
   });
 
-  const { data: friendsLeague } = useQuery({
+  const { data: friendsLeague, isLoading: isFriendsLeagueLoading } = useQuery({
     queryKey: [FRIENDS_LEAGUE],
     queryFn: async () => call((token) => getFriendsLeagueRequest(token)),
   });
+
+  const isHomeHeaderLoading =
+    isDailyLoading ||
+    isReviewSummaryLoading ||
+    isInboxSummaryLoading ||
+    isFriendsActivityLoading ||
+    isFriendsLeagueLoading;
 
   const startStudyMutation = useMutation({
     mutationFn: () =>
@@ -365,34 +372,34 @@ export default function HomeClient() {
         >
           <Box sx={{ px: 2, pt: 2, flexShrink: 0 }}>
             <Stack spacing={1} sx={{ mb: 1 }}>
-              {daily && (
-                <DailyStreakCard
-                  streak={daily.currentStreak}
-                  cardsReviewedToday={daily.cardsReviewed}
-                  dailyGoal={daily.dailyGoal}
-                />
-              )}
+              {isHomeHeaderLoading ? (
+                <SectionLoader minHeight={200} imageSize={72} />
+              ) : (
+                <>
+                  <DailyStreakCard
+                    streak={daily!.currentStreak}
+                    cardsReviewedToday={daily!.cardsReviewed}
+                    dailyGoal={daily!.dailyGoal}
+                  />
 
-              {reviewSummary && inboxSummary && (
-                <ReviewDueCard
-                  totalDueCount={reviewSummary.totalDueCount}
-                  inboxCount={inboxSummary.count}
-                  onStartStudy={() => startStudyMutation.mutate()}
-                  isStarting={startStudyMutation.isPending}
-                />
-              )}
+                  <ReviewDueCard
+                    totalDueCount={reviewSummary!.totalDueCount}
+                    inboxCount={inboxSummary!.count}
+                    onStartStudy={() => startStudyMutation.mutate()}
+                    isStarting={startStudyMutation.isPending}
+                  />
 
-              {friendsLeague && (
-                <WeeklyLeagueCard league={friendsLeague} compact />
-              )}
+                  <WeeklyLeagueCard league={friendsLeague!} compact />
 
-              {!!friendsActivity?.length && (
-                <SocialHomeSection
-                  friends={friendsActivity}
-                  onFriendClick={(nickname) =>
-                    navigate(ROUTES.userProfile(nickname))
-                  }
-                />
+                  {!!friendsActivity?.length && (
+                    <SocialHomeSection
+                      friends={friendsActivity}
+                      onFriendClick={(nickname) =>
+                        navigate(ROUTES.userProfile(nickname))
+                      }
+                    />
+                  )}
+                </>
               )}
             </Stack>
 

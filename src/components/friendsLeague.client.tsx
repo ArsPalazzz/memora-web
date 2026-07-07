@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useQuery } from "@tanstack/react-query";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import { SectionLoader } from "@/components/ui/Loader";
@@ -33,6 +33,7 @@ function formatWeekRange(weekStart: string, weekEnd: string) {
 
 export default function FriendsLeagueClient() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const { call } = useProtectedRequest();
 
   const { data: league, isLoading } = useQuery({
@@ -44,7 +45,7 @@ export default function FriendsLeagueClient() {
 
   return (
     <WithBottomNav>
-      <Header title="Weekly league" />
+      <Header title="Weekly league" onBack={() => navigate(-1)} />
 
       <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2, py: 2 }}>
         {isLoading && <SectionLoader minHeight="40vh" />}
