@@ -20,6 +20,8 @@ export interface GetMyProfileResponse {
     nickname: string;
     email: string;
     created_at: string;
+    stats_public: boolean;
+    league_notifications: boolean;
   };
   settings: {
     card_orientation: CARD_ORIENTATION;
@@ -35,4 +37,21 @@ export interface GetUserDailyResponse {
   currentStreak: number;
   dailyGoal: number;
   cardsReviewed: number;
+}
+
+export interface PublicProfileDesk {
+  sub: string;
+  title: string;
+  cardCount: number;
+  totalSaves: number;
+}
+
+export interface GetPublicProfileResponse {
+  nickname: string;
+  memberSince: string;
+  desks: PublicProfileDesk[];
+  stats?: {
+    currentStreak: number;
+    cardsReviewedThisWeek: number;
+  };
 }

@@ -75,6 +75,8 @@ export type GetFeedNextCardResult = {
     imageUuid: string;
     deskTitle: string;
     deskSub: string;
+    creatorNickname: string;
+    saveCount: number;
     globalStats: {
       shown: number;
       liked: number;

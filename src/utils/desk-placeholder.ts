@@ -25,6 +25,7 @@ export function deskSummaryToPlaceholder(
     sub: summary.sub,
     title: summary.title,
     description: summary.description,
+    visibility: "private",
     created_at: "",
     cards: [],
     settings: {

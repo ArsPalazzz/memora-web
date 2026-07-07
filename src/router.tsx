@@ -15,6 +15,10 @@ import DeskCardsClient from "@/components/desk.cards.client";
 import DeskPlayClient from "@/components/deskPlay.client";
 import FolderClient from "@/components/folder-client";
 import AnkiImportClient from "@/components/import/AnkiImport.client";
+import PublicProfileClient from "@/components/publicProfile.client";
+import PublicDeskClient from "@/components/publicDesk.client";
+import AddFriendInviteClient from "@/components/addFriendInvite.client";
+import FriendsLeagueClient from "@/components/friendsLeague.client";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import Header from "@/components/layout/Header";
 import { Box, Typography } from "@mui/material";
@@ -42,6 +46,7 @@ export function AppRouter() {
       <Route path="/" element={<Navigate to="/home" replace />} />
       <Route path="/login" element={<LoginClient />} />
       <Route path="/sign-up" element={<SignUpClient />} />
+      <Route path="/add" element={<AddFriendInviteClient />} />
 
       <Route element={<ProtectedRoute />}>
         <Route
@@ -53,7 +58,11 @@ export function AppRouter() {
           }
         />
         <Route path="/profile" element={<ProfileClient />} />
+        <Route path="/u/:nickname" element={<PublicProfileClient />} />
+        <Route path="/u/:nickname/desk/:sub" element={<PublicDeskClient />} />
+        <Route path="/desk/:id/public" element={<PublicDeskClient />} />
         <Route path="/feed" element={<FeedClient />} />
+        <Route path="/friends/league" element={<FriendsLeagueClient />} />
         <Route path="/info" element={<InfoPage />} />
         <Route
           path="/review"

@@ -9,7 +9,7 @@ import {
 } from "@/services/games/games.types";
 import { FINISH_GAME_API } from "@/routes/api";
 import {
-  invalidateUserDaily,
+  invalidateAfterStudySession,
   shouldInvalidateDailyAfterGrade,
 } from "@/utils/invalidateUserDaily";
 
@@ -118,7 +118,7 @@ export function useMatchModeSession({
 
       if (!activeSessionId || activePhase === "grading" || !accessToken) return;
 
-      invalidateUserDaily(queryClient);
+      invalidateAfterStudySession(queryClient);
 
       fetch(`/api${FINISH_GAME_API}`, {
         method: "POST",
@@ -210,7 +210,7 @@ export function useMatchModeSession({
       {
         onSuccess: () => {
           if (shouldInvalidateDailyAfterGrade(quality, "match")) {
-            invalidateUserDaily(queryClient);
+            invalidateAfterStudySession(queryClient);
           }
 
           const nextIndex = gradingIndex + 1;

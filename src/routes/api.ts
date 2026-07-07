@@ -7,16 +7,38 @@ export const LOGOUT_API = "/auth/logout";
 // USERS
 export const CREATE_USER_API = "/users/create";
 export const GET_MY_PROFILE_API = "/users/my-profile";
+export const PATCH_MY_PROFILE_API = "/users/my-profile";
 export const GET_USER_DAILY_API = "/users/daily";
+export const GET_REVIEW_SUMMARY_API = "/users/review-summary";
+export const GET_INBOX_SUMMARY_API = "/users/inbox-summary";
+export const START_REVIEW_API = "/reviews/start";
+export const getPublicProfileApi = (nickname: string) =>
+  `/users/${encodeURIComponent(nickname)}/public`;
+
+export const FRIENDS_REQUEST_API = "/friends/request";
+export const FRIENDS_ACCEPT_API = "/friends/accept";
+export const FRIENDS_DECLINE_API = "/friends/decline";
+export const FRIENDS_LIST_API = "/friends";
+export const FRIENDS_ACTIVITY_API = "/friends/activity";
+export const FRIENDS_LEAGUE_API = "/friends/league";
+export const CURRENT_CHALLENGE_API = "/challenges/current";
+export const getFriendshipStatusApi = (nickname: string) =>
+  `/friends/status/${encodeURIComponent(nickname)}`;
+export const removeFriendApi = (friendSub: string) =>
+  `/friends/${encodeURIComponent(friendSub)}`;
 
 // CARDS
 export const FETCH_DESKS_API = "/desks";
 export const FETCH_ARCHIVED_DESKS_API = "/desks/archived";
 export const FETCH_DESKS_SHORT_API = "/desks/short";
+export const GET_LIBRARY_SOURCES_API = "/me/library/sources";
+export const addDeskToLibraryApi = (sub: string) =>
+  `/desks/${encodeURIComponent(sub)}/add-to-library`;
 export const CREATE_DESK_API = "/desks/create";
 export const UPDATE_FEED_SETTINGS_API = "/feed/settings";
 export const FETCH_CARD_API = (sub: string) => `/cards/${sub}`;
 export const FETCH_DESK_API = (sub: string) => `/desks/${sub}`;
+export const getPublicDeskApi = (sub: string) => `/desks/${encodeURIComponent(sub)}/public`;
 export const FETCH_DESK_CARDS_API = (sub: string) => `/desks/${sub}/cards`;
 export const FETCH_CARDS_TO_PLAY_API = (sub: string) => `/desks/${sub}/play`;
 export const CREATE_CARD_API = "/cards/create";
@@ -38,3 +60,4 @@ export const ANKI_IMPORT_GET_JOB_API = (sub: string) => `/import/anki/jobs/${sub
 
 // GAMES
 export const FINISH_GAME_API = "/games/finish";
+export const ADD_TO_INBOX_API = "/games/add-to-inbox";

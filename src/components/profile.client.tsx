@@ -14,6 +14,7 @@ import {
   ListItemIcon,
   ListItemText,
   Grid,
+  Switch,
 } from "@mui/material";
 import { useAuth } from "../utils/auth";
 import ScreenRotationIcon from "@mui/icons-material/ScreenRotation";
@@ -28,7 +29,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MY_PROFILE } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import { SectionLoader, Loader } from "@/components/ui/Loader";
-import { getMyProfileRequest } from "@/services/user/user";
+import { getMyProfileRequest, updateMyProfileRequest } from "@/services/user/user";
 import { logoutRequest } from "@/services/auth/auth";
 import { ROUTES } from "@/routes/paths";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +56,8 @@ import {
   updateReviewSettingsRequest,
 } from "@/services/desk/desk";
 import ArchiveIcon from "@mui/icons-material/Archive";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import ReviewSettingsCardsPerSessionModal from "./modals/ReviewSettings/ReviewSettingsCardsPerSession.modal";
 import { useNotification } from "@/context/NotificationContext";
 
@@ -214,6 +217,36 @@ export default function ProfileClient() {
 
   const onUpdateFeedSettingsSubmit = (data: FeedSettings) => {
     updateDeskSettingsMutation.mutate({ data, token: accessToken! });
+  };
+
+  const updateMyProfileMutation = useMutation({
+    mutationFn: (payload: {
+      stats_public?: boolean;
+      league_notifications?: boolean;
+      token: string;
+    }) => {
+      const { token, ...body } = payload;
+      return call(() => updateMyProfileRequest(body, token));
+    },
+    onSuccess: () => {
+      notifySuccess("Profile settings updated");
+      queryClient.invalidateQueries({ queryKey: [MY_PROFILE] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const handleStatsPublicChange = (checked: boolean) => {
+    updateMyProfileMutation.mutate({ stats_public: checked, token: accessToken! });
+  };
+
+  const handleLeagueNotificationsChange = (checked: boolean) => {
+    updateMyProfileMutation.mutate({
+      league_notifications: checked,
+      token: accessToken!,
+    });
   };
 
   const handleNotifications = async () => {
@@ -677,6 +710,60 @@ export default function ProfileClient() {
                         "Enable"
                       )}
                     </Button>
+                  </Box>
+
+                  <Divider component="li" />
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      py: 2,
+                      gap: 1,
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <EmojiEventsIcon sx={{ color: "warning.main", fontSize: 20 }} />
+                      <ListItemText
+                        primary="League notifications"
+                        secondary="Get notified when a friend overtakes you in the weekly league"
+                        primaryTypographyProps={{ fontWeight: 600 }}
+                      />
+                    </Stack>
+                    <Switch
+                      checked={profileInfo?.profile.league_notifications ?? true}
+                      onChange={(_, checked) => handleLeagueNotificationsChange(checked)}
+                      disabled={updateMyProfileMutation.isPending}
+                      inputProps={{ "aria-label": "League notifications" }}
+                    />
+                  </Box>
+
+                  <Divider component="li" />
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      py: 2,
+                      gap: 1,
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <VisibilityIcon sx={{ color: "primary.main", fontSize: 20 }} />
+                      <ListItemText
+                        primary="Show my activity"
+                        secondary="Display streak and weekly stats on your public profile"
+                        primaryTypographyProps={{ fontWeight: 600 }}
+                      />
+                    </Stack>
+                    <Switch
+                      checked={profileInfo?.profile.stats_public ?? false}
+                      onChange={(_, checked) => handleStatsPublicChange(checked)}
+                      disabled={updateMyProfileMutation.isPending}
+                      inputProps={{ "aria-label": "Show my activity" }}
+                    />
                   </Box>
 
                   <Divider component="li" />

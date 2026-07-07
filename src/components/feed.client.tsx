@@ -30,9 +30,11 @@ import { useProtectedRequest } from "@/utils/protected";
 import { SectionLoader } from "@/components/ui/Loader";
 import {
   Favorite,
+  FavoriteBorder,
   ArrowUpward,
   Translate,
   MenuBook,
+  LibraryBooks,
 } from "@mui/icons-material";
 import {
   startFeedSessionRequest,
@@ -42,7 +44,7 @@ import {
   gradeCardFeedRequest,
   revealCardFeedRequest,
 } from "@/services/games/games";
-import { USER_DESKS_SHORT } from "@/routes/react-query";
+import { USER_DESKS_SHORT, USER_INBOX_SUMMARY } from "@/routes/react-query";
 import {
   DEFAULT_BACK_LANGUAGE,
   DEFAULT_FRONT_LANGUAGE,
@@ -63,6 +65,7 @@ import {
   fetchMyDesksShortRequest,
   regenerateCardExamplesRequest,
 } from "@/services/desk/desk";
+import { addCardToInboxRequest } from "@/services/review/review";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import Header from "./layout/Header";
 import { VIEWPORT_SHELL_SX } from "./layout/viewport.constants";
@@ -73,6 +76,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { useNotification } from "@/context/NotificationContext";
 import { SpeakButton } from "@/components/ui/SpeakButton";
+import { formatCount } from "@/utils/formatCount";
 
 interface FeedCard {
   sub: string;
@@ -81,6 +85,8 @@ interface FeedCard {
   imageUuid?: string;
   deskTitle: string;
   deskSub: string;
+  creatorNickname: string;
+  saveCount: number;
   globalStats: {
     shown: number;
     liked: number;
@@ -129,6 +135,7 @@ function FeedSwipePage() {
   const [addedToDesks, setAddedToDesks] = useState<{
     [cardSub: string]: string[];
   }>({});
+  const [savedToInbox, setSavedToInbox] = useState<Record<string, boolean>>({});
   const [result, setResult] = useState<{
     isCorrect: boolean;
     correctVariants: string[];
@@ -439,8 +446,24 @@ function FeedSwipePage() {
       }));
 
       setAddToDeskDialog(false);
-      setSelectedDesk("");
-      notifySuccess(`Card added successfully`);
+      notifySuccess(`Card added to deck`);
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const addCardToInboxMutation = useMutation({
+    mutationFn: (payload: { cardSub: string; token: string }) =>
+      call(() => addCardToInboxRequest(payload.token, payload.cardSub)),
+    onSuccess: (_, variables) => {
+      setSavedToInbox((prev) => ({
+        ...prev,
+        [variables.cardSub]: true,
+      }));
+      void queryClient.invalidateQueries({ queryKey: [USER_INBOX_SUMMARY] });
+      notifySuccess("Saved to inbox");
     },
     onError: (err) => {
       console.warn(err);
@@ -739,11 +762,57 @@ function FeedSwipePage() {
                       >
                         <IconButton
                           onClick={() => {
+                            if (!accessToken || !currentCard) return;
+                            addCardToInboxMutation.mutate({
+                              cardSub: currentCard.sub,
+                              token: accessToken,
+                            });
+                          }}
+                          disabled={
+                            addCardToInboxMutation.isPending ||
+                            savedToInbox[currentCard.sub]
+                          }
+                          aria-label="Save to inbox"
+                          sx={{
+                            width: 64,
+                            height: 64,
+                            bgcolor: savedToInbox[currentCard.sub]
+                              ? "primary.main"
+                              : "action.hover",
+                            color: savedToInbox[currentCard.sub]
+                              ? "primary.contrastText"
+                              : "text.secondary",
+                            "&:hover": {
+                              bgcolor: savedToInbox[currentCard.sub]
+                                ? "primary.dark"
+                                : "action.selected",
+                            },
+                          }}
+                        >
+                          {savedToInbox[currentCard.sub] ? (
+                            <Favorite fontSize="medium" />
+                          ) : (
+                            <FavoriteBorder fontSize="medium" />
+                          )}
+                        </IconButton>
+                      </motion.div>
+                      <motion.div
+                        initial={{ x: 50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{
+                          duration: 0.5,
+                          ease: [0.22, 1, 0.36, 1],
+                          delay: 0.32,
+                        }}
+                      >
+                        <IconButton
+                          onClick={() => {
                             const alreadyAdded =
                               addedToDesks[currentCard.sub] || [];
                             setSelectedDesks(alreadyAdded);
                             setAddToDeskDialog(true);
                           }}
+                          aria-label="Save to deck"
                           sx={{
                             width: 64,
                             height: 64,
@@ -754,7 +823,7 @@ function FeedSwipePage() {
                             },
                           }}
                         >
-                          <Favorite fontSize="medium" />
+                          <LibraryBooks fontSize="medium" />
                         </IconButton>
                       </motion.div>
                         </>
@@ -820,6 +889,52 @@ function FeedSwipePage() {
                       </Collapse>
                     )}
                   </CardContent>
+
+                  {isCurrent && (
+                    <Box sx={{ px: 3, pb: 2.5, pt: 0, mt: "auto" }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ textAlign: "center" }}
+                      >
+                        <Box
+                          component="button"
+                          type="button"
+                          onClick={() =>
+                            navigate(
+                              ROUTES.userProfile(
+                                card.creatorNickname || "Anonymous"
+                              )
+                            )
+                          }
+                          sx={{
+                            color: "primary.main",
+                            fontWeight: 600,
+                            textDecoration: "none",
+                            border: "none",
+                            background: "none",
+                            padding: 0,
+                            font: "inherit",
+                            cursor: "pointer",
+                            "&:hover": { textDecoration: "underline" },
+                          }}
+                        >
+                          @{card.creatorNickname || "Anonymous"}
+                        </Box>
+                        {" · "}
+                        {card.deskTitle}
+                      </Typography>
+                      {card.saveCount > 0 && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: "block", textAlign: "center", mt: 0.5 }}
+                        >
+                          Saved by {formatCount(card.saveCount)}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
                 </Card>
               </Box>
             );
@@ -1011,7 +1126,7 @@ function FeedSwipePage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Add to Decks</DialogTitle>
+        <DialogTitle>Save to deck…</DialogTitle>
         <DialogContent>
           {isDesksLoading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
@@ -1104,7 +1219,7 @@ function FeedSwipePage() {
             {addCardToDeskMutation.isPending ? (
               <CircularProgress size={24} />
             ) : (
-              `Save Changes`
+              `Save to deck`
             )}
           </Button>
         </DialogActions>

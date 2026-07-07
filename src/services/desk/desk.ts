@@ -11,6 +11,9 @@ import {
   FetchDeskResponse,
   FetchDesksResponse,
   FetchDesksShortResponse,
+  GetPublicDeskResponse,
+  AddToLibraryResponse,
+  LibrarySource,
   FolderFlat,
   GetCardsToPlayResponse,
   RootFolder,
@@ -31,8 +34,11 @@ import {
   FETCH_CARDS_TO_PLAY_API,
   FETCH_DESK_API,
   FETCH_DESK_CARDS_API,
+  getPublicDeskApi,
   FETCH_DESKS_API,
   FETCH_DESKS_SHORT_API,
+  GET_LIBRARY_SOURCES_API,
+  addDeskToLibraryApi,
   RESTORE_DESK_API,
   UPDATE_CARD_API,
   UPDATE_DESK_API,
@@ -78,6 +84,38 @@ export async function fetchDeskRequest(
 ): Promise<FetchDeskResponse> {
   return handleApiRequest(
     api.get(FETCH_DESK_API(sub), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function getPublicDeskRequest(
+  deskSub: string,
+  token: string
+): Promise<GetPublicDeskResponse> {
+  return handleApiRequest(
+    api.get(getPublicDeskApi(deskSub), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function addDeskToLibraryRequest(
+  deskSub: string,
+  token: string
+): Promise<AddToLibraryResponse> {
+  return handleApiRequest(
+    api.post(addDeskToLibraryApi(deskSub), undefined, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function getLibrarySourcesRequest(
+  token: string
+): Promise<LibrarySource[]> {
+  return handleApiRequest(
+    api.get(GET_LIBRARY_SOURCES_API, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

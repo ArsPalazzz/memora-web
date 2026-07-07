@@ -76,6 +76,22 @@ export const DeskCard = ({
           >
             {desk.title}
           </Typography>
+          {desk.sourceCreatorNickname && (
+            <Chip
+              size="small"
+              label={`from @${desk.sourceCreatorNickname}`}
+              variant="outlined"
+              sx={{
+                mt: 0.75,
+                maxWidth: "100%",
+                height: 22,
+                "& .MuiChip-label": {
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                },
+              }}
+            />
+          )}
         </Box>
 
         <Chip

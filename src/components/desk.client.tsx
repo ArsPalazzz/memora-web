@@ -43,6 +43,7 @@ import {
 } from "@/services/desk/desk";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import EditIcon from "@mui/icons-material/Edit";
+import ShareIcon from "@mui/icons-material/Share";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArchiveIcon from "@mui/icons-material/Archive";
@@ -55,7 +56,8 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthContext } from "@/context/AuthContext";
 import React from "react";
-import { DeskSettings } from "@/services/desk/desk.types";
+import { DeskSettings, FetchDeskResponse } from "@/services/desk/desk.types";
+import { DeskVisibility } from "@/schemas/createDesk.schema";
 import { CARD_ORIENTATION } from "@/services/desk/desk.const";
 import {
   updateDeskSchema,
@@ -78,6 +80,7 @@ import EditCardModal from "./modals/EditCard/EditCard.modal";
 import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettingsCardOrientation.modal";
 import DeskSettingsLanguagesModal from "./modals/DeskSettings/DeskSettingsLanguages.modal";
 import StudyModeSelectModal from "./modals/StudyModeSelect.modal";
+import DeskShareModal from "./modals/DeskShare/DeskShare.modal";
 import { formatLanguagePair } from "@/constants/language.const";
 import {
   DEFAULT_DESK_STUDY_MODE,
@@ -262,10 +265,42 @@ export default function DeskClient() {
       notifySuccess(`Deck updated successfully`);
 
       patchDeskMetadataInCaches(queryClient, sub, variables.data);
+      if (variables.data.visibility) {
+        queryClient.setQueryData<FetchDeskResponse>([USER_DESK, sub], (old) =>
+          old ? { ...old, visibility: variables.data.visibility! } : old
+        );
+      }
       void invalidateDeskListQueries(queryClient);
     },
     onError: (err) => {
       console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const updateVisibilityMutation = useMutation({
+    mutationFn: (visibility: DeskVisibility) =>
+      call((token) =>
+        updateDeskRequest(
+          {
+            desk_sub: sub,
+            payload: {
+              title: desk!.title,
+              description: desk!.description,
+              visibility,
+            },
+          },
+          token
+        )
+      ),
+    onSuccess: (_data, visibility) => {
+      setOpenSheet(null);
+      notifySuccess("Sharing settings updated");
+      queryClient.setQueryData<FetchDeskResponse>([USER_DESK, sub], (old) =>
+        old ? { ...old, visibility } : old
+      );
+    },
+    onError: (err) => {
       notifyError(err.message);
     },
   });
@@ -496,6 +531,21 @@ export default function DeskClient() {
                   >
                     <EditIcon sx={{ fontSize: 18 }} />
                     <Typography>Edit desk</Typography>
+                  </MenuItem>
+
+                  <MenuItem
+                    sx={{
+                      display: "flex",
+                      gap: 1,
+                      alignItems: "center",
+                    }}
+                    onClick={() => {
+                      setAnchorMenu(null);
+                      setOpenSheet("share");
+                    }}
+                  >
+                    <ShareIcon sx={{ fontSize: 18 }} />
+                    <Typography>Share</Typography>
                   </MenuItem>
 
                   <MenuItem
@@ -1000,6 +1050,15 @@ export default function DeskClient() {
               ...value,
             });
           }}
+        />
+      )}
+
+      {desk && openSheet === "share" && (
+        <DeskShareModal
+          currentVisibility={desk.visibility ?? "private"}
+          onClose={() => setOpenSheet(null)}
+          onSave={(visibility) => updateVisibilityMutation.mutate(visibility)}
+          isSaving={updateVisibilityMutation.isPending}
         />
       )}
     </>

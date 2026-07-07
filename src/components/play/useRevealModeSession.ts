@@ -6,7 +6,7 @@ import { gradeCardRequest } from "@/services/games/games";
 import { NextCardResponse, RevealResult } from "@/services/games/games.types";
 import { FINISH_GAME_API } from "@/routes/api";
 import {
-  invalidateUserDaily,
+  invalidateAfterStudySession,
   shouldInvalidateDailyAfterGrade,
 } from "@/utils/invalidateUserDaily";
 
@@ -72,7 +72,7 @@ export function useRevealModeSession({
 
       if (!activeSessionId || activeResult?.finished || !accessToken) return;
 
-      invalidateUserDaily(queryClient);
+      invalidateAfterStudySession(queryClient);
 
       fetch(`/api${FINISH_GAME_API}`, {
         method: "POST",
@@ -126,7 +126,7 @@ export function useRevealModeSession({
       {
         onSuccess: () => {
           if (shouldInvalidateDailyAfterGrade(quality, "reveal")) {
-            invalidateUserDaily(queryClient);
+            invalidateAfterStudySession(queryClient);
           }
           goToNextCard();
         },

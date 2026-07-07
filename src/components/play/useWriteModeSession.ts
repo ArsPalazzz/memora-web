@@ -7,7 +7,7 @@ import { NextCardResponse } from "@/services/games/games.types";
 import { FINISH_GAME_API } from "@/routes/api";
 import { AnswerResult } from "./play.constants";
 import {
-  invalidateUserDaily,
+  invalidateAfterStudySession,
   shouldInvalidateDailyAfterWriteAnswer,
 } from "@/utils/invalidateUserDaily";
 
@@ -74,7 +74,7 @@ export function useWriteModeSession({
 
       if (!activeSessionId || activeResult?.finished || !accessToken) return;
 
-      invalidateUserDaily(queryClient);
+      invalidateAfterStudySession(queryClient);
 
       fetch(`/api${FINISH_GAME_API}`, {
         method: "POST",
@@ -98,7 +98,7 @@ export function useWriteModeSession({
         onSuccess: (res) => {
           setResult(res);
           if (shouldInvalidateDailyAfterWriteAnswer(res.isCorrect)) {
-            invalidateUserDaily(queryClient);
+            invalidateAfterStudySession(queryClient);
           }
         },
       }

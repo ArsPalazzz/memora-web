@@ -146,7 +146,7 @@ export default function FolderClient() {
     control,
   } = useForm<CreateDeskValues>({
     resolver: zodResolver(createDeskSchema),
-    defaultValues: { isPublic: true, ...DEFAULT_DESK_LANGUAGE_SETTINGS },
+    defaultValues: { visibility: "private", ...DEFAULT_DESK_LANGUAGE_SETTINGS },
     mode: "onChange",
   });
 

@@ -12,6 +12,7 @@ export interface FetchDesksResponse {
   dueCards: number;
   learningCards: number;
   masteredCards: number;
+  sourceCreatorNickname?: string;
 }
 
 export interface FetchArchivedDesksResponse {
@@ -48,6 +49,7 @@ export interface FetchDeskResponse {
   sub: string;
   title: string;
   description: string;
+  visibility: "private" | "public" | "friends" | "unlisted";
   created_at: string;
   cards: {
     sub: string;
@@ -130,7 +132,7 @@ export interface CreateDeskParams {
   sub: string;
   title: string;
   description: string;
-  isPublic: boolean;
+  visibility: "private" | "public" | "friends" | "unlisted";
   folder_sub: string | null;
   front_language: LanguageCode;
   back_language: LanguageCode;
@@ -183,6 +185,7 @@ export interface CreateDeskResult {
   sub: string;
   title: string;
   description: string;
+  visibility: "private" | "public" | "friends" | "unlisted";
   public: boolean;
   created_at: string;
 }
@@ -194,4 +197,41 @@ export interface CreateCardResult {
   front_variants: string[];
   back_variants: string[];
   created_at: string;
+}
+
+export interface GetPublicDeskResponse {
+  sub: string;
+  title: string;
+  description: string;
+  creatorNickname: string;
+  cardCount: number;
+  cards: {
+    sub: string;
+    frontVariants: string[];
+  }[];
+  pagination: {
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
+export interface AddToLibraryResponse {
+  sub: string;
+  localDeskSub: string;
+  sourceDeskSub: string;
+  title: string;
+  cardCount: number;
+}
+
+export interface LibrarySource {
+  sub: string;
+  sourceDeskSub: string;
+  localDeskSub: string;
+  sourceCreatorSub: string;
+  sourceCreatorNickname: string;
+  sourceDeskTitle: string;
+  localDeskTitle: string;
+  mode: string;
+  createdAt: string;
 }

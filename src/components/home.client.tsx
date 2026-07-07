@@ -28,6 +28,11 @@ import {
   USER_DESKS,
   USER_DESK,
   ROOT_FOLDERS,
+  USER_REVIEW_SUMMARY,
+  USER_INBOX_SUMMARY,
+  FRIENDS_ACTIVITY,
+  FRIENDS_LEAGUE,
+  CURRENT_CHALLENGE,
 } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
@@ -39,8 +44,17 @@ import WithBottomNav from "./layout/WithBottomNav";
 import { motion } from "framer-motion";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import { getUserDailyRequest } from "@/services/user/user";
+import {
+  getReviewSummaryRequest,
+  getInboxSummaryRequest,
+  startReviewRequest,
+} from "@/services/review/review";
 import { DeskCard } from "./ui/DeskCard";
 import { DailyStreakCard } from "./ui/DailyStreakCard";
+import { ReviewDueCard } from "./ui/ReviewDueCard";
+import { FriendsTodayCard } from "./ui/FriendsTodayCard";
+import { WeeklyLeagueCard } from "./ui/WeeklyLeagueCard";
+import { ChallengeBanner } from "./ui/ChallengeBanner";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import { FolderCard } from "./ui/FolterCard";
 import NewFolderModal from "./modals/NewFolder/NewFolder.modal";
@@ -49,6 +63,9 @@ import { TabsSwitcher } from "./ui/TabSwitcher";
 import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
 import { useNotification } from "@/context/NotificationContext";
 import { invalidateDeskListQueries } from "@/utils/invalidateDeskQueries";
+import { getFriendsActivityRequest, getFriendsLeagueRequest } from "@/services/friends/friends";
+import { getCurrentChallengeRequest } from "@/services/challenge/challenge";
+import { ROUTES } from "@/routes/paths";
 
 export default function HomeClient() {
   const { authenticated } = useAuth();
@@ -94,9 +111,48 @@ export default function HomeClient() {
     }
   }, [activeTab, navigate, searchParams]);
 
+  const { notifySuccess, notifyError } = useNotification();
+
   const { data: daily } = useQuery({
     queryKey: [USER_DAILY],
     queryFn: async () => call((token) => getUserDailyRequest(token)),
+  });
+
+  const { data: reviewSummary } = useQuery({
+    queryKey: [USER_REVIEW_SUMMARY],
+    queryFn: async () => call((token) => getReviewSummaryRequest(token)),
+  });
+
+  const { data: inboxSummary } = useQuery({
+    queryKey: [USER_INBOX_SUMMARY],
+    queryFn: async () => call((token) => getInboxSummaryRequest(token)),
+  });
+
+  const { data: friendsActivity } = useQuery({
+    queryKey: [FRIENDS_ACTIVITY],
+    queryFn: async () => call((token) => getFriendsActivityRequest(token)),
+  });
+
+  const { data: friendsLeague } = useQuery({
+    queryKey: [FRIENDS_LEAGUE],
+    queryFn: async () => call((token) => getFriendsLeagueRequest(token)),
+  });
+
+  const { data: currentChallenge } = useQuery({
+    queryKey: [CURRENT_CHALLENGE],
+    queryFn: async () => call((token) => getCurrentChallengeRequest(token)),
+    retry: false,
+  });
+
+  const startStudyMutation = useMutation({
+    mutationFn: () => call((token) => startReviewRequest(token)),
+    onSuccess: ({ batchId }) => {
+      navigate(`/review?batchId=${batchId}`);
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
   });
 
   const { data: desks, isLoading: isDesksLoading } = useQuery({
@@ -127,11 +183,9 @@ export default function HomeClient() {
     control,
   } = useForm<CreateDeskValues>({
     resolver: zodResolver(createDeskSchema),
-    defaultValues: { isPublic: true, ...DEFAULT_DESK_LANGUAGE_SETTINGS },
+    defaultValues: { visibility: "private", ...DEFAULT_DESK_LANGUAGE_SETTINGS },
     mode: "onChange",
   });
-
-  const { notifySuccess, notifyError } = useNotification();
 
   const createDeskMutation = useMutation({
     mutationFn: (payload: { data: CreateDeskValues; token: string }) => {
@@ -316,6 +370,57 @@ export default function HomeClient() {
                   streak={daily.currentStreak}
                   cardsReviewedToday={daily.cardsReviewed}
                   dailyGoal={daily.dailyGoal}
+                />
+              </Box>
+            )}
+
+            {friendsActivity && (
+              <Box sx={{ mb: 3 }}>
+                <FriendsTodayCard
+                  friends={friendsActivity}
+                  onFriendClick={(nickname) =>
+                    navigate(ROUTES.userProfile(nickname))
+                  }
+                />
+              </Box>
+            )}
+
+            {friendsLeague && (
+              <Box sx={{ mb: 3 }}>
+                <WeeklyLeagueCard league={friendsLeague} />
+              </Box>
+            )}
+
+            {currentChallenge && (
+              <Box sx={{ mb: 3 }}>
+                <ChallengeBanner
+                  challenge={currentChallenge}
+                  onOpen={() => {
+                    const myEntry = currentChallenge.leaderboard.find(
+                      (entry) => entry.isMe
+                    );
+                    if (myEntry) {
+                      navigate(`/desk/${myEntry.localDeskSub}`);
+                      return;
+                    }
+                    navigate(
+                      ROUTES.publicDesk(
+                        currentChallenge.desk.creatorNickname,
+                        currentChallenge.desk.sub
+                      )
+                    );
+                  }}
+                />
+              </Box>
+            )}
+
+            {reviewSummary && inboxSummary && (
+              <Box sx={{ mb: 3 }}>
+                <ReviewDueCard
+                  totalDueCount={reviewSummary.totalDueCount}
+                  inboxCount={inboxSummary.count}
+                  onStartStudy={() => startStudyMutation.mutate()}
+                  isStarting={startStudyMutation.isPending}
                 />
               </Box>
             )}

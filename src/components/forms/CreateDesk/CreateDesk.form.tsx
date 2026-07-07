@@ -1,16 +1,15 @@
 import {
   Box,
   Button,
-  Checkbox,
   DialogActions,
-  FormControlLabel,
-  FormHelperText,
   TextField,
   Typography,
 } from "@mui/material";
 import { CreateDeskFormProps } from "./CreateDesk.types";
-import { Controller, useFormState } from "react-hook-form";
+import { useFormState } from "react-hook-form";
 import LanguageSelect from "@/components/ui/LanguageSelect";
+import { Controller } from "react-hook-form";
+import { DeskVisibilitySelect } from "@/components/ui/DeskVisibilitySelect";
 
 const CreateDesk = ({
   onSubmit,
@@ -92,26 +91,17 @@ const CreateDesk = ({
       </Box>
 
       <Box sx={{ mt: 1 }}>
+        <Typography variant="subtitle2" fontWeight={600} mb={1}>
+          Visibility
+        </Typography>
         <Controller
-          name="isPublic"
+          name="visibility"
           control={control}
-          defaultValue={true}
           render={({ field }) => (
-            <>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    {...field}
-                    checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                  />
-                }
-                label="Public deck"
-              />
-              <FormHelperText sx={{ ml: 0, mt: 0.5 }}>
-                Cards will be displayed in the Feed mode
-              </FormHelperText>
-            </>
+            <DeskVisibilitySelect
+              value={field.value}
+              onChange={field.onChange}
+            />
           )}
         />
       </Box>

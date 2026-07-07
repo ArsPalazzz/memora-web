@@ -9,7 +9,10 @@ import {
   CREATE_USER_API,
   GET_MY_PROFILE_API,
   GET_USER_DAILY_API,
+  PATCH_MY_PROFILE_API,
+  getPublicProfileApi,
 } from "@/routes/api";
+import { GetPublicProfileResponse } from "./user.types";
 
 export async function signUpRequest(
   payload: SignUpParams
@@ -27,11 +30,33 @@ export async function getMyProfileRequest(
   );
 }
 
+export async function updateMyProfileRequest(
+  payload: { stats_public?: boolean; league_notifications?: boolean },
+  token: string
+): Promise<{ profile: GetMyProfileResponse["profile"] }> {
+  return handleApiRequest(
+    api.patch(PATCH_MY_PROFILE_API, payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
 export async function getUserDailyRequest(
   token: string
 ): Promise<GetUserDailyResponse> {
   return handleApiRequest(
     api.get(GET_USER_DAILY_API, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function getPublicProfileRequest(
+  nickname: string,
+  token: string
+): Promise<GetPublicProfileResponse> {
+  return handleApiRequest(
+    api.get(getPublicProfileApi(nickname), {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

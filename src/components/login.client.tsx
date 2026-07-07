@@ -1,6 +1,6 @@
 
 import { Box, Typography, Paper, useTheme, alpha } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -16,6 +16,8 @@ import Particles from "@/components/ui/Particles";
 
 export default function LoginClient() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectPath = searchParams.get("redirect");
   const { setAccessToken } = useAuthContext();
   const { call } = useProtectedRequest();
   const theme = useTheme();
@@ -35,7 +37,7 @@ export default function LoginClient() {
     },
     onSuccess: (data) => {
       setAccessToken(data.accessToken);
-      navigate(ROUTES.HOME);
+      navigate(redirectPath || ROUTES.HOME, { replace: true });
     },
     onError: (err) => {
       console.warn(err);

@@ -52,6 +52,38 @@ self.addEventListener("notificationclick", (event) => {
           return clients.openWindow(url);
         })
     );
+  } else if (data.type === "league") {
+    event.waitUntil(
+      clients
+        .matchAll({ type: "window", includeUncontrolled: true })
+        .then((clientList) => {
+          const url = "/friends/league";
+
+          for (const client of clientList) {
+            if (client.url.includes("/friends/league")) {
+              return client.focus();
+            }
+          }
+
+          return clients.openWindow(url);
+        })
+    );
+  } else if (data.type === "challenge") {
+    event.waitUntil(
+      clients
+        .matchAll({ type: "window", includeUncontrolled: true })
+        .then((clientList) => {
+          const url = "/home";
+
+          for (const client of clientList) {
+            if (client.url.includes("/home")) {
+              return client.focus();
+            }
+          }
+
+          return clients.openWindow(url);
+        })
+    );
   } else {
     event.waitUntil(clients.openWindow("/"));
   }
