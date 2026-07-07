@@ -5,6 +5,7 @@ import { Box, Typography } from "@mui/material";
 import { useProtectedRequest } from "@/utils/protected";
 import { FullPageLoader } from "@/components/ui/Loader";
 import { startReviewSessionRequest } from "@/services/games/games";
+import { ROUTES } from "@/routes/paths";
 
 export default function ReviewClient() {
   const [searchParams] = useSearchParams();
@@ -26,7 +27,10 @@ export default function ReviewClient() {
           startReviewSessionRequest({ batchId }, token)
         );
 
-        navigate(`/review/${sessionId}/play`);
+        navigate(`/review/${sessionId}/play`, {
+          replace: true,
+          state: { from: ROUTES.HOME },
+        });
       } catch (error) {
         console.error("Failed to start review session:", error);
       } finally {

@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import { startDeskSessionRequest } from "@/services/games/games";
@@ -12,6 +12,7 @@ export default function PlayDeskPage() {
   const deskSub = params.id;
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { call } = useProtectedRequest();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -31,20 +32,21 @@ export default function PlayDeskPage() {
     startSessionMutation.mutate(deskSub);
   }, [deskSub]);
 
-  const handleFinished = () => {
-    const currentState = window.history.state;
-
-    window.history.back();
-    window.history.replaceState(currentState, "", `/desk/${deskSub}`);
-
-    setTimeout(() => {
-      navigate(`/desk/${deskSub}`, { replace: true });
-    }, 0);
+  const handleLeave = () => {
+    const from =
+      (location.state as { from?: string } | null)?.from ?? `/desk/${deskSub}`;
+    navigate(from, { replace: true });
   };
 
   if (!sessionId && startSessionMutation.isPending) {
     return <FullPageLoader />;
   }
 
-  return <PlayScreen sessionId={sessionId} onFinished={handleFinished} />;
+  return (
+    <PlayScreen
+      sessionId={sessionId}
+      onFinished={handleLeave}
+      onExit={handleLeave}
+    />
+  );
 }

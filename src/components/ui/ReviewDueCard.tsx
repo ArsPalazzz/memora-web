@@ -1,4 +1,4 @@
-import { Inbox, Replay, School } from "@mui/icons-material";
+import { School } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -97,38 +97,6 @@ export function ReviewDueCard({
             </Box>
           </Box>
         </Box>
-
-        {(totalDueCount > 0 || inboxCount > 0) && (
-          <Box
-            sx={{
-              mt: 1.5,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 1,
-            }}
-          >
-            {totalDueCount > 0 && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-              >
-                <Replay sx={{ fontSize: 14, color: "warning.main" }} />
-                {totalDueCount} due
-              </Typography>
-            )}
-            {inboxCount > 0 && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-              >
-                <Inbox sx={{ fontSize: 14, color: "secondary.main" }} />
-                {inboxCount} from feed
-              </Typography>
-            )}
-          </Box>
-        )}
 
         <Button
           variant="contained"

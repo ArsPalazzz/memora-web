@@ -8,10 +8,12 @@ import { WritePlayScreen } from "./WritePlayScreen";
 import { RevealPlayScreen } from "./RevealPlayScreen";
 import { MatchPlayScreen } from "./MatchPlayScreen";
 import { FeedStudyError } from "./FeedStudyStates";
+import { usePlayExitOnBack } from "./usePlayExitOnBack";
 
 interface PlayScreenProps {
   sessionId: string | null;
   onFinished: () => void;
+  onExit?: () => void;
   initialMode?: StudyMode | null;
   nested?: boolean;
 }
@@ -19,6 +21,7 @@ interface PlayScreenProps {
 export function PlayScreen({
   sessionId,
   onFinished,
+  onExit,
   initialMode = null,
   nested = false,
 }: PlayScreenProps) {
@@ -29,6 +32,8 @@ export function PlayScreen({
     matchBoard: MatchBoardResponse | null;
   } | null>(null);
   const [bootError, setBootError] = useState(false);
+
+  usePlayExitOnBack(!nested && !!sessionId, onExit ?? onFinished);
 
   useEffect(() => {
     if (!sessionId) {

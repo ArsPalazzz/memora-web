@@ -49,6 +49,7 @@ import {
   getInboxSummaryRequest,
   startReviewRequest,
 } from "@/services/review/review";
+import { startReviewSessionRequest } from "@/services/games/games";
 import { DeskCard } from "./ui/DeskCard";
 import { DailyStreakCard } from "./ui/DailyStreakCard";
 import { ReviewDueCard } from "./ui/ReviewDueCard";
@@ -143,9 +144,17 @@ export default function HomeClient() {
   });
 
   const startStudyMutation = useMutation({
-    mutationFn: () => call((token) => startReviewRequest(token)),
-    onSuccess: ({ batchId }) => {
-      navigate(`/review?batchId=${batchId}`);
+    mutationFn: () =>
+      call(async (token) => {
+        const { batchId } = await startReviewRequest(token);
+        const { sessionId } = await startReviewSessionRequest({ batchId }, token);
+        return { sessionId };
+      }),
+    onSuccess: ({ sessionId }) => {
+      navigate(`/review/${sessionId}/play`, {
+        replace: true,
+        state: { from: ROUTES.HOME },
+      });
     },
     onError: (err) => {
       console.warn(err);

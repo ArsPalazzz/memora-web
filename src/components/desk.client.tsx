@@ -909,7 +909,10 @@ export default function DeskClient() {
                   if (!desk?.cards.length) return;
 
                   setIsNavigating(true);
-                  navigate(`/desk/${sub}/play`);
+                  navigate(`/desk/${sub}/play`, {
+                    replace: true,
+                    state: { from: `/desk/${sub}` },
+                  });
                 }}
               >
                 {isNavigating ? (
