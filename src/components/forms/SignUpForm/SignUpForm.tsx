@@ -14,6 +14,8 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useState } from "react";
 
+import { NICKNAME_HINT } from "@/constants/nickname.const";
+
 const SignUpForm = ({
   onSubmit,
   register,
@@ -37,6 +39,21 @@ const SignUpForm = ({
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <TextField
+          placeholder="Nickname"
+          fullWidth
+          {...register("nickname")}
+          error={!!errors.nickname}
+          helperText={errors.nickname?.message ?? NICKNAME_HINT}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">@</InputAdornment>
+              ),
+            },
+          }}
+          autoComplete="username"
+        />
         <TextField
           placeholder="Email"
           fullWidth

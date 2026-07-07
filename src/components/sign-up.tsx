@@ -30,7 +30,11 @@ export default function SignUpClient() {
 
   const signUpMutation = useMutation({
     mutationFn: (data: SignUpFormValues) => {
-      const payload = { email: data.email, password: data.password };
+      const payload = {
+        email: data.email,
+        password: data.password,
+        nickname: data.nickname,
+      };
       return call(() => signUpRequest(payload), false);
     },
     onSuccess: () => {

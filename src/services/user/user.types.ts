@@ -4,6 +4,7 @@ import { StudyMode } from "@/constants/studyMode.const";
 export interface SignUpParams {
   email: string;
   password: string;
+  nickname: string;
 }
 
 export interface SignUpResponse {

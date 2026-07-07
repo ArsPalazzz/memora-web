@@ -29,7 +29,7 @@ import { FRIENDS, FRIENDS_REQUESTS } from "@/routes/react-query";
 import { ROUTES } from "@/routes/paths";
 import { useNotification } from "@/context/NotificationContext";
 
-const NICKNAME_PATTERN = /^[a-z0-9_]{3,50}$/;
+import { NICKNAME_HINT, NICKNAME_PATTERN } from "@/constants/nickname.const";
 
 export default function FriendsClient() {
   const navigate = useNavigate();
@@ -80,7 +80,7 @@ export default function FriendsClient() {
     const nickname = searchNickname.trim().toLowerCase();
 
     if (!NICKNAME_PATTERN.test(nickname)) {
-      setSearchError("Nickname: 3–50 chars, a-z, 0-9, _");
+      setSearchError(`Nickname: ${NICKNAME_HINT}`);
       return;
     }
 
