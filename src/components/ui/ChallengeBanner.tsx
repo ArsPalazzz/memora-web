@@ -15,31 +15,46 @@ interface ChallengeBannerProps {
 
 export function ChallengeBanner({ challenge, onOpen }: ChallengeBannerProps) {
   const miniLeaderboard = challenge.leaderboard.slice(0, 3);
-  const leaderLabel = challenge.leaderNickname
-    ? `@${challenge.leaderNickname}`
-    : "—";
+  const myEntry = challenge.leaderboard.find((entry) => entry.isMe);
 
   return (
     <Card
+      variant="outlined"
       sx={{
-        border: "1px solid",
         borderColor: "warning.light",
-        bgcolor: "background.paper",
       }}
     >
       <CardActionArea onClick={onOpen}>
-        <CardContent sx={{ py: 2, "&:last-child": { pb: 2 } }}>
+        <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
           <Typography
             variant="subtitle2"
             fontWeight={700}
-            sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.5 }}
+            sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.25 }}
           >
             <Flag sx={{ fontSize: 18, color: "warning.main" }} />
-            Challenge: {challenge.desk.title} — {leaderLabel}
+            Challenge недели
           </Typography>
 
-          {miniLeaderboard.length > 0 ? (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          <Typography variant="caption" color="text.secondary" display="block">
+            Кто больше повторит одну колоду за неделю
+          </Typography>
+
+          <Typography variant="body2" fontWeight={600} sx={{ mt: 0.75 }} noWrap>
+            {challenge.desk.title}
+          </Typography>
+
+          {myEntry ? (
+            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.25 }}>
+              Твоё место: #{myEntry.rank} · {myEntry.cardsReviewed} cards
+            </Typography>
+          ) : (
+            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.25 }}>
+              Добавь колоду в библиотеку, чтобы участвовать
+            </Typography>
+          )}
+
+          {miniLeaderboard.length > 0 && (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, mt: 1 }}>
               {miniLeaderboard.map((entry) => (
                 <Typography
                   key={`${entry.nickname}-${entry.rank}`}
@@ -47,15 +62,10 @@ export function ChallengeBanner({ challenge, onOpen }: ChallengeBannerProps) {
                   color="text.secondary"
                 >
                   #{entry.rank}{" "}
-                  {entry.isMe ? "Ты" : `@${entry.nickname}`} · {entry.cardsReviewed}{" "}
-                  cards
+                  {entry.isMe ? "Ты" : `@${entry.nickname}`} · {entry.cardsReviewed} cards
                 </Typography>
               ))}
             </Box>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              Добавь колоду в библиотеку, чтобы участвовать
-            </Typography>
           )}
         </CardContent>
       </CardActionArea>

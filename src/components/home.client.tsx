@@ -52,7 +52,7 @@ import {
 import { DeskCard } from "./ui/DeskCard";
 import { DailyStreakCard } from "./ui/DailyStreakCard";
 import { ReviewDueCard } from "./ui/ReviewDueCard";
-import { SocialHomeCard } from "./ui/SocialHomeCard";
+import { SocialHomeSection } from "./ui/SocialHomeSection";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import { FolderCard } from "./ui/FolterCard";
 import NewFolderModal from "./modals/NewFolder/NewFolder.modal";
@@ -384,7 +384,7 @@ export default function HomeClient() {
             )}
 
             <Box sx={{ mb: 2 }}>
-              <SocialHomeCard
+              <SocialHomeSection
                 friends={friendsActivity}
                 league={friendsLeague}
                 challenge={currentChallenge}
