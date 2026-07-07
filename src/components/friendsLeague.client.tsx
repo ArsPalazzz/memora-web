@@ -66,8 +66,8 @@ export default function FriendsLeagueClient() {
                 <Typography color="text.secondary" sx={{ mb: 2 }}>
                   Нужен хотя бы один друг с публичной статистикой
                 </Typography>
-                <Link component={RouterLink} to={ROUTES.FEED} underline="hover">
-                  Найти в ленте
+                <Link component={RouterLink} to={ROUTES.FRIENDS} underline="hover">
+                  Найти друзей
                 </Link>
               </Box>
             ) : (

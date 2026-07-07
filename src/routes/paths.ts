@@ -14,4 +14,5 @@ export const ROUTES = {
   publicDeskBySub: (deskSub: string) =>
     `/desk/${encodeURIComponent(deskSub)}/public`,
   FRIENDS_LEAGUE: "/friends/league",
+  FRIENDS: "/friends",
 };

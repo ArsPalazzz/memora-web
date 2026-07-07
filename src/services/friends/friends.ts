@@ -5,6 +5,7 @@ import {
   FRIENDS_DECLINE_API,
   FRIENDS_LEAGUE_API,
   FRIENDS_LIST_API,
+  FRIENDS_REQUESTS_API,
   FRIENDS_REQUEST_API,
   getFriendshipStatusApi,
   removeFriendApi,
@@ -53,6 +54,16 @@ export async function declineFriendRequest(
       { requesterSub },
       { headers: { Authorization: `Bearer ${token}` } }
     )
+  );
+}
+
+export async function getIncomingFriendRequestsRequest(
+  token: string
+): Promise<FriendSummary[]> {
+  return handleApiRequest(
+    api.get(FRIENDS_REQUESTS_API, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
   );
 }
 

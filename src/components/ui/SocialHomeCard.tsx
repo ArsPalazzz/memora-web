@@ -81,16 +81,34 @@ export function SocialHomeCard({
     return (
       <Card sx={{ border: "1px solid", borderColor: "divider" }}>
         <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
-          <Typography
-            variant="subtitle2"
-            fontWeight={700}
-            sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.5 }}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 0.5,
+            }}
           >
-            <People sx={{ fontSize: 18, color: "text.secondary" }} />
-            Friends
-          </Typography>
+            <Typography
+              variant="subtitle2"
+              fontWeight={700}
+              sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+            >
+              <People sx={{ fontSize: 18, color: "text.secondary" }} />
+              Friends
+            </Typography>
+            <Link
+              component={RouterLink}
+              to={ROUTES.FRIENDS}
+              underline="hover"
+              variant="caption"
+              fontWeight={600}
+            >
+              All
+            </Link>
+          </Box>
           <Typography variant="body2" color="text.secondary">
-            Добавь друга{" "}
+            Найди друга по nickname или{" "}
             <Link component={RouterLink} to={ROUTES.FEED} underline="hover">
               в ленте
             </Link>
@@ -103,14 +121,32 @@ export function SocialHomeCard({
   return (
     <Card sx={{ border: "1px solid", borderColor: "divider" }}>
       <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
-        <Typography
-          variant="subtitle2"
-          fontWeight={700}
-          sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1 }}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1,
+          }}
         >
-          <People sx={{ fontSize: 18, color: "text.secondary" }} />
-          Friends
-        </Typography>
+          <Typography
+            variant="subtitle2"
+            fontWeight={700}
+            sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+          >
+            <People sx={{ fontSize: 18, color: "text.secondary" }} />
+            Friends
+          </Typography>
+          <Link
+            component={RouterLink}
+            to={ROUTES.FRIENDS}
+            underline="hover"
+            variant="caption"
+            fontWeight={600}
+          >
+            All
+          </Link>
+        </Box>
 
         {visibleFriends.length > 0 && (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, mb: 1 }}>

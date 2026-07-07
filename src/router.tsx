@@ -19,6 +19,7 @@ import PublicProfileClient from "@/components/publicProfile.client";
 import PublicDeskClient from "@/components/publicDesk.client";
 import AddFriendInviteClient from "@/components/addFriendInvite.client";
 import FriendsLeagueClient from "@/components/friendsLeague.client";
+import FriendsClient from "@/components/friends.client";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import Header from "@/components/layout/Header";
 import { Box, Typography } from "@mui/material";
@@ -63,6 +64,7 @@ export function AppRouter() {
         <Route path="/desk/:id/public" element={<PublicDeskClient />} />
         <Route path="/feed" element={<FeedClient />} />
         <Route path="/friends/league" element={<FriendsLeagueClient />} />
+        <Route path="/friends" element={<FriendsClient />} />
         <Route path="/info" element={<InfoPage />} />
         <Route
           path="/review"

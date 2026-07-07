@@ -26,8 +26,8 @@ import WithBottomNav from "@/components/layout/WithBottomNav";
 import { SectionLoader } from "@/components/ui/Loader";
 import { useProtectedRequest } from "@/utils/protected";
 import { getPublicProfileRequest, getMyProfileRequest } from "@/services/user/user";
-import { sendFriendRequest, getFriendshipStatusRequest } from "@/services/friends/friends";
-import { FRIENDSHIP_STATUS, MY_PROFILE, PUBLIC_PROFILE } from "@/routes/react-query";
+import { sendFriendRequest, getFriendshipStatusRequest, acceptFriendRequest, declineFriendRequest } from "@/services/friends/friends";
+import { FRIENDSHIP_STATUS, FRIENDS, FRIENDS_REQUESTS, MY_PROFILE, PUBLIC_PROFILE } from "@/routes/react-query";
 import { ROUTES } from "@/routes/paths";
 import { PublicProfileDesk } from "@/services/user/user.types";
 import { formatCount } from "@/utils/formatCount";
@@ -164,6 +164,29 @@ export default function PublicProfileClient() {
     },
   });
 
+  const acceptRequestMutation = useMutation({
+    mutationFn: () =>
+      call((token) => acceptFriendRequest(friendshipStatus!.sub, token)),
+    onSuccess: () => {
+      notifySuccess(`You are now friends with @${nickname}`);
+      queryClient.invalidateQueries({ queryKey: [FRIENDSHIP_STATUS, nickname] });
+      queryClient.invalidateQueries({ queryKey: [FRIENDS] });
+      queryClient.invalidateQueries({ queryKey: [FRIENDS_REQUESTS] });
+    },
+    onError: (err) => notifyError(err.message),
+  });
+
+  const declineRequestMutation = useMutation({
+    mutationFn: () =>
+      call((token) => declineFriendRequest(friendshipStatus!.sub, token)),
+    onSuccess: () => {
+      notifySuccess("Friend request declined");
+      queryClient.invalidateQueries({ queryKey: [FRIENDSHIP_STATUS, nickname] });
+      queryClient.invalidateQueries({ queryKey: [FRIENDS_REQUESTS] });
+    },
+    onError: (err) => notifyError(err.message),
+  });
+
   const handleDeskClick = (deskSub: string) => {
     if (!nickname) return;
     navigate(ROUTES.publicDesk(nickname, deskSub), { state: { fromProfile: true } });
@@ -188,6 +211,27 @@ export default function PublicProfileClient() {
     }
 
     if (friendshipStatus?.status === "pending") {
+      if (friendshipStatus.direction === "incoming") {
+        return (
+          <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+            <Button
+              variant="contained"
+              disabled={acceptRequestMutation.isPending || declineRequestMutation.isPending}
+              onClick={() => acceptRequestMutation.mutate()}
+            >
+              Accept
+            </Button>
+            <Button
+              variant="outlined"
+              disabled={acceptRequestMutation.isPending || declineRequestMutation.isPending}
+              onClick={() => declineRequestMutation.mutate()}
+            >
+              Decline
+            </Button>
+          </Stack>
+        );
+      }
+
       return (
         <Button
           variant="outlined"

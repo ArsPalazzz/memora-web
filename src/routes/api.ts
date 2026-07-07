@@ -19,6 +19,7 @@ export const FRIENDS_REQUEST_API = "/friends/request";
 export const FRIENDS_ACCEPT_API = "/friends/accept";
 export const FRIENDS_DECLINE_API = "/friends/decline";
 export const FRIENDS_LIST_API = "/friends";
+export const FRIENDS_REQUESTS_API = "/friends/requests";
 export const FRIENDS_ACTIVITY_API = "/friends/activity";
 export const FRIENDS_LEAGUE_API = "/friends/league";
 export const CURRENT_CHALLENGE_API = "/challenges/current";

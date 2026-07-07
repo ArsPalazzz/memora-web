@@ -21,6 +21,7 @@ export const PUBLIC_PROFILE = "public-profile";
 export const PUBLIC_DESK = "public-desk";
 export const LIBRARY_SOURCES = "library-sources";
 export const FRIENDS = "friends";
+export const FRIENDS_REQUESTS = "friends-requests";
 export const FRIENDS_ACTIVITY = "friends-activity";
 export const FRIENDS_LEAGUE = "friends-league";
 export const CURRENT_CHALLENGE = "current-challenge";

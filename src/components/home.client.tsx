@@ -383,31 +383,29 @@ export default function HomeClient() {
               </Box>
             )}
 
-            {(friendsActivity || friendsLeague || currentChallenge) && (
-              <Box sx={{ mb: 2 }}>
-                <SocialHomeCard
-                  friends={friendsActivity}
-                  league={friendsLeague}
-                  challenge={currentChallenge}
-                  onFriendClick={(nickname) =>
-                    navigate(ROUTES.userProfile(nickname))
+            <Box sx={{ mb: 2 }}>
+              <SocialHomeCard
+                friends={friendsActivity}
+                league={friendsLeague}
+                challenge={currentChallenge}
+                onFriendClick={(nickname) =>
+                  navigate(ROUTES.userProfile(nickname))
+                }
+                onChallengeOpen={() => {
+                  if (!currentChallenge) return;
+                  const myEntry = currentChallenge.leaderboard.find(
+                    (entry) => entry.isMe
+                  );
+                  if (myEntry) {
+                    navigate(`/desk/${myEntry.localDeskSub}`);
+                    return;
                   }
-                  onChallengeOpen={() => {
-                    if (!currentChallenge) return;
-                    const myEntry = currentChallenge.leaderboard.find(
-                      (entry) => entry.isMe
-                    );
-                    if (myEntry) {
-                      navigate(`/desk/${myEntry.localDeskSub}`);
-                      return;
-                    }
-                    navigate(
-                      ROUTES.publicDeskBySub(currentChallenge.desk.sub)
-                    );
-                  }}
-                />
-              </Box>
-            )}
+                  navigate(
+                    ROUTES.publicDeskBySub(currentChallenge.desk.sub)
+                  );
+                }}
+              />
+            </Box>
 
             <TabsSwitcher activeTab={activeTab} onChange={handleTabChange} />
           </Box>
