@@ -87,6 +87,7 @@ export function useDuelLobby(duelId: string) {
   const [socketConnected, setSocketConnected] = useState(true);
   const [opponentLeft, setOpponentLeft] = useState(false);
   const prevPlayerCountRef = useRef<number | null>(null);
+  const lobbyStatusRef = useRef<DuelResponse["status"] | undefined>(undefined);
 
   const { data: profileData } = useQuery({
     queryKey: [MY_PROFILE],
@@ -118,6 +119,7 @@ export function useDuelLobby(duelId: string) {
       }
 
       prevPlayerCountRef.current = state.players.length;
+      lobbyStatusRef.current = state.status;
       setLobby(state);
     },
     []
@@ -283,13 +285,17 @@ export function useDuelLobby(duelId: string) {
     }
   }, [authenticated, call, duelId]);
 
+  // Leave the socket room only when navigating away while still in the waiting
+  // phase. Do not depend on lobby.status — when the host starts the duel the
+  // status flips to "countdown" and a status-based cleanup would incorrectly
+  // emit lobby:leave for every connected player.
   useEffect(() => {
     return () => {
-      if (duelId && authenticated && lobby?.status === "waiting") {
+      if (duelId && authenticated && lobbyStatusRef.current === "waiting") {
         leaveDuelLobbyRoom(duelId);
       }
     };
-  }, [authenticated, duelId, lobby?.status]);
+  }, [authenticated, duelId]);
 
   const playerSlots = useMemo(() => {
     const slots: Array<DuelPlayerResponse | null> = [null, null];

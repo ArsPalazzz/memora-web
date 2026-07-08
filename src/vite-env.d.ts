@@ -2,7 +2,7 @@
 /// <reference types="vite-plugin-pwa/client" />
 
 interface ImportMetaEnv {
-  /** Backend URL for Vite dev/preview proxy (/api → backend). Not exposed to browser runtime. */
+  /** Backend URL: dev/preview Vite proxy, Vercel /api middleware, prod Socket.IO direct connect. */
   readonly VITE_API_URL: string;
 
   /** Firebase client config — src/lib/firebase.ts */

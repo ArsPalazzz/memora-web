@@ -57,12 +57,14 @@ The repo includes `vercel.json` + `middleware.ts` (Edge proxy `/api` → backend
 
    | Variable | Example | Notes |
    |----------|---------|-------|
-   | `VITE_API_URL` | `https://your-api.up.railway.app` | Edge proxy target; was `NEXT_PUBLIC_API_URL` on Next |
+   | `VITE_API_URL` | `https://your-api.up.railway.app` | `/api` proxy target + direct Socket.IO URL in production |
    | `VITE_FIREBASE_*` | see `.env.example` | Build + `generate-sw.js` |
 
 4. **Redeploy** after changing env vars.
 
 Auth cookies work because the browser calls same-origin `/api`; middleware forwards to the API (like old `next.config.ts` rewrites). **No CORS changes needed** for normal app traffic.
+
+Socket.IO connects **directly** to `VITE_API_URL` in production (not through Vercel). Set `CORS_URL` on memora-api to your Vercel origin (e.g. `https://memora-web-olive.vercel.app`).
 
 If you ever call the API **directly** from the browser (without `/api` proxy), set `CORS_URL` on memora-api to your exact Vercel URL and keep cookies `Secure` + `SameSite=None`.
 
