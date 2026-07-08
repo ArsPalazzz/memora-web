@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/auth";
 import { SectionLoader } from "./ui/Loader";
+import { CardImage } from "./ui/CardImage";
 import { getDeskPlaceholder } from "@/utils/desk-placeholder";
 import {
   Box,
@@ -34,10 +35,12 @@ import {
   archiveDeskRequest,
   createCardRequest,
   deleteCardRequest,
+  deleteCardImageRequest,
   fetchCardRequest,
   fetchDeskRequest,
   regenerateCardExamplesRequest,
   updateCardRequest,
+  uploadCardImageRequest,
   updateDeskRequest,
   updateDeskSettingsRequest,
 } from "@/services/desk/desk";
@@ -125,6 +128,7 @@ export default function DeskClient() {
   const [updateDeskModal, setUpdateDeskModal] = useState(false);
   const [updateCardModalSub, setUpdateCardModalSub] = useState("");
   const [editCardExamples, setEditCardExamples] = useState<string[]>([]);
+  const [editCardImageUrl, setEditCardImageUrl] = useState<string | null>(null);
   const [deleteDeskModal, setDeleteDeskModal] = useState(false);
   const [openSheet, setOpenSheet] = useState<null | string>(null);
 
@@ -319,12 +323,52 @@ export default function DeskClient() {
     onSuccess: () => {
       resetUpdateCard();
       setUpdateCardModalSub("");
+      setEditCardImageUrl(null);
       notifySuccess(`Card updated successfully`);
 
       queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
     },
     onError: (err) => {
       console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const patchCardImageInDesk = (cardSub: string, imageUrl: string | null) => {
+    queryClient.setQueryData<FetchDeskResponse>([USER_DESK, sub], (old) =>
+      old
+        ? {
+            ...old,
+            cards: old.cards.map((card) =>
+              card.sub === cardSub ? { ...card, image_url: imageUrl } : card
+            ),
+          }
+        : old
+    );
+  };
+
+  const uploadCardImageMutation = useMutation({
+    mutationFn: (file: File) =>
+      call((token) => uploadCardImageRequest(updateCardModalSub, file, token)),
+    onSuccess: (data) => {
+      setEditCardImageUrl(data.image_url);
+      patchCardImageInDesk(updateCardModalSub, data.image_url);
+      notifySuccess("Photo uploaded");
+    },
+    onError: (err) => {
+      notifyError(err.message);
+    },
+  });
+
+  const deleteCardImageMutation = useMutation({
+    mutationFn: () =>
+      call((token) => deleteCardImageRequest(updateCardModalSub, token)),
+    onSuccess: () => {
+      setEditCardImageUrl(null);
+      patchCardImageInDesk(updateCardModalSub, null);
+      notifySuccess("Photo removed");
+    },
+    onError: (err) => {
       notifyError(err.message);
     },
   });
@@ -464,6 +508,7 @@ export default function DeskClient() {
         back: el.back_variants.map((item) => ({ value: item })),
       });
       setEditCardExamples(el.examples ?? []);
+      setEditCardImageUrl(el.image_url ?? null);
     }
   }, [desk, updateCardModalSub, resetUpdateCard]);
 
@@ -732,6 +777,11 @@ export default function DeskClient() {
                             >
                               <DeleteIcon fontSize="small" color="error" />
                             </IconButton>
+                            {card.image_url && (
+                              <Box sx={{ mb: 1 }}>
+                                <CardImage url={card.image_url} size="thumb" />
+                              </Box>
+                            )}
                             <Typography
                               variant="h6"
                               sx={{ fontWeight: 600, mb: 1 }}
@@ -975,6 +1025,11 @@ export default function DeskClient() {
             })
           }
           isRegeneratingExamples={regenerateExamplesMutation.isPending}
+          imageUrl={editCardImageUrl}
+          onImageSelected={(file) => uploadCardImageMutation.mutate(file)}
+          onImageDelete={() => deleteCardImageMutation.mutate()}
+          isImageUploading={uploadCardImageMutation.isPending}
+          isImageDeleting={deleteCardImageMutation.isPending}
           onDelete={() => onDeleteCardSubmit(updateCardModalSub)}
         />
       )}

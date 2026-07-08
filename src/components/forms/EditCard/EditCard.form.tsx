@@ -1,8 +1,10 @@
-import { alpha, Box, Button, Chip, CircularProgress, TextField, Typography, useTheme } from "@mui/material";
+import { alpha, Box, Button, Chip, CircularProgress, IconButton, TextField, Typography, useTheme } from "@mui/material";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { EditCardFormProps } from "./EditCard.types";
 import { useFieldArray } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { CardImage } from "@/components/ui/CardImage";
 
 const EditCard = ({
   onSubmit,
@@ -11,6 +13,11 @@ const EditCard = ({
   examples,
   onRegenerateExamples,
   isRegeneratingExamples = false,
+  imageUrl,
+  onImageSelected,
+  onImageDelete,
+  isImageUploading = false,
+  isImageDeleting = false,
 }: EditCardFormProps) => {
   const {
     fields: frontFields,
@@ -32,6 +39,7 @@ const EditCard = ({
 
   const [frontInput, setFrontInput] = useState("");
   const [backInput, setBackInput] = useState("");
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const theme = useTheme();
 
@@ -111,6 +119,84 @@ const EditCard = ({
               onDelete={() => removeBack(index)}
             />
           ))}
+        </Box>
+      </Box>
+
+      <Box>
+        <Typography sx={{ fontWeight: 500, fontSize: "0.9rem", mb: 1 }}>
+          Photo (optional)
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ position: "relative", display: "inline-flex" }}>
+            {imageUrl ? (
+              <CardImage url={imageUrl} size="study" />
+            ) : (
+              <Box
+                sx={{
+                  width: 120,
+                  height: 80,
+                  borderRadius: 1,
+                  bgcolor: alpha(theme.palette.background.default, 0.5),
+                  border: "1px dashed",
+                  borderColor: "divider",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography variant="caption" color="text.secondary">
+                  No photo
+                </Typography>
+              </Box>
+            )}
+            {onImageSelected && (
+              <>
+                <IconButton
+                  aria-label="Change card photo"
+                  size="small"
+                  disabled={isImageUploading || isImageDeleting}
+                  onClick={() => imageInputRef.current?.click()}
+                  sx={{
+                    position: "absolute",
+                    right: -8,
+                    bottom: -8,
+                    bgcolor: "background.paper",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    boxShadow: 1,
+                  }}
+                >
+                  {isImageUploading ? (
+                    <CircularProgress size={14} />
+                  ) : (
+                    <PhotoCameraIcon sx={{ fontSize: 16 }} />
+                  )}
+                </IconButton>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      onImageSelected(file);
+                    }
+                    e.target.value = "";
+                  }}
+                />
+              </>
+            )}
+          </Box>
+          {imageUrl && onImageDelete && (
+            <Button
+              size="small"
+              disabled={isImageDeleting || isImageUploading}
+              onClick={onImageDelete}
+            >
+              Remove photo
+            </Button>
+          )}
         </Box>
       </Box>
 

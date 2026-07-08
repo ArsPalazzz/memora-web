@@ -10,4 +10,9 @@ export interface EditCardFormProps {
   examples: string[];
   onRegenerateExamples?: () => void;
   isRegeneratingExamples?: boolean;
+  imageUrl?: string | null;
+  onImageSelected?: (file: File) => void;
+  onImageDelete?: () => void;
+  isImageUploading?: boolean;
+  isImageDeleting?: boolean;
 }

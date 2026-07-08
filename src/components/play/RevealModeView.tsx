@@ -2,6 +2,7 @@ import { Box, Button, Card, CardContent, Fade, Typography, useTheme } from "@mui
 import { NextCardResponse, RevealResult } from "@/services/games/games.types";
 import { GradeButtons } from "./GradeButtons";
 import { CardPromptWithSpeak } from "./CardPromptWithSpeak";
+import { CardImage } from "@/components/ui/CardImage";
 import { SpeakButton } from "@/components/ui/SpeakButton";
 import {
   DEFAULT_BACK_LANGUAGE,
@@ -61,6 +62,8 @@ export function RevealModeView({
                 text={currentCard.card.text}
                 language={promptLanguage}
               />
+
+              <CardImage url={currentCard.card.image_url} size="study" />
 
               {revealed && (
                 <Fade in>

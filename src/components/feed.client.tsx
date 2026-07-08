@@ -68,13 +68,14 @@ import { useAuthContext } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { useNotification } from "@/context/NotificationContext";
 import { SpeakButton } from "@/components/ui/SpeakButton";
+import { CardImage } from "@/components/ui/CardImage";
 import { formatCount } from "@/utils/formatCount";
 
 interface FeedCard {
   sub: string;
   text: string[];
   backVariants: string[];
-  imageUuid?: string;
+  image_url?: string | null;
   deskTitle: string;
   deskSub: string;
   creatorNickname: string;
@@ -857,6 +858,11 @@ function FeedSwipePage() {
                     >
                       {card.text.join(", ")}
                     </Typography>
+                    {isCurrent && card.image_url && (
+                      <Box sx={{ my: 2, width: "100%" }}>
+                        <CardImage url={card.image_url} size="study" />
+                      </Box>
+                    )}
                     {isCurrent && (showAnswer || showTranslation) && (
                       <Collapse
                         in={showAnswer || showTranslation}

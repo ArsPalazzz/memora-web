@@ -24,6 +24,11 @@ export default function EditCardModal(props: EditCardModalProps) {
     onDelete,
     onRegenerateExamples,
     isRegeneratingExamples,
+    imageUrl,
+    onImageSelected,
+    onImageDelete,
+    isImageUploading,
+    isImageDeleting,
   } = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -71,6 +76,11 @@ export default function EditCardModal(props: EditCardModalProps) {
           examples={examples}
           onRegenerateExamples={onRegenerateExamples}
           isRegeneratingExamples={isRegeneratingExamples}
+          imageUrl={imageUrl}
+          onImageSelected={onImageSelected}
+          onImageDelete={onImageDelete}
+          isImageUploading={isImageUploading}
+          isImageDeleting={isImageDeleting}
         />
       </DialogContent>
 

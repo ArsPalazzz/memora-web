@@ -58,6 +58,7 @@ export interface FetchDeskResponse {
     back_variants: string[];
     examples: string[];
     created_at: string;
+    image_url?: string | null;
   }[];
   settings: DeskSettings;
   stats: {
@@ -95,6 +96,7 @@ export interface FetchCardResponse {
   front_variants: string[];
   back_variants: string[];
   examples: string[];
+  image_url?: string | null;
 }
 
 export interface RootFolder {
@@ -117,6 +119,7 @@ export interface FetchDeskCardsResponse {
   frontVariants: string[];
   backVariants: string[];
   examples: string[];
+  image_url?: string | null;
 }
 
 export interface GetCardsToPlayResponse {

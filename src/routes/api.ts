@@ -47,6 +47,8 @@ export const FETCH_CARDS_TO_PLAY_API = (sub: string) => `/desks/${sub}/play`;
 export const CREATE_CARD_API = "/cards/create";
 export const UPDATE_DESK_API = (sub: string) => `/desks/${sub}`;
 export const UPDATE_CARD_API = (sub: string) => `/cards/${sub}`;
+export const UPLOAD_CARD_IMAGE_API = (sub: string) => `/cards/${sub}/image`;
+export const DELETE_CARD_IMAGE_API = (sub: string) => `/cards/${sub}/image`;
 export const REGENERATE_CARD_EXAMPLES_API = (sub: string) =>
   `/cards/${sub}/regenerate-examples`;
 export const DELETE_CARD_API = (sub: string) => `/cards/${sub}`;

@@ -41,6 +41,8 @@ import {
   addDeskToLibraryApi,
   RESTORE_DESK_API,
   UPDATE_CARD_API,
+  UPLOAD_CARD_IMAGE_API,
+  DELETE_CARD_IMAGE_API,
   UPDATE_DESK_API,
   UPDATE_DESK_SETTINGS_API,
   UPDATE_FEED_SETTINGS_API,
@@ -377,6 +379,35 @@ export async function deleteCardRequest(
 ): Promise<{ archived: boolean }> {
   return handleApiRequest(
     api.delete(DELETE_CARD_API(payload.cardSub), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function uploadCardImageRequest(
+  cardSub: string,
+  file: File,
+  token: string
+): Promise<{ image_url: string }> {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  return handleApiRequest(
+    api.post(UPLOAD_CARD_IMAGE_API(cardSub), formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  );
+}
+
+export async function deleteCardImageRequest(
+  cardSub: string,
+  token: string
+): Promise<{ image_url: null }> {
+  return handleApiRequest(
+    api.delete(DELETE_CARD_IMAGE_API(cardSub), {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

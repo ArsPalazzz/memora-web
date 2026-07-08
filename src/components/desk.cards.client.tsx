@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/utils/auth";
 import { SectionLoader } from "./ui/Loader";
+import { CardImage } from "./ui/CardImage";
 import { Box, Card, IconButton, Typography } from "@mui/material";
 import Header from "./layout/Header";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,10 +11,13 @@ import { USER_CARDS, USER_DESK } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import {
   deleteCardRequest,
+  deleteCardImageRequest,
   fetchDeskCardsRequest,
   regenerateCardExamplesRequest,
   updateCardRequest,
+  uploadCardImageRequest,
 } from "@/services/desk/desk";
+import { FetchDeskCardsResponse } from "@/services/desk/desk.types";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,6 +51,7 @@ export default function DeskCardsClient() {
 
   const [updateCardModalSub, setUpdateCardModalSub] = useState("");
   const [editCardExamples, setEditCardExamples] = useState<string[]>([]);
+  const [editCardImageUrl, setEditCardImageUrl] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
@@ -86,6 +91,7 @@ export default function DeskCardsClient() {
     onSuccess: () => {
       resetUpdateCard();
       setUpdateCardModalSub("");
+      setEditCardImageUrl(null);
       notifySuccess(`Card updated successfully`);
 
       queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
@@ -93,6 +99,40 @@ export default function DeskCardsClient() {
     },
     onError: (err) => {
       console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const patchCardImageInList = (cardSub: string, imageUrl: string | null) => {
+    queryClient.setQueryData<FetchDeskCardsResponse[]>([USER_CARDS, sub], (old) =>
+      old?.map((card) =>
+        card.sub === cardSub ? { ...card, image_url: imageUrl } : card
+      )
+    );
+  };
+
+  const uploadCardImageMutation = useMutation({
+    mutationFn: (file: File) =>
+      call((token) => uploadCardImageRequest(updateCardModalSub, file, token)),
+    onSuccess: (data) => {
+      setEditCardImageUrl(data.image_url);
+      patchCardImageInList(updateCardModalSub, data.image_url);
+      notifySuccess("Photo uploaded");
+    },
+    onError: (err) => {
+      notifyError(err.message);
+    },
+  });
+
+  const deleteCardImageMutation = useMutation({
+    mutationFn: () =>
+      call((token) => deleteCardImageRequest(updateCardModalSub, token)),
+    onSuccess: () => {
+      setEditCardImageUrl(null);
+      patchCardImageInList(updateCardModalSub, null);
+      notifySuccess("Photo removed");
+    },
+    onError: (err) => {
       notifyError(err.message);
     },
   });
@@ -143,6 +183,7 @@ export default function DeskCardsClient() {
         back: el.backVariants.map((item) => ({ value: item })),
       });
       setEditCardExamples(el.examples ?? []);
+      setEditCardImageUrl(el.image_url ?? null);
     }
   }, [cards, updateCardModalSub, resetUpdateCard]);
 
@@ -287,6 +328,11 @@ export default function DeskCardsClient() {
                         >
                           <DeleteIcon fontSize="small" color="error" />
                         </IconButton>
+                        {card.image_url && (
+                          <Box sx={{ mb: 1 }}>
+                            <CardImage url={card.image_url} size="thumb" />
+                          </Box>
+                        )}
                         <Typography
                           variant="h6"
                           sx={{ fontWeight: 600, mb: 1 }}
@@ -360,6 +406,11 @@ export default function DeskCardsClient() {
             })
           }
           isRegeneratingExamples={regenerateExamplesMutation.isPending}
+          imageUrl={editCardImageUrl}
+          onImageSelected={(file) => uploadCardImageMutation.mutate(file)}
+          onImageDelete={() => deleteCardImageMutation.mutate()}
+          isImageUploading={uploadCardImageMutation.isPending}
+          isImageDeleting={deleteCardImageMutation.isPending}
           onDelete={() => onDeleteCardSubmit(updateCardModalSub)}
         />
       )}

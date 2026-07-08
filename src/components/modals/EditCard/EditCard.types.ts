@@ -12,4 +12,9 @@ export interface EditCardModalProps {
   onDelete: () => void;
   onRegenerateExamples?: () => void;
   isRegeneratingExamples?: boolean;
+  imageUrl?: string | null;
+  onImageSelected?: (file: File) => void;
+  onImageDelete?: () => void;
+  isImageUploading?: boolean;
+  isImageDeleting?: boolean;
 }

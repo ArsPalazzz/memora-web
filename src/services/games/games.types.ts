@@ -40,6 +40,7 @@ export type NextCardResponse = {
   card: {
     sub: string;
     text: string[];
+    image_url?: string | null;
     promptLanguage?: LanguageCode;
     answerLanguage?: LanguageCode;
   };
@@ -72,7 +73,7 @@ export type GetFeedNextCardResult = {
     sub: string;
     text: string[];
     backVariants: string[];
-    imageUuid: string;
+    image_url?: string | null;
     deskTitle: string;
     deskSub: string;
     creatorNickname: string;

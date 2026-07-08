@@ -14,6 +14,7 @@ import { NextCardResponse } from "@/services/games/games.types";
 import { GradeButtons } from "./GradeButtons";
 import { AnswerResult } from "./play.constants";
 import { CardPromptWithSpeak } from "./CardPromptWithSpeak";
+import { CardImage } from "@/components/ui/CardImage";
 import { SpeakButton } from "@/components/ui/SpeakButton";
 import {
   DEFAULT_BACK_LANGUAGE,
@@ -83,6 +84,8 @@ export function WriteModeView({
                 text={currentCard.card.text}
                 language={promptLanguage}
               />
+
+              <CardImage url={currentCard.card.image_url} size="study" />
 
               {result !== null && (
                 <Box sx={{ height: 48, width: "100%", mt: 2 }}>
