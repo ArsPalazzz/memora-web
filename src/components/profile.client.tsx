@@ -822,7 +822,7 @@ export default function ProfileClient() {
                       />
                     </Stack>
                     <Switch
-                      checked={profileInfo?.profile.stats_public ?? false}
+                      checked={profileInfo?.profile.stats_public ?? true}
                       onChange={(_, checked) => handleStatsPublicChange(checked)}
                       disabled={updateMyProfileMutation.isPending}
                       inputProps={{ "aria-label": "Show my activity" }}
