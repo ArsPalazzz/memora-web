@@ -126,82 +126,104 @@ export default function FriendsClient() {
     <WithBottomNav>
       <Header title="Friends" />
 
-      <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2, pt: 3, pb: 2 }}>
-        <Box component="form" onSubmit={handleSearch} sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            size="small"
-            label="Find by nickname"
-            placeholder="username"
-            value={searchNickname}
-            onChange={(event) => {
-              setSearchNickname(event.target.value);
-              if (searchError) setSearchError(null);
-            }}
-            error={!!searchError}
-            helperText={searchError ?? "Start typing to see matching profiles"}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">@</InputAdornment>
-                ),
-                endAdornment: isSearching ? (
-                  <InputAdornment position="end">
-                    <CircularProgress size={16} />
-                  </InputAdornment>
-                ) : undefined,
-              },
-            }}
-          />
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        <Box sx={{ flexShrink: 0, px: 2, pt: 3 }}>
+          <Box component="form" onSubmit={handleSearch} sx={{ mb: 2 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Find by nickname"
+              placeholder="username"
+              value={searchNickname}
+              onChange={(event) => {
+                setSearchNickname(event.target.value);
+                if (searchError) setSearchError(null);
+              }}
+              error={!!searchError}
+              helperText={searchError ?? "Start typing to see matching profiles"}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">@</InputAdornment>
+                  ),
+                  endAdornment: isSearching ? (
+                    <InputAdornment position="end">
+                      <CircularProgress size={16} />
+                    </InputAdornment>
+                  ) : undefined,
+                },
+              }}
+            />
 
-          {showSearchResults && (
-            <Card variant="outlined" sx={{ mt: 1 }}>
-              {searchResults.length === 0 && !isSearching ? (
-                <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
-                  <Typography variant="body2" color="text.secondary">
-                    No profiles found
-                  </Typography>
-                </CardContent>
-              ) : (
-                searchResults.map((result) => (
-                  <CardActionArea
-                    key={result.sub}
-                    onClick={() => openProfile(result.nickname)}
-                  >
-                    <CardContent
-                      sx={{
-                        py: 1,
-                        "&:last-child": { pb: 1 },
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                      }}
+            {showSearchResults && (
+              <Card variant="outlined" sx={{ mt: 1 }}>
+                {searchResults.length === 0 && !isSearching ? (
+                  <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No profiles found
+                    </Typography>
+                  </CardContent>
+                ) : (
+                  searchResults.map((result) => (
+                    <CardActionArea
+                      key={result.sub}
+                      onClick={() => openProfile(result.nickname)}
                     >
-                      <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }} noWrap>
-                        @{result.nickname}
-                      </Typography>
-                      <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
-                    </CardContent>
-                  </CardActionArea>
-                ))
-              )}
-            </Card>
-          )}
+                      <CardContent
+                        sx={{
+                          py: 1,
+                          "&:last-child": { pb: 1 },
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }} noWrap>
+                          @{result.nickname}
+                        </Typography>
+                        <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+                      </CardContent>
+                    </CardActionArea>
+                  ))
+                )}
+              </Card>
+            )}
 
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            startIcon={<PersonSearchIcon />}
-            sx={{ mt: 1.5 }}
-          >
-            Open profile
-          </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              startIcon={<PersonSearchIcon />}
+              sx={{ mt: 1.5 }}
+            >
+              Open profile
+            </Button>
+          </Box>
         </Box>
 
-        {isLoading && <SectionLoader minHeight="30vh" />}
-
-        {!isLoading && incomingRequests.length > 0 && (
+        {isLoading ? (
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 0,
+            }}
+          >
+            <SectionLoader minHeight="auto" />
+          </Box>
+        ) : (
+          <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2, pb: 2 }}>
+            {incomingRequests.length > 0 && (
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
               Incoming requests
@@ -252,8 +274,6 @@ export default function FriendsClient() {
           </Box>
         )}
 
-        {!isLoading && (
-          <>
             <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
               My friends ({friends.length})
             </Typography>
@@ -295,7 +315,7 @@ export default function FriendsClient() {
                 ))}
               </Stack>
             )}
-          </>
+          </Box>
         )}
       </Box>
     </WithBottomNav>
