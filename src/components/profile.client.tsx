@@ -32,6 +32,7 @@ import { useProtectedRequest } from "@/utils/protected";
 import { SectionLoader, Loader } from "@/components/ui/Loader";
 import { getMyProfileRequest, updateMyProfileRequest, uploadAvatarRequest, deleteAvatarRequest } from "@/services/user/user";
 import { logoutRequest } from "@/services/auth/auth";
+import { clearAppQueryCache } from "@/utils/clearAppQueryCache";
 import { ROUTES } from "@/routes/paths";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/context/AuthContext";
@@ -96,6 +97,7 @@ export default function ProfileClient() {
   const logoutMutation = useMutation({
     mutationFn: () => call((token) => logoutRequest(token)),
     onSuccess: () => {
+      clearAppQueryCache();
       setAccessToken(null);
       navigate(ROUTES.LOGIN);
     },

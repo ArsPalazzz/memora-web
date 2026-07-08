@@ -6,13 +6,17 @@ import {
 } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   ROOT_FOLDERS,
   USER_DAILY,
   USER_DESK,
   USER_DESKS,
 } from "@/routes/react-query";
+import {
+  QUERY_CACHE_STORAGE_KEY,
+  registerAppQueryClient,
+} from "@/utils/clearAppQueryCache";
 
 const PERSISTED_KEYS = new Set([
   USER_DAILY,
@@ -39,13 +43,17 @@ function getPersister() {
   if (isServer) return undefined;
   return createSyncStoragePersister({
     storage: window.localStorage,
-    key: "memora-query-cache",
+    key: QUERY_CACHE_STORAGE_KEY,
   });
 }
 
 export default function QueryProvider({ children }: { children: ReactNode }) {
   const [client] = useState(() => makeQueryClient());
   const [persister] = useState(() => getPersister());
+
+  useEffect(() => {
+    registerAppQueryClient(client);
+  }, [client]);
 
   if (!persister) {
     return (

@@ -12,6 +12,7 @@ import { ROUTES } from "@/routes/paths";
 import { useProtectedRequest } from "@/utils/protected";
 import { notifyError } from "@/utils/notification";
 import { motion } from "framer-motion";
+import { clearAppQueryCache } from "@/utils/clearAppQueryCache";
 import Particles from "@/components/ui/Particles";
 
 export default function LoginClient() {
@@ -36,6 +37,7 @@ export default function LoginClient() {
       return call(() => loginRequest(payload), false);
     },
     onSuccess: (data) => {
+      clearAppQueryCache();
       setAccessToken(data.accessToken);
       navigate(redirectPath || ROUTES.HOME, { replace: true });
     },

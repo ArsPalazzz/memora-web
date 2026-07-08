@@ -6,6 +6,7 @@ import {
   setOnUnauthorized,
   subscribeAccessToken,
 } from "@/auth/tokenStore";
+import { clearAppQueryCache } from "@/utils/clearAppQueryCache";
 import {
   createContext,
   useCallback,
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setOnUnauthorized(() => {
+      clearAppQueryCache();
       setAccessTokenState(null);
       navigate(ROUTES.LOGIN, { replace: true });
     });
@@ -71,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ? { Authorization: `Bearer ${accessToken}` }
         : undefined,
     });
+    clearAppQueryCache();
     setAccessToken(null);
   };
 
