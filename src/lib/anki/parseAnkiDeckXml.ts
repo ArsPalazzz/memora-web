@@ -4,6 +4,15 @@ import { htmlToPlainText, parseAnkiTagsToFolderPath, splitBackVariants } from ".
 import { resolveAnkiFields } from "./resolveAnkiFields";
 import { restoreAnkiSanitizedDeckTitle } from "./restoreAnkiDeckTitle";
 
+const FIELD_DEFINITION_SELECTOR = "fields > rich-text, fields > text, fields > field";
+const FIELD_VALUE_SELECTOR = ":scope > rich-text, :scope > text, :scope > field";
+
+function readDeckFieldNames(deckEl: Element): string[] {
+  return Array.from(deckEl.querySelectorAll(FIELD_DEFINITION_SELECTOR))
+    .map((node) => node.getAttribute("name")?.trim() || "")
+    .filter(Boolean);
+}
+
 function readFieldRawContent(fieldEl: Element): string {
   if (!fieldEl.childNodes.length) {
     return fieldEl.textContent?.trim() ?? "";
@@ -23,13 +32,8 @@ function readFieldRawContent(fieldEl: Element): string {
 }
 
 function findCardField(cardEl: Element, fieldName: string): Element | null {
-  const richTextField = Array.from(cardEl.querySelectorAll(":scope > rich-text")).find(
-    (node) => node.getAttribute("name") === fieldName
-  );
-  if (richTextField) return richTextField;
-
   return (
-    Array.from(cardEl.querySelectorAll(":scope > field, :scope > *")).find(
+    Array.from(cardEl.querySelectorAll(FIELD_VALUE_SELECTOR)).find(
       (node) => node.getAttribute("name") === fieldName
     ) ?? null
   );
@@ -118,9 +122,7 @@ export function parseAnkiDeckXml(xml: string, sourceName?: string): ParsedAnkiDe
   const tags = deckEl.getAttribute("tags")?.trim() || "";
   const folderPath = parseAnkiTagsToFolderPath(tags);
 
-  const fieldNames = Array.from(deckEl.querySelectorAll("fields > rich-text"))
-    .map((node) => node.getAttribute("name")?.trim() || "")
-    .filter(Boolean);
+  const fieldNames = readDeckFieldNames(deckEl);
 
   const cardNodes = Array.from(deckEl.querySelectorAll("cards > card"));
   const { frontField, backField, exampleFields } = resolveAnkiFields(fieldNames);
