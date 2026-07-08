@@ -1,5 +1,11 @@
 
-import { refreshRequest } from "@/services/auth/auth";
+import {
+  getAccessToken,
+  refreshAccessToken,
+  setAccessToken as persistAccessToken,
+  setOnUnauthorized,
+  subscribeAccessToken,
+} from "@/auth/tokenStore";
 import {
   createContext,
   useCallback,
@@ -8,13 +14,8 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-
-const TOKEN_KEY = "access_token";
-
-function readStoredToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(TOKEN_KEY);
-}
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/routes/paths";
 
 interface AuthContextType {
   accessToken: string | null;
@@ -31,24 +32,36 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   const [accessToken, setAccessTokenState] = useState<string | null>(
-    readStoredToken
+    getAccessToken
   );
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   const setAccessToken = useCallback((token: string | null) => {
+    persistAccessToken(token);
     setAccessTokenState(token);
-    if (typeof window === "undefined") return;
-    if (token) sessionStorage.setItem(TOKEN_KEY, token);
-    else sessionStorage.removeItem(TOKEN_KEY);
   }, []);
 
   useEffect(() => {
-    refreshRequest()
-      .then(({ accessToken: token }) => setAccessToken(token))
-      .catch(() => setAccessToken(null))
+    return subscribeAccessToken(setAccessTokenState);
+  }, []);
+
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      setAccessTokenState(null);
+      navigate(ROUTES.LOGIN, { replace: true });
+    });
+
+    return () => setOnUnauthorized(null);
+  }, [navigate]);
+
+  useEffect(() => {
+    refreshAccessToken()
+      .then((token) => setAccessTokenState(token))
+      .catch(() => setAccessTokenState(null))
       .finally(() => setIsAuthReady(true));
-  }, [setAccessToken]);
+  }, []);
 
   const logout = async () => {
     await fetch("/api/auth/logout", {

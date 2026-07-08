@@ -217,7 +217,7 @@ export default function DeskClient() {
       if (!accessToken) return;
 
       const pollInterval = setInterval(async () => {
-        const updatedCard = await fetchCardRequest(card.sub, accessToken);
+        const updatedCard = await call((token) => fetchCardRequest(card.sub, token));
         if (updatedCard.examples.length > 0) {
           clearInterval(pollInterval);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
