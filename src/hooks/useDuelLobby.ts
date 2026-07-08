@@ -76,6 +76,40 @@ function deriveBanner(
   return null;
 }
 
+const LOBBY_STATUS_RANK: Record<DuelResponse["status"], number> = {
+  waiting: 0,
+  countdown: 1,
+  racing: 2,
+  finished: 3,
+  cancelled: 4,
+};
+
+function shouldAcceptLobbyState(
+  incoming: DuelResponse,
+  current: DuelResponse | null
+): boolean {
+  if (!current) {
+    return true;
+  }
+
+  if (incoming.status === "cancelled" || incoming.status === "finished") {
+    return true;
+  }
+
+  if (current.status === "cancelled" || current.status === "finished") {
+    return false;
+  }
+
+  const incomingRank = LOBBY_STATUS_RANK[incoming.status];
+  const currentRank = LOBBY_STATUS_RANK[current.status];
+
+  if (incomingRank !== currentRank) {
+    return incomingRank >= currentRank;
+  }
+
+  return incoming.players.length >= current.players.length;
+}
+
 export function useDuelLobby(duelId: string) {
   const navigate = useNavigate();
   const { call } = useProtectedRequest();
@@ -88,6 +122,9 @@ export function useDuelLobby(duelId: string) {
   const [opponentLeft, setOpponentLeft] = useState(false);
   const prevPlayerCountRef = useRef<number | null>(null);
   const lobbyStatusRef = useRef<DuelResponse["status"] | undefined>(undefined);
+  const lobbyRef = useRef<DuelResponse | null>(null);
+  const duelIdRef = useRef(duelId);
+  duelIdRef.current = duelId;
 
   const { data: profileData } = useQuery({
     queryKey: [MY_PROFILE],
@@ -109,6 +146,10 @@ export function useDuelLobby(duelId: string) {
 
   const applyLobbyState = useCallback(
     (state: DuelResponse) => {
+      if (!shouldAcceptLobbyState(state, lobbyRef.current)) {
+        return;
+      }
+
       const prevCount = prevPlayerCountRef.current;
       if (
         prevCount === 2 &&
@@ -120,6 +161,7 @@ export function useDuelLobby(duelId: string) {
 
       prevPlayerCountRef.current = state.players.length;
       lobbyStatusRef.current = state.status;
+      lobbyRef.current = state;
       setLobby(state);
     },
     []
@@ -270,6 +312,21 @@ export function useDuelLobby(duelId: string) {
       return;
     }
 
+    lobbyStatusRef.current = "countdown";
+    setLobby((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      const next: DuelResponse = {
+        ...prev,
+        status: "countdown",
+        startedAt: new Date().toISOString(),
+      };
+      lobbyRef.current = next;
+      return next;
+    });
+
     startDuelLobby({ duelId });
   }, [canStart, duelId]);
 
@@ -285,17 +342,17 @@ export function useDuelLobby(duelId: string) {
     }
   }, [authenticated, call, duelId]);
 
-  // Leave the socket room only when navigating away while still in the waiting
-  // phase. Do not depend on lobby.status — when the host starts the duel the
-  // status flips to "countdown" and a status-based cleanup would incorrectly
-  // emit lobby:leave for every connected player.
+  // Leave the socket room only on real unmount while still waiting. Use refs so
+  // dependency changes (auth, duel id, lobby status) never trigger a spurious
+  // lobby:leave — e.g. when status flips to countdown right after Start.
   useEffect(() => {
     return () => {
-      if (duelId && authenticated && lobbyStatusRef.current === "waiting") {
-        leaveDuelLobbyRoom(duelId);
+      const id = duelIdRef.current;
+      if (id && lobbyStatusRef.current === "waiting") {
+        leaveDuelLobbyRoom(id);
       }
     };
-  }, [authenticated, duelId]);
+  }, []);
 
   const playerSlots = useMemo(() => {
     const slots: Array<DuelPlayerResponse | null> = [null, null];
