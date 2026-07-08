@@ -47,6 +47,7 @@ import {
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import EditIcon from "@mui/icons-material/Edit";
 import ShareIcon from "@mui/icons-material/Share";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArchiveIcon from "@mui/icons-material/Archive";
@@ -84,6 +85,8 @@ import DeskSettingsCardOrientationModal from "./modals/DeskSettings/DeskSettings
 import DeskSettingsLanguagesModal from "./modals/DeskSettings/DeskSettingsLanguages.modal";
 import StudyModeSelectModal from "./modals/StudyModeSelect.modal";
 import DeskShareModal from "./modals/DeskShare/DeskShare.modal";
+import DuelPickFriendModal from "./modals/DuelPickFriend.modal";
+import { createDuelRequest } from "@/services/games/duel";
 import { formatLanguagePair } from "@/constants/language.const";
 import {
   DEFAULT_DESK_STUDY_MODE,
@@ -196,6 +199,27 @@ export default function DeskClient() {
   };
 
   const { notifySuccess, notifyError } = useNotification();
+  const [duelFriendPickerOpen, setDuelFriendPickerOpen] = useState(false);
+
+  const createDuelMutation = useMutation({
+    mutationFn: (inviteFriendSub: string) =>
+      call((token) =>
+        createDuelRequest(
+          {
+            deskSub: sub,
+            inviteFriendSub,
+            config: { cardCount: 10, cardPick: "random" },
+          },
+          token
+        )
+      ),
+    onSuccess: ({ duel }) => {
+      setDuelFriendPickerOpen(false);
+      notifySuccess("Duel invite sent");
+      navigate(ROUTES.duelLobby(duel.id));
+    },
+    onError: (err: Error) => notifyError(err.message),
+  });
 
   const createCardMutation = useMutation({
     mutationFn: (payload: { data: CreateCardValues; token: string }) => {
@@ -591,6 +615,21 @@ export default function DeskClient() {
                   >
                     <ShareIcon sx={{ fontSize: 18 }} />
                     <Typography>Share</Typography>
+                  </MenuItem>
+
+                  <MenuItem
+                    sx={{
+                      display: "flex",
+                      gap: 1,
+                      alignItems: "center",
+                    }}
+                    onClick={() => {
+                      setAnchorMenu(null);
+                      setDuelFriendPickerOpen(true);
+                    }}
+                  >
+                    <SportsEsportsIcon sx={{ fontSize: 18 }} />
+                    <Typography>Race with friend</Typography>
                   </MenuItem>
 
                   <MenuItem
@@ -1117,6 +1156,14 @@ export default function DeskClient() {
           onClose={() => setOpenSheet(null)}
           onSave={(visibility) => updateVisibilityMutation.mutate(visibility)}
           isSaving={updateVisibilityMutation.isPending}
+        />
+      )}
+
+      {desk && duelFriendPickerOpen && (
+        <DuelPickFriendModal
+          deskTitle={desk.title}
+          onClose={() => setDuelFriendPickerOpen(false)}
+          onSelectFriend={(friendSub) => createDuelMutation.mutate(friendSub)}
         />
       )}
     </>

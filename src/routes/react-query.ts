@@ -26,5 +26,6 @@ export const FRIENDS_REQUESTS = "friends-requests";
 export const FRIENDS_ACTIVITY = "friends-activity";
 export const FRIENDS_LEAGUE = "friends-league";
 export const FRIENDSHIP_STATUS = "friendship-status";
+export const DUEL_HISTORY = "duel-history";
 
 export const REFRESH_TOKEN = "refresh-token";

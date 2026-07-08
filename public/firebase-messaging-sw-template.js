@@ -68,6 +68,22 @@ self.addEventListener("notificationclick", (event) => {
           return clients.openWindow(url);
         })
     );
+  } else if (data.type === "duel_invite" && data.code) {
+    event.waitUntil(
+      clients
+        .matchAll({ type: "window", includeUncontrolled: true })
+        .then((clientList) => {
+          const url = `/duel/join/${String(data.code).toUpperCase()}`;
+
+          for (const client of clientList) {
+            if (client.url.includes("/duel/join/")) {
+              return client.focus();
+            }
+          }
+
+          return clients.openWindow(url);
+        })
+    );
   } else {
     event.waitUntil(clients.openWindow("/"));
   }

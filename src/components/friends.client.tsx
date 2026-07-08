@@ -15,6 +15,7 @@ import {
 import PeopleIcon from "@mui/icons-material/People";
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
@@ -29,7 +30,7 @@ import {
   getIncomingFriendRequestsRequest,
 } from "@/services/friends/friends";
 import { searchUsersByNicknameRequest } from "@/services/user/user";
-import { FRIENDS, FRIENDS_REQUESTS, USER_SEARCH } from "@/routes/react-query";
+import { FRIENDS, FRIENDS_REQUESTS, USER_SEARCH, DUEL_HISTORY } from "@/routes/react-query";
 import { ROUTES } from "@/routes/paths";
 import { useNotification } from "@/context/NotificationContext";
 import {
@@ -37,6 +38,10 @@ import {
   NICKNAME_PATTERN,
   NICKNAME_SEARCH_PREFIX_PATTERN,
 } from "@/constants/nickname.const";
+import DuelChallengeDeskModal from "@/components/modals/DuelChallengeDesk.modal";
+import { DuelRecentHistory } from "@/components/duel/DuelRecentHistory";
+import { createDuelRequest, getDuelHistoryRequest } from "@/services/games/duel";
+import type { FriendSummary } from "@/services/friends/friends.types";
 
 export default function FriendsClient() {
   const navigate = useNavigate();
@@ -46,6 +51,7 @@ export default function FriendsClient() {
   const [searchNickname, setSearchNickname] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [challengeFriend, setChallengeFriend] = useState<FriendSummary | null>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -77,6 +83,11 @@ export default function FriendsClient() {
       queryFn: async () => call((token) => getIncomingFriendRequestsRequest(token)),
     });
 
+  const { data: duelHistoryData } = useQuery({
+    queryKey: [DUEL_HISTORY],
+    queryFn: async () => call((token) => getDuelHistoryRequest(token, 20)),
+  });
+
   const invalidateFriends = () => {
     queryClient.invalidateQueries({ queryKey: [FRIENDS] });
     queryClient.invalidateQueries({ queryKey: [FRIENDS_REQUESTS] });
@@ -100,6 +111,17 @@ export default function FriendsClient() {
       invalidateFriends();
     },
     onError: (err) => notifyError(err.message),
+  });
+
+  const createDuelMutation = useMutation({
+    mutationFn: (params: { deskSub: string; inviteFriendSub: string }) =>
+      call((token) => createDuelRequest(params, token)),
+    onSuccess: ({ duel }) => {
+      setChallengeFriend(null);
+      notifySuccess("Duel invite sent");
+      navigate(ROUTES.duelLobby(duel.id));
+    },
+    onError: (err: Error) => notifyError(err.message),
   });
 
   const openProfile = (nickname: string) => {
@@ -285,7 +307,12 @@ export default function FriendsClient() {
           </Box>
         )}
 
-            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
+            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, mt: 2 }}>
+              Recent duels
+            </Typography>
+            <DuelRecentHistory history={duelHistoryData?.history ?? []} compact />
+
+            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, mt: 2 }}>
               My friends ({friends.length})
             </Typography>
 
@@ -311,19 +338,38 @@ export default function FriendsClient() {
                         display: "flex",
                         alignItems: "center",
                         gap: 1,
-                        cursor: "pointer",
                       }}
-                      onClick={() => openProfile(friend.nickname)}
                     >
-                      <UserAvatar
-                        nickname={friend.nickname}
-                        avatarUrl={friend.avatar_url}
-                        size={36}
-                      />
-                      <Typography variant="body1" fontWeight={600} sx={{ flex: 1 }} noWrap>
-                        @{friend.nickname}
-                      </Typography>
-                      <IconButton size="small" aria-label="Open profile">
+                      <Box
+                        sx={{
+                          flex: 1,
+                          minWidth: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => openProfile(friend.nickname)}
+                      >
+                        <UserAvatar
+                          nickname={friend.nickname}
+                          avatarUrl={friend.avatar_url}
+                          size={36}
+                        />
+                        <Typography variant="body1" fontWeight={600} noWrap>
+                          @{friend.nickname}
+                        </Typography>
+                      </Box>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<SportsEsportsIcon />}
+                        disabled={createDuelMutation.isPending}
+                        onClick={() => setChallengeFriend(friend)}
+                      >
+                        Challenge
+                      </Button>
+                      <IconButton size="small" aria-label="Open profile" onClick={() => openProfile(friend.nickname)}>
                         <ChevronRightIcon />
                       </IconButton>
                     </CardContent>
@@ -334,6 +380,19 @@ export default function FriendsClient() {
           </Box>
         )}
       </Box>
+
+      {challengeFriend && (
+        <DuelChallengeDeskModal
+          friendNickname={challengeFriend.nickname}
+          onClose={() => setChallengeFriend(null)}
+          onSelectDesk={(deskSub) =>
+            createDuelMutation.mutate({
+              deskSub,
+              inviteFriendSub: challengeFriend.sub,
+            })
+          }
+        />
+      )}
     </WithBottomNav>
   );
 }

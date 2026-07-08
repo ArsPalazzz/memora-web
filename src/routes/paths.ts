@@ -15,4 +15,8 @@ export const ROUTES = {
     `/desk/${encodeURIComponent(deskSub)}/public`,
   FRIENDS_LEAGUE: "/friends/league",
   FRIENDS: "/friends",
+  duelJoin: (code: string) => `/duel/join/${encodeURIComponent(code.toUpperCase())}`,
+  duelLobby: (duelId: string) => `/duel/lobby/${encodeURIComponent(duelId)}`,
+  duelRace: (duelId: string) => `/duel/race/${encodeURIComponent(duelId)}`,
+  duelResults: (duelId: string) => `/duel/results/${encodeURIComponent(duelId)}`,
 };

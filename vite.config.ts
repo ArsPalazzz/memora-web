@@ -103,6 +103,11 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (requestPath) => requestPath.replace(/^\/api/, ""),
         },
+        "/socket.io": {
+          target: apiUrl,
+          changeOrigin: true,
+          ws: true,
+        },
       },
     },
     preview: {
@@ -113,6 +118,11 @@ export default defineConfig(({ mode }) => {
           target: apiUrl,
           changeOrigin: true,
           rewrite: (requestPath) => requestPath.replace(/^\/api/, ""),
+        },
+        "/socket.io": {
+          target: apiUrl,
+          changeOrigin: true,
+          ws: true,
         },
       },
     },

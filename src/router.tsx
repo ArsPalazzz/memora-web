@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { FullPageLoader } from "@/components/ui/Loader";
 import LoginClient from "@/components/login.client";
@@ -18,11 +18,24 @@ import AnkiImportClient from "@/components/import/AnkiImport.client";
 import PublicProfileClient from "@/components/publicProfile.client";
 import PublicDeskClient from "@/components/publicDesk.client";
 import AddFriendInviteClient from "@/components/addFriendInvite.client";
+import DuelJoinClient from "@/components/duelJoin.client";
+import DuelLobbyClient from "@/components/duelLobby.client";
+import DuelRaceClient from "@/components/duelRace.client";
+import DuelResultsClient from "@/components/duelResults.client";
 import FriendsLeagueClient from "@/components/friendsLeague.client";
 import FriendsClient from "@/components/friends.client";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import Header from "@/components/layout/Header";
 import { Box, Typography } from "@mui/material";
+import { ROUTES } from "@/routes/paths";
+
+function DuelLobbyRedirect() {
+  const { id } = useParams();
+  if (!id) {
+    return <Navigate to={ROUTES.HOME} replace />;
+  }
+  return <Navigate to={ROUTES.duelLobby(id)} replace />;
+}
 
 function InfoPage() {
   return (
@@ -48,6 +61,7 @@ export function AppRouter() {
       <Route path="/login" element={<LoginClient />} />
       <Route path="/sign-up" element={<SignUpClient />} />
       <Route path="/add" element={<AddFriendInviteClient />} />
+      <Route path="/duel/join/:code" element={<DuelJoinClient />} />
 
       <Route element={<ProtectedRoute />}>
         <Route
@@ -65,6 +79,10 @@ export function AppRouter() {
         <Route path="/feed" element={<FeedClient />} />
         <Route path="/friends/league" element={<FriendsLeagueClient />} />
         <Route path="/friends" element={<FriendsClient />} />
+        <Route path="/duel/lobby/:id" element={<DuelLobbyClient />} />
+        <Route path="/duel/race/:id" element={<DuelRaceClient />} />
+        <Route path="/duel/results/:id" element={<DuelResultsClient />} />
+        <Route path="/duel/:id" element={<DuelLobbyRedirect />} />
         <Route path="/info" element={<InfoPage />} />
         <Route
           path="/review"

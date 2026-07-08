@@ -63,6 +63,26 @@ export const ANKI_IMPORT_PREVIEW_API = "/import/anki/preview";
 export const ANKI_IMPORT_CREATE_JOB_API = "/import/anki/jobs";
 export const ANKI_IMPORT_GET_JOB_API = (sub: string) => `/import/anki/jobs/${sub}`;
 
+export const FORFEIT_DUEL_RACE_API = (duelId: string) =>
+  `/duels/${encodeURIComponent(duelId)}/race/forfeit`;
+export const GET_DUEL_RACE_PAYLOAD_API = (duelId: string) =>
+  `/duels/${encodeURIComponent(duelId)}/race-payload`;
+export const GET_DUEL_HEAD_TO_HEAD_STATS_API = (friendSub: string) =>
+  `/duels/stats/${encodeURIComponent(friendSub)}`;
+export const GET_DUEL_HISTORY_API = "/duels/history";
+export const GET_DUEL_RESULTS_API = (duelId: string) =>
+  `/duels/${encodeURIComponent(duelId)}/results`;
+export const ADD_DUEL_WRONG_CARDS_TO_INBOX_API = (duelId: string) =>
+  `/duels/${encodeURIComponent(duelId)}/wrong-cards/to-inbox`;
+export const ADD_CARDS_TO_INBOX_API = "/games/add-cards-to-inbox";
+export const CREATE_DUEL_API = "/duels";
+export const JOIN_DUEL_API = (code: string) =>
+  `/duels/${encodeURIComponent(code.toUpperCase())}/join`;
+export const GET_DUEL_API = (duelId: string) =>
+  `/duels/${encodeURIComponent(duelId)}`;
+export const LEAVE_DUEL_API = (duelId: string) =>
+  `/duels/${encodeURIComponent(duelId)}`;
+
 // GAMES
 export const FINISH_GAME_API = "/games/finish";
 export const ADD_TO_INBOX_API = "/games/add-to-inbox";
