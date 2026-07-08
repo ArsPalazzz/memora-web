@@ -558,9 +558,20 @@ export default function DeskClient() {
             onBack={() => navigate(-1)}
             RightButton={
               <>
-                <IconButton onClick={(e) => handleMenuOpen(e)}>
-                  <MoreHorizIcon sx={{ color: "white", fontSize: 30 }} />
-                </IconButton>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <IconButton
+                    aria-label="Add card"
+                    onClick={() => setCreateCardModal(true)}
+                  >
+                    <AddIcon sx={{ color: "white", fontSize: 24 }} />
+                  </IconButton>
+                  <IconButton
+                    aria-label="More actions"
+                    onClick={(e) => handleMenuOpen(e)}
+                  >
+                    <MoreHorizIcon sx={{ color: "white", fontSize: 30 }} />
+                  </IconButton>
+                </Box>
 
                 <Menu
                   anchorEl={anchorMenu}
@@ -575,21 +586,6 @@ export default function DeskClient() {
                     horizontal: "right",
                   }}
                 >
-                  <MenuItem
-                    sx={{
-                      display: "flex",
-                      gap: 1,
-                      alignItems: "center",
-                    }}
-                    onClick={() => {
-                      setAnchorMenu(null);
-                      setCreateCardModal(true);
-                    }}
-                  >
-                    <AddIcon sx={{ fontSize: 20 }} />
-                    <Typography>Add card</Typography>
-                  </MenuItem>
-
                   <MenuItem
                     sx={{
                       display: "flex",
