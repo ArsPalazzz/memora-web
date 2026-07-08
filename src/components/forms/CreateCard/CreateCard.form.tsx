@@ -14,8 +14,6 @@ import { useFieldArray } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 
-const ADD_VARIANT_HINT = "Type a variant and press Enter or + to add";
-
 const CreateCard = ({
   onSubmit,
   control,
@@ -173,7 +171,7 @@ const CreateCard = ({
           onKeyDown={handleFrontKeyDown}
           fullWidth
           error={!!errors.front}
-          helperText={errors.front?.message ?? ADD_VARIANT_HINT}
+          helperText={errors.front?.message ?? ""}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -204,7 +202,7 @@ const CreateCard = ({
           onKeyDown={handleBackKeyDown}
           fullWidth
           error={!!errors.back}
-          helperText={errors.back?.message ?? ADD_VARIANT_HINT}
+          helperText={errors.back?.message ?? ""}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -235,10 +233,7 @@ const CreateCard = ({
           onKeyDown={handleExampleKeyDown}
           fullWidth
           error={!!errors.examples}
-          helperText={
-            errors.examples?.message ??
-            "Add your own example sentences — they won't be auto-generated"
-          }
+          helperText={errors.examples?.message ?? ""}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
