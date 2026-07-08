@@ -23,7 +23,7 @@ export default function NewCardModal(props: NewCardModalProps) {
         sx: {
           maxWidth: isMobile ? "80vw" : "40vw",
           width: isMobile ? "80vw" : "40vw",
-          maxHeight: isMobile ? "90vh" : "40vw",
+          maxHeight: isMobile ? "90vh" : "70vh",
         },
       }}
     >

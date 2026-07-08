@@ -147,6 +147,7 @@ export interface CreateCardParams {
   desk_sub: string;
   front: string[];
   back: string[];
+  examples?: string[];
 }
 
 export interface UpdateDeskSettingsParams {

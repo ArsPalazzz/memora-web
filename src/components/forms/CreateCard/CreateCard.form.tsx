@@ -40,8 +40,18 @@ const CreateCard = ({
     name: "back",
   });
 
+  const {
+    fields: exampleFields,
+    append: appendExample,
+    remove: removeExample,
+  } = useFieldArray({
+    control,
+    name: "examples",
+  });
+
   const [frontInput, setFrontInput] = useState("");
   const [backInput, setBackInput] = useState("");
+  const [exampleInput, setExampleInput] = useState("");
 
   const tryAddFront = (raw = frontInput) => {
     const trimmed = raw.trim();
@@ -61,6 +71,15 @@ const CreateCard = ({
     return true;
   };
 
+  const tryAddExample = (raw = exampleInput) => {
+    const trimmed = raw.trim();
+    if (!trimmed) return false;
+    if (exampleFields.some((field) => field.value === trimmed)) return false;
+    appendExample({ value: trimmed });
+    setExampleInput("");
+    return true;
+  };
+
   const handleFrontKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -75,9 +94,17 @@ const CreateCard = ({
     }
   };
 
+  const handleExampleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      tryAddExample();
+    }
+  };
+
   useEffect(() => {
     setFrontInput("");
     setBackInput("");
+    setExampleInput("");
   }, []);
 
   const hasFront = frontFields.length > 0 || frontInput.trim().length > 0;
@@ -89,6 +116,7 @@ const CreateCard = ({
     flushSync(() => {
       tryAddFront();
       tryAddBack();
+      tryAddExample();
     });
     void onSubmit(e);
   };
@@ -196,6 +224,60 @@ const CreateCard = ({
           backFields,
           removeBack,
           "Added back variants will appear here"
+        )}
+      </Box>
+
+      <Box>
+        <TextField
+          label="Examples (optional)"
+          value={exampleInput}
+          onChange={(e) => setExampleInput(e.target.value)}
+          onKeyDown={handleExampleKeyDown}
+          fullWidth
+          error={!!errors.examples}
+          helperText={
+            errors.examples?.message ??
+            "Add your own example sentences — they won't be auto-generated"
+          }
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="Add example"
+                  onClick={() => tryAddExample()}
+                  disabled={!exampleInput.trim()}
+                  edge="end"
+                >
+                  <AddIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+        {exampleFields.length > 0 ? (
+          <Box
+            sx={{
+              mt: 1,
+              maxHeight: 120,
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 0.5,
+            }}
+          >
+            {exampleFields.map((field, index) => (
+              <Chip
+                key={field.id}
+                label={field.value}
+                onDelete={() => removeExample(index)}
+                sx={{ height: "auto", "& .MuiChip-label": { whiteSpace: "normal", py: 0.5 } }}
+              />
+            ))}
+          </Box>
+        ) : (
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+            Leave empty to auto-generate examples
+          </Typography>
         )}
       </Box>
 

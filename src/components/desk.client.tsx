@@ -148,7 +148,7 @@ export default function DeskClient() {
   } = useForm<CreateCardValues>({
     resolver: zodResolver(createCardSchema),
     mode: "onChange",
-    defaultValues: { front: [], back: [] },
+    defaultValues: { front: [], back: [], examples: [] },
   });
 
   const {
@@ -223,22 +223,25 @@ export default function DeskClient() {
 
   const createCardMutation = useMutation({
     mutationFn: (payload: { data: CreateCardValues; token: string }) => {
+      const examples = payload.data.examples.map((item) => item.value);
       const values = {
         front: payload.data.front.map((item) => item.value),
         back: payload.data.back.map((item) => item.value),
+        ...(examples.length > 0 ? { examples } : {}),
       };
 
       const data = { desk_sub: sub, ...values };
 
       return call(() => createCardRequest(data, payload.token));
     },
-    onSuccess: (card: { sub: string }) => {
+    onSuccess: (card: { sub: string }, variables) => {
       resetCreateCard();
       notifySuccess(`Card created successfully`);
 
       queryClient.invalidateQueries({ queryKey: [USER_DESK, sub] });
 
-      if (!accessToken) return;
+      const userExamples = variables.data.examples.map((item) => item.value);
+      if (userExamples.length > 0 || !accessToken) return;
 
       const pollInterval = setInterval(async () => {
         const updatedCard = await call((token) => fetchCardRequest(card.sub, token));
