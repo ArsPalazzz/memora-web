@@ -7,9 +7,9 @@ export const createCardSchema = z.object({
   back: z
     .array(z.object({ value: z.string().min(1, "Back side cannot be empty") }))
     .min(1, "At least one back side is required"),
-  examples: z
-    .array(z.object({ value: z.string().min(1, "Example cannot be empty") }))
-    .default([]),
+  examples: z.array(
+    z.object({ value: z.string().min(1, "Example cannot be empty") })
+  ),
 });
 
 export type CreateCardValues = z.infer<typeof createCardSchema>;
