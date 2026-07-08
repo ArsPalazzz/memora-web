@@ -40,7 +40,10 @@ export function RevealModeView({
           <Card
             sx={{
               flex: 1,
+              minHeight: 0,
               display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
               bgcolor: theme.palette.background.paper,
               boxShadow: 4,
               borderRadius: 3,
@@ -49,12 +52,15 @@ export function RevealModeView({
             <CardContent
               sx={{
                 flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
+                justifyContent: revealed ? "flex-start" : "center",
                 textAlign: "center",
                 px: 3,
+                py: 2,
                 gap: 2,
               }}
             >

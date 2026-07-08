@@ -62,7 +62,10 @@ export function WriteModeView({
           <Card
             sx={{
               flex: 1,
+              minHeight: 0,
               display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
               bgcolor: cardColor,
               transition: "background-color 0.3s",
               boxShadow: 4,
@@ -72,12 +75,15 @@ export function WriteModeView({
             <CardContent
               sx={{
                 flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
+                justifyContent: result === null ? "center" : "flex-start",
                 textAlign: "center",
                 px: 3,
+                py: 2,
               }}
             >
               <CardPromptWithSpeak
@@ -88,7 +94,7 @@ export function WriteModeView({
               <CardImage url={currentCard.card.image_url} size="study" />
 
               {result !== null && (
-                <Box sx={{ height: 48, width: "100%", mt: 2 }}>
+                <Box sx={{ width: "100%", mt: 2 }}>
                   <Fade in={result !== null}>
                     <Box>
                       <Box
