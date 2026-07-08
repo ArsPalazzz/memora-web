@@ -126,7 +126,7 @@ export default function FriendsClient() {
     <WithBottomNav>
       <Header title="Friends" />
 
-      <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2, py: 2 }}>
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", px: 2, pt: 3, pb: 2 }}>
         <Box component="form" onSubmit={handleSearch} sx={{ mb: 3 }}>
           <TextField
             fullWidth

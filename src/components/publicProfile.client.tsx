@@ -318,7 +318,14 @@ export default function PublicProfileClient() {
                         Learning since {formatMemberSince(profile.memberSince)}
                       </Typography>
                       {profile.stats && (
-                        <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: "wrap", gap: 1 }}>
+                        <Box
+                          sx={{
+                            mt: 1.5,
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 1,
+                          }}
+                        >
                           <Chip
                             size="small"
                             icon={<LocalFireDepartmentIcon sx={{ fontSize: 16 }} />}
@@ -331,7 +338,7 @@ export default function PublicProfileClient() {
                             label={`${profile.stats.cardsReviewedThisWeek} cards this week`}
                             variant="outlined"
                           />
-                        </Stack>
+                        </Box>
                       )}
                       {renderFriendAction()}
                     </Box>
