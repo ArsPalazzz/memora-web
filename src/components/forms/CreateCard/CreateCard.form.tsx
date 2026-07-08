@@ -171,7 +171,7 @@ const CreateCard = ({
           onKeyDown={handleFrontKeyDown}
           fullWidth
           error={!!errors.front}
-          helperText={errors.front?.message ?? ""}
+          helperText={errors.front?.message}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -202,7 +202,7 @@ const CreateCard = ({
           onKeyDown={handleBackKeyDown}
           fullWidth
           error={!!errors.back}
-          helperText={errors.back?.message ?? ""}
+          helperText={errors.back?.message}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -233,7 +233,7 @@ const CreateCard = ({
           onKeyDown={handleExampleKeyDown}
           fullWidth
           error={!!errors.examples}
-          helperText={errors.examples?.message ?? ""}
+          helperText={errors.examples?.message}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -270,14 +270,21 @@ const CreateCard = ({
             ))}
           </Box>
         ) : (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-            Leave empty to auto-generate examples
-          </Typography>
+          renderVariantList(
+            exampleFields,
+            removeExample,
+            "Leave empty to auto-generate examples"
+          )
         )}
       </Box>
 
       {!isFormValid && !isSubmitting && (
-        <Typography variant="caption" color="text.secondary" textAlign="center">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          textAlign="center"
+          sx={{ mt: 1 }}
+        >
           Add at least one variant on the front and back
         </Typography>
       )}
