@@ -261,21 +261,43 @@ export default function PublicProfileClient() {
     <WithBottomNav>
       <Header title={nickname ? `@${nickname}` : "Profile"} onBack={() => navigate(-1)} />
 
-      <Box sx={{ px: 2, py: 2, pb: 3 }}>
-        {isLoading && <SectionLoader minHeight="40vh" />}
-
-        {!isLoading && (isError || !profile) && (
-          <Box sx={{ py: 6, textAlign: "center" }}>
-            <Typography variant="h6" gutterBottom>
-              User not found
-            </Typography>
-            <Typography color="text.secondary">
-              This profile does not exist or is unavailable.
-            </Typography>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          overflowY: "auto",
+          px: 2,
+          py: 2,
+          pb: 3,
+        }}
+      >
+        {isLoading ? (
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <SectionLoader minHeight="auto" />
           </Box>
-        )}
+        ) : (
+          <>
+            {(isError || !profile) && (
+              <Box sx={{ py: 6, textAlign: "center" }}>
+                <Typography variant="h6" gutterBottom>
+                  User not found
+                </Typography>
+                <Typography color="text.secondary">
+                  This profile does not exist or is unavailable.
+                </Typography>
+              </Box>
+            )}
 
-        {profile && (
+            {profile && (
           <>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -379,6 +401,8 @@ export default function PublicProfileClient() {
                   </Grid>
                 ))}
               </Grid>
+            )}
+          </>
             )}
           </>
         )}
