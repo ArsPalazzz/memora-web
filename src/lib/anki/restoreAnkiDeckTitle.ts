@@ -1,7 +1,10 @@
 /**
  * Anki export replaces [\/?<>:*|"^] with "_" in deck names (file-safe names).
- * The common "Category: Title" pattern becomes "Category_ Title".
+ * - Quoted text: "Authenticity" → _Authenticity_
+ * - Category separator: "Category: Title" → "Category_ Title"
  */
 export function restoreAnkiSanitizedDeckTitle(title: string): string {
-  return title.replace(/([^\s_])_ /g, "$1: ");
+  return title
+    .replace(/_([^_]+?)_/g, '"$1"')
+    .replace(/([^\s_])_ /g, "$1: ");
 }
