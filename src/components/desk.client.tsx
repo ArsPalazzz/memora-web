@@ -97,6 +97,7 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import TranslateIcon from "@mui/icons-material/Translate";
 
 const PLAY_BUTTON_HEIGHT = 64;
+const DUEL_DEFAULT_CARD_COUNT = 10;
 
 export default function DeskClient() {
   const params = useParams() as { id: string };
@@ -208,7 +209,7 @@ export default function DeskClient() {
           {
             deskSub: sub,
             inviteFriendSub,
-            config: { cardCount: 10, cardPick: "random" },
+            config: { cardCount: DUEL_DEFAULT_CARD_COUNT, cardPick: "random" },
           },
           token
         )
@@ -617,12 +618,18 @@ export default function DeskClient() {
                   </MenuItem>
 
                   <MenuItem
+                    disabled={
+                      !desk || desk.stats.total_cards < DUEL_DEFAULT_CARD_COUNT
+                    }
                     sx={{
                       display: "flex",
                       gap: 1,
                       alignItems: "center",
                     }}
                     onClick={() => {
+                      if (!desk || desk.stats.total_cards < DUEL_DEFAULT_CARD_COUNT) {
+                        return;
+                      }
                       setAnchorMenu(null);
                       setDuelFriendPickerOpen(true);
                     }}
