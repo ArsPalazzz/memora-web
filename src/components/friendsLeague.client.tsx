@@ -12,6 +12,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useQuery } from "@tanstack/react-query";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import { SectionLoader } from "@/components/ui/Loader";
 import { useProtectedRequest } from "@/utils/protected";
@@ -102,6 +103,12 @@ export default function FriendsLeagueClient() {
                       >
                         #{participant.rank}
                       </Typography>
+
+                      <UserAvatar
+                        nickname={participant.isMe ? "You" : participant.nickname}
+                        avatarUrl={participant.avatar_url}
+                        size={40}
+                      />
 
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography variant="body1" fontWeight={700} noWrap>

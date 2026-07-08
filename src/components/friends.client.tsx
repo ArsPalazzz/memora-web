@@ -18,6 +18,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import WithBottomNav from "@/components/layout/WithBottomNav";
 import { SectionLoader } from "@/components/ui/Loader";
 import { useProtectedRequest } from "@/utils/protected";
@@ -177,16 +178,21 @@ export default function FriendsClient() {
                       key={result.sub}
                       onClick={() => openProfile(result.nickname)}
                     >
-                      <CardContent
-                        sx={{
-                          py: 1,
-                          "&:last-child": { pb: 1 },
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }} noWrap>
+                    <CardContent
+                      sx={{
+                        py: 1,
+                        "&:last-child": { pb: 1 },
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                    >
+                      <UserAvatar
+                        nickname={result.nickname}
+                        avatarUrl={result.avatar_url}
+                        size={32}
+                      />
+                      <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }} noWrap>
                           @{result.nickname}
                         </Typography>
                         <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
@@ -240,7 +246,12 @@ export default function FriendsClient() {
                       gap: 1,
                     }}
                   >
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 1 }}>
+                      <UserAvatar
+                        nickname={request.nickname}
+                        avatarUrl={request.avatar_url}
+                        size={36}
+                      />
                       <Typography
                         variant="body1"
                         fontWeight={700}
@@ -304,6 +315,11 @@ export default function FriendsClient() {
                       }}
                       onClick={() => openProfile(friend.nickname)}
                     >
+                      <UserAvatar
+                        nickname={friend.nickname}
+                        avatarUrl={friend.avatar_url}
+                        size={36}
+                      />
                       <Typography variant="body1" fontWeight={600} sx={{ flex: 1 }} noWrap>
                         @{friend.nickname}
                       </Typography>

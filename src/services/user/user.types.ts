@@ -23,6 +23,7 @@ export interface GetMyProfileResponse {
     created_at: string;
     stats_public: boolean;
     league_notifications: boolean;
+    avatar_url: string | null;
   };
   settings: {
     card_orientation: CARD_ORIENTATION;
@@ -50,6 +51,7 @@ export interface PublicProfileDesk {
 export interface GetPublicProfileResponse {
   nickname: string;
   memberSince: string;
+  avatar_url: string | null;
   desks: PublicProfileDesk[];
   stats?: {
     currentStreak: number;

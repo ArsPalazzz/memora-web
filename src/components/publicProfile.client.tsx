@@ -33,6 +33,7 @@ import { PublicProfileDesk } from "@/services/user/user.types";
 import { formatCount } from "@/utils/formatCount";
 import { useNotification } from "@/context/NotificationContext";
 import { useAuth } from "@/utils/auth";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 function formatMemberSince(value: string) {
   const date = new Date(value);
@@ -314,24 +315,15 @@ export default function PublicProfileClient() {
               >
                 <CardContent sx={{ p: 3 }}>
                   <Stack direction="row" alignItems="center" spacing={2}>
-                    <Box
+                    <UserAvatar
+                      nickname={profile.nickname}
+                      avatarUrl={profile.avatar_url}
+                      size={70}
                       sx={{
-                        width: 70,
-                        height: 70,
-                        borderRadius: "50%",
-                        bgcolor: theme.palette.primary.main,
-                        display: "flex",
-                        flexShrink: 0,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "white",
                         fontSize: "2rem",
-                        fontWeight: 600,
                         boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
                       }}
-                    >
-                      {profile.nickname[0]?.toUpperCase() || "U"}
-                    </Box>
+                    />
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="h6" fontWeight={700}>
                         @{profile.nickname}

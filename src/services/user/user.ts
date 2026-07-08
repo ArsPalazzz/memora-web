@@ -10,6 +10,8 @@ import {
   GET_MY_PROFILE_API,
   GET_USER_DAILY_API,
   PATCH_MY_PROFILE_API,
+  UPLOAD_AVATAR_API,
+  DELETE_AVATAR_API,
   SEARCH_USERS_API,
   getPublicProfileApi,
 } from "@/routes/api";
@@ -50,6 +52,33 @@ export async function updateMyProfileRequest(
 ): Promise<{ profile: GetMyProfileResponse["profile"] }> {
   return handleApiRequest(
     api.patch(PATCH_MY_PROFILE_API, payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}
+
+export async function uploadAvatarRequest(
+  file: File,
+  token: string
+): Promise<{ profile: GetMyProfileResponse["profile"] }> {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  return handleApiRequest(
+    api.post(UPLOAD_AVATAR_API, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  );
+}
+
+export async function deleteAvatarRequest(
+  token: string
+): Promise<{ profile: GetMyProfileResponse["profile"] }> {
+  return handleApiRequest(
+    api.delete(DELETE_AVATAR_API, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

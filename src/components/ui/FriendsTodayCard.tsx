@@ -5,6 +5,7 @@ import {
   CardContent,
   Typography,
 } from "@mui/material";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { FriendActivity } from "@/services/friends/friends.types";
 
 interface FriendsTodayCardProps {
@@ -56,9 +57,16 @@ export function FriendsTodayCard({
                 "&:hover": { bgcolor: "action.hover" },
               }}
             >
-              <Typography variant="body2" fontWeight={600} noWrap>
-                @{friend.nickname}
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, flex: 1 }}>
+                <UserAvatar
+                  nickname={friend.nickname}
+                  avatarUrl={friend.avatar_url}
+                  size={28}
+                />
+                <Typography variant="body2" fontWeight={600} noWrap>
+                  @{friend.nickname}
+                </Typography>
+              </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <Typography variant="caption" color="text.secondary">
                   {friend.cardsReviewedToday}/{friend.dailyGoal}

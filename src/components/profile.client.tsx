@@ -15,6 +15,7 @@ import {
   ListItemText,
   Grid,
   Switch,
+  IconButton,
 } from "@mui/material";
 import { useAuth } from "../utils/auth";
 import ScreenRotationIcon from "@mui/icons-material/ScreenRotation";
@@ -29,7 +30,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MY_PROFILE } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import { SectionLoader, Loader } from "@/components/ui/Loader";
-import { getMyProfileRequest, updateMyProfileRequest } from "@/services/user/user";
+import { getMyProfileRequest, updateMyProfileRequest, uploadAvatarRequest, deleteAvatarRequest } from "@/services/user/user";
 import { logoutRequest } from "@/services/auth/auth";
 import { ROUTES } from "@/routes/paths";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +39,7 @@ import Header from "@/components/layout/Header";
 import { useFCM } from "@/hooks/useFCM";
 import { motion } from "framer-motion";
 import WithBottomNav from "./layout/WithBottomNav";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import FeedSettingsCardOrientationModal from "./modals/FeedSettings/FeedSettingsCardOrientation.modal";
 import { CARD_ORIENTATION } from "@/services/desk/desk.const";
 import { DEFAULT_FEED_STUDY_MODE, DEFAULT_REVIEW_STUDY_MODE, STUDY_MODE_LABELS, StudyMode, normalizeFeedStudyMode, studyModeLabelSx } from "@/constants/studyMode.const";
@@ -58,6 +59,8 @@ import {
 import ArchiveIcon from "@mui/icons-material/Archive";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import ReviewSettingsCardsPerSessionModal from "./modals/ReviewSettings/ReviewSettingsCardsPerSession.modal";
 import { useNotification } from "@/context/NotificationContext";
 
@@ -69,6 +72,7 @@ export default function ProfileClient() {
   const theme = useTheme();
 
   const [openSheet, setOpenSheet] = useState<null | string>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const { mode, accentColor } = useThemeContext();
   const queryClient = useQueryClient();
   const { notifySuccess, notifyError } = useNotification();
@@ -249,6 +253,34 @@ export default function ProfileClient() {
     });
   };
 
+  const uploadAvatarMutation = useMutation({
+    mutationFn: (file: File) =>
+      call((token) => uploadAvatarRequest(file, token)),
+    onSuccess: () => {
+      notifySuccess("Avatar updated");
+      queryClient.invalidateQueries({ queryKey: [MY_PROFILE] });
+    },
+    onError: (err) => notifyError(err.message),
+  });
+
+  const deleteAvatarMutation = useMutation({
+    mutationFn: () => call((token) => deleteAvatarRequest(token)),
+    onSuccess: () => {
+      notifySuccess("Avatar removed");
+      queryClient.invalidateQueries({ queryKey: [MY_PROFILE] });
+    },
+    onError: (err) => notifyError(err.message),
+  });
+
+  const handleAvatarSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    uploadAvatarMutation.mutate(file);
+  };
+
   const handleNotifications = async () => {
     if (messageToken) {
       const result = await disableNotifications();
@@ -374,26 +406,45 @@ export default function ProfileClient() {
                 spacing={2}
                 sx={{ mb: 2 }}
               >
-                <Box
-                  sx={{
-                    width: 70,
-                    height: 70,
-                    borderRadius: "50%",
-                    bgcolor: theme.palette.primary.main,
-                    display: "flex",
-                    flexShrink: 0,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: "2rem",
-                    fontWeight: 600,
-                    boxShadow: `0 4px 20px ${alpha(
-                      theme.palette.primary.main,
-                      0.3
-                    )}`,
-                  }}
-                >
-                  {profileInfo?.profile.nickname?.[0]?.toUpperCase() || "U"}
+                <Box sx={{ position: "relative", display: "inline-flex" }}>
+                  <UserAvatar
+                    nickname={profileInfo?.profile.nickname ?? "User"}
+                    avatarUrl={profileInfo?.profile.avatar_url}
+                    size={70}
+                    sx={{
+                      fontSize: "2rem",
+                      boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    }}
+                  />
+                  <IconButton
+                    aria-label="Change avatar"
+                    size="small"
+                    disabled={uploadAvatarMutation.isPending || deleteAvatarMutation.isPending}
+                    onClick={() => avatarInputRef.current?.click()}
+                    sx={{
+                      position: "absolute",
+                      right: -4,
+                      bottom: -4,
+                      bgcolor: "background.paper",
+                      border: "1px solid",
+                      borderColor: "divider",
+                      boxShadow: 1,
+                      "&:hover": { bgcolor: "background.paper" },
+                    }}
+                  >
+                    {uploadAvatarMutation.isPending ? (
+                      <Loader size={16} />
+                    ) : (
+                      <PhotoCameraIcon sx={{ fontSize: 16 }} />
+                    )}
+                  </IconButton>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleAvatarSelected}
+                  />
                 </Box>
                 <Box>
                   <Typography
@@ -409,6 +460,16 @@ export default function ProfileClient() {
                   <Typography variant="body2" color="text.secondary">
                     Member since {profileInfo?.profile.created_at.split("T")[0]}
                   </Typography>
+                  {profileInfo?.profile.avatar_url && (
+                    <Button
+                      size="small"
+                      sx={{ mt: 0.5, px: 0, minWidth: 0 }}
+                      disabled={deleteAvatarMutation.isPending}
+                      onClick={() => deleteAvatarMutation.mutate()}
+                    >
+                      Remove photo
+                    </Button>
+                  )}
                 </Box>
               </Stack>
             </CardContent>
