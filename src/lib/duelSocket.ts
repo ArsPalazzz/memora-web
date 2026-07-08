@@ -41,7 +41,14 @@ function getSocketOrigin(): string {
     return '';
   }
 
-  return window.location.origin;
+  // Dev: Vite proxies /socket.io → backend. Prod: connect directly to Railway
+  // (Vercel Edge only proxies /api/* and cannot upgrade WebSockets).
+  if (import.meta.env.DEV) {
+    return window.location.origin;
+  }
+
+  const backendUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
+  return backendUrl || window.location.origin;
 }
 
 function notifyConnection(connected: boolean) {
