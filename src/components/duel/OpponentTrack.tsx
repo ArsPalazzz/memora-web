@@ -111,7 +111,7 @@ export function OpponentTrack({ me, opponent }: OpponentTrackProps) {
     >
       <TrackLane player={me} align="left" />
       {opponent ? (
-        <TrackLane player={opponent} align="right" />
+        <TrackLane player={opponent} align="left" />
       ) : (
         <Typography variant="caption" color="text.secondary" textAlign="center">
           Waiting for opponent…
