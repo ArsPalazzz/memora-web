@@ -6,6 +6,7 @@ import FolderIcon from "@mui/icons-material/Folder";
 import {
   createDeskRequest,
   createFolderRequest,
+  deleteFolderRequest,
   fetchDeskRequest,
   fetchMyDesksRequest,
   getFoldersRequest,
@@ -57,6 +58,7 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import { FolderCard } from "./ui/FolterCard";
 import NewFolderModal from "./modals/NewFolder/NewFolder.modal";
 import MoveItemModal from "@/components/modals/MoveItem/MoveItem.modal";
+import DeleteFolderModal from "@/components/modals/DeleteFolder/DeleteFolder.modal";
 import { TabsSwitcher } from "./ui/TabSwitcher";
 import { DEFAULT_DESK_LANGUAGE_SETTINGS } from "@/constants/language.const";
 import { useNotification } from "@/context/NotificationContext";
@@ -74,6 +76,7 @@ export default function HomeClient() {
 
   const [openDeskModal, setOpenDeskModal] = useState(false);
   const [openFolderModal, setOpenFolderModal] = useState(false);
+  const [deleteFolderSub, setDeleteFolderSub] = useState<string | null>(null);
   const [moveTarget, setMoveTarget] = useState<{
     type: "desk" | "folder";
     sub: string;
@@ -233,6 +236,20 @@ export default function HomeClient() {
       setOpenFolderModal(false);
       notifySuccess("Folder created successfully");
       queryClient.invalidateQueries({ queryKey: [ROOT_FOLDERS] });
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
+  const deleteFolderMutation = useMutation({
+    mutationFn: (folderSub: string) =>
+      call((token) => deleteFolderRequest(folderSub, token)),
+    onSuccess: () => {
+      setDeleteFolderSub(null);
+      notifySuccess("Folder deleted successfully");
+      void invalidateDeskListQueries(queryClient);
     },
     onError: (err) => {
       console.warn(err);
@@ -527,6 +544,7 @@ export default function HomeClient() {
                                 currentLocationSub: null,
                               })
                             }
+                            onDelete={() => setDeleteFolderSub(folder.sub)}
                           />
                         </motion.div>
                       </Grid>
@@ -572,6 +590,15 @@ export default function HomeClient() {
           isPending={
             moveDeskMutation.isPending || moveFolderMutation.isPending
           }
+        />
+      )}
+
+      {deleteFolderSub && (
+        <DeleteFolderModal
+          open={!!deleteFolderSub}
+          onClose={() => setDeleteFolderSub(null)}
+          onSubmit={() => deleteFolderMutation.mutate(deleteFolderSub)}
+          isPending={deleteFolderMutation.isPending}
         />
       )}
     </WithBottomNav>

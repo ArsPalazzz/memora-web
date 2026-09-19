@@ -9,6 +9,7 @@ import {
 import { useAuthContext } from "@/context/AuthContext";
 import { ARCHIVED_DESKS, USER_DESKS } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
+import { invalidateDeskListQueries } from "@/utils/invalidateDeskQueries";
 import { Loader } from "@/components/ui/Loader";
 import Header from "@/components/layout/Header";
 import { useNavigate } from "react-router-dom";
@@ -41,6 +42,7 @@ export default function ArchivedDesksClient() {
 
       queryClient.invalidateQueries({ queryKey: [ARCHIVED_DESKS] });
       queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
+      void invalidateDeskListQueries(queryClient);
     },
     onError: (err) => {
       console.warn(err);

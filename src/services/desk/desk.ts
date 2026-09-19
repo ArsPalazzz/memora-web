@@ -201,6 +201,17 @@ export const createFolderRequest = async (
   );
 };
 
+export const deleteFolderRequest = async (
+  folderSub: string,
+  token: string
+): Promise<{ deleted: boolean }> => {
+  return handleApiRequest(
+    api.delete(`/folders/${folderSub}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+};
+
 export async function fetchDeskCardsRequest(
   sub: string,
   token: string

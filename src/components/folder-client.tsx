@@ -33,6 +33,7 @@ import { v4 as uuidV4 } from "uuid";
 import {
   createDeskRequest,
   createFolderRequest,
+  deleteFolderRequest,
   getFolderContentsRequest,
   getFolderInfoRequest,
   moveDeskToFolderRequest,
@@ -48,6 +49,8 @@ import {
   getFolderPlaceholder,
 } from "@/utils/folder-placeholder";
 import MoveItemModal from "@/components/modals/MoveItem/MoveItem.modal";
+import DeleteFolderModal from "@/components/modals/DeleteFolder/DeleteFolder.modal";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 export default function FolderClient() {
   const params = useParams() as { id: string };
@@ -63,6 +66,11 @@ export default function FolderClient() {
 
   const [openDeskModal, setOpenDeskModal] = useState(false);
   const [openFolderModal, setOpenFolderModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    folderSub: string;
+    navigateAfter: boolean;
+  } | null>(null);
   const [moveTarget, setMoveTarget] = useState<{
     type: "desk" | "folder";
     sub: string;
@@ -248,6 +256,30 @@ export default function FolderClient() {
     },
   });
 
+  const deleteFolderMutation = useMutation({
+    mutationFn: (payload: { folderSub: string; navigateAfter: boolean }) =>
+      call((token) => deleteFolderRequest(payload.folderSub, token)),
+    onSuccess: (_data, payload) => {
+      setOpenDeleteModal(false);
+      setDeleteTarget(null);
+      invalidateMoveQueries();
+      notifySuccess("Folder deleted successfully");
+
+      if (payload.navigateAfter) {
+        const parentSub = folderInfo?.parentFolderSub;
+        if (parentSub) {
+          navigate(`/folder/${parentSub}`, { replace: true });
+        } else {
+          navigate("/home?tab=folders", { replace: true });
+        }
+      }
+    },
+    onError: (err) => {
+      console.warn(err);
+      notifyError(err.message);
+    },
+  });
+
   const handleMoveSubmit = (targetFolderSub: string | null) => {
     if (!moveTarget) {
       return;
@@ -280,9 +312,21 @@ export default function FolderClient() {
   };
 
   const isLoading = isFolderInfoLoading || isContentsLoading;
+  const canDeleteCurrentFolder = !isLoading && !!contents && contents.length === 0;
 
   const RightButtons = () => (
     <Box sx={{ display: "flex", gap: 1 }}>
+      {canDeleteCurrentFolder && (
+        <IconButton
+          aria-label="Delete folder"
+          onClick={() => {
+            setDeleteTarget({ folderSub, navigateAfter: true });
+            setOpenDeleteModal(true);
+          }}
+        >
+          <DeleteOutlineIcon sx={{ color: "white", fontSize: 24 }} />
+        </IconButton>
+      )}
       <IconButton onClick={() => setOpenDeskModal(true)}>
         <AddIcon sx={{ color: "white", fontSize: 24 }} />
       </IconButton>
@@ -323,6 +367,10 @@ export default function FolderClient() {
             <EmptyState
               onAddDesk={() => setOpenDeskModal(true)}
               onAddFolder={() => setOpenFolderModal(true)}
+              onDelete={() => {
+                setDeleteTarget({ folderSub, navigateAfter: true });
+                setOpenDeleteModal(true);
+              }}
               title="Folder is empty"
               description="Add decks or subfolders to organize your learning materials"
             />
@@ -354,6 +402,13 @@ export default function FolderClient() {
                             currentLocationSub: folderSub,
                           })
                         }
+                        onDelete={() => {
+                          setDeleteTarget({
+                            folderSub: item.sub,
+                            navigateAfter: false,
+                          });
+                          setOpenDeleteModal(true);
+                        }}
                       />
                     ) : (
                       <DeskCard
@@ -425,6 +480,18 @@ export default function FolderClient() {
           }
         />
       )}
+
+      {openDeleteModal && deleteTarget && (
+        <DeleteFolderModal
+          open={openDeleteModal}
+          onClose={() => {
+            setOpenDeleteModal(false);
+            setDeleteTarget(null);
+          }}
+          onSubmit={() => deleteFolderMutation.mutate(deleteTarget)}
+          isPending={deleteFolderMutation.isPending}
+        />
+      )}
     </WithBottomNav>
   );
 }
@@ -432,11 +499,13 @@ export default function FolderClient() {
 const EmptyState = ({
   onAddDesk,
   onAddFolder,
+  onDelete,
   title,
   description,
 }: {
   onAddDesk: () => void;
   onAddFolder: () => void;
+  onDelete?: () => void;
   title: string;
   description: string;
 }) => (
@@ -459,7 +528,7 @@ const EmptyState = ({
     <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 400 }}>
       {description}
     </Typography>
-    <Box sx={{ display: "flex", gap: 2 }}>
+    <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
       <Button
         variant="contained"
         startIcon={<AddIcon />}
@@ -476,6 +545,17 @@ const EmptyState = ({
       >
         Subfolder
       </Button>
+      {onDelete && (
+        <Button
+          color="error"
+          variant="outlined"
+          startIcon={<DeleteOutlineIcon />}
+          onClick={onDelete}
+          size="large"
+        >
+          Delete folder
+        </Button>
+      )}
     </Box>
   </Box>
 );
