@@ -113,6 +113,11 @@ export interface FolderFlat {
   parentFolderSub: string | null;
 }
 
+export interface PinnedFolder {
+  folderSub: string;
+  title: string;
+}
+
 export interface FetchDeskCardsResponse {
   sub: string;
   createdAt: string;

@@ -15,6 +15,7 @@ import {
   AddToLibraryResponse,
   LibrarySource,
   FolderFlat,
+  PinnedFolder,
   GetCardsToPlayResponse,
   RootFolder,
   UpdateCardParams,
@@ -48,6 +49,8 @@ import {
   UPDATE_FEED_SETTINGS_API,
   UPDATE_REVIEW_SETTINGS_API,
   REGENERATE_CARD_EXAMPLES_API,
+  PINNED_FOLDERS_API,
+  pinFolderApi,
 } from "@/routes/api";
 
 export async function fetchMyDesksRequest(
@@ -149,6 +152,42 @@ export const getFoldersFlatRequest = async (
 ): Promise<FolderFlat[]> => {
   return handleApiRequest(
     api.get("/folders/flat", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+};
+
+export const getPinnedFoldersRequest = async (
+  token: string
+): Promise<PinnedFolder[]> => {
+  return handleApiRequest(
+    api.get(PINNED_FOLDERS_API, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+};
+
+export const pinFolderRequest = async (
+  folderSub: string,
+  token: string
+): Promise<{ pinned: boolean }> => {
+  return handleApiRequest(
+    api.post(
+      pinFolderApi(folderSub),
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+  );
+};
+
+export const unpinFolderRequest = async (
+  folderSub: string,
+  token: string
+): Promise<{ pinned: boolean }> => {
+  return handleApiRequest(
+    api.delete(pinFolderApi(folderSub), {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

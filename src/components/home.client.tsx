@@ -9,7 +9,6 @@ import {
   deleteFolderRequest,
   fetchDeskRequest,
   fetchMyDesksRequest,
-  getFoldersFlatRequest,
   getFoldersRequest,
   moveDeskToFolderRequest,
   moveFolderToParentRequest,
@@ -30,11 +29,11 @@ import {
   USER_DESKS,
   USER_DESK,
   ROOT_FOLDERS,
-  FOLDERS_FLAT,
   USER_REVIEW_SUMMARY,
   USER_INBOX_SUMMARY,
   FRIENDS_ACTIVITY,
   FRIENDS_LEAGUE,
+  PINNED_FOLDERS,
 } from "@/routes/react-query";
 import { CreateDeskResult } from "@/services/desk/desk.types";
 import { useProtectedRequest } from "@/utils/protected";
@@ -78,14 +77,10 @@ import {
 import {
   homeIndexToTab,
   homeTabToIndex,
-  isFolderPinned,
-  loadPinnedFolderSubs,
   resolveInitialHomeTab,
-  resolvePinnedFolders,
   saveHomeLastTab,
-  savePinnedFolderSubs,
-  togglePinnedFolder,
 } from "@/lib/homeLayoutPrefs";
+import { usePinnedFolders } from "@/hooks/usePinnedFolders";
 // import { WeeklyLeagueCard } from "./ui/WeeklyLeagueCard";
 
 export default function HomeClient() {
@@ -99,7 +94,6 @@ export default function HomeClient() {
   const [excludedDeskSubs, setExcludedDeskSubs] = useState<string[]>([]);
   const [includeInbox, setIncludeInbox] = useState(true);
   const [selectionHydrated, setSelectionHydrated] = useState(false);
-  const [pinnedFolderSubs, setPinnedFolderSubs] = useState<string[]>([]);
 
   const [openDeskModal, setOpenDeskModal] = useState(false);
   const [openFolderModal, setOpenFolderModal] = useState(false);
@@ -121,6 +115,8 @@ export default function HomeClient() {
     homeTabToIndex(resolveInitialHomeTab(searchParams.get("tab")))
   );
 
+  const { pinnedFolders, isPinned, togglePin, unpin } = usePinnedFolders();
+
   useEffect(() => {
     const tabParam = homeIndexToTab(activeTab);
     const currentTabParam = searchParams.get("tab");
@@ -137,7 +133,6 @@ export default function HomeClient() {
     const selection = loadReviewDeskSelection();
     setExcludedDeskSubs(selection.excludedDeskSubs);
     setIncludeInbox(selection.includeInbox);
-    setPinnedFolderSubs(loadPinnedFolderSubs());
     setSelectionHydrated(true);
   }, []);
 
@@ -147,22 +142,6 @@ export default function HomeClient() {
     }
     saveReviewDeskSelection({ excludedDeskSubs, includeInbox });
   }, [excludedDeskSubs, includeInbox, selectionHydrated]);
-
-  useEffect(() => {
-    if (!selectionHydrated) {
-      return;
-    }
-    savePinnedFolderSubs(pinnedFolderSubs);
-  }, [pinnedFolderSubs, selectionHydrated]);
-
-  const handleTogglePin = (folderSub: string) => {
-    const { next, result } = togglePinnedFolder(folderSub, pinnedFolderSubs);
-    if (result === "limit") {
-      notifyError("Max 8 pinned folders");
-      return;
-    }
-    setPinnedFolderSubs(next);
-  };
 
   const { data: daily, isLoading: isDailyLoading } = useQuery({
     queryKey: [USER_DAILY],
@@ -240,29 +219,6 @@ export default function HomeClient() {
     enabled: activeTab === 0,
   });
 
-  const { data: foldersFlat = [] } = useQuery({
-    queryKey: [FOLDERS_FLAT],
-    queryFn: async () => call((token) => getFoldersFlatRequest(token)),
-    staleTime: 5 * 60_000,
-  });
-
-  const pinnedFolders = useMemo(
-    () => resolvePinnedFolders(pinnedFolderSubs, foldersFlat),
-    [pinnedFolderSubs, foldersFlat]
-  );
-
-  useEffect(() => {
-    if (!selectionHydrated || foldersFlat.length === 0) {
-      return;
-    }
-    const validSubs = pinnedFolderSubs.filter((sub) =>
-      foldersFlat.some((folder) => folder.sub === sub)
-    );
-    if (validSubs.length !== pinnedFolderSubs.length) {
-      setPinnedFolderSubs(validSubs);
-    }
-  }, [foldersFlat, pinnedFolderSubs, selectionHydrated]);
-
   const isHomeLoading =
     isDailyLoading ||
     isReviewSummaryLoading ||
@@ -330,11 +286,11 @@ export default function HomeClient() {
   const deleteFolderMutation = useMutation({
     mutationFn: (folderSub: string) =>
       call((token) => deleteFolderRequest(folderSub, token)),
-    onSuccess: (_data, folderSub) => {
+    onSuccess: () => {
       setDeleteFolderSub(null);
-      setPinnedFolderSubs((prev) => prev.filter((sub) => sub !== folderSub));
       notifySuccess("Folder deleted successfully");
       void invalidateDeskListQueries(queryClient);
+      void queryClient.invalidateQueries({ queryKey: [PINNED_FOLDERS] });
     },
     onError: (err) => {
       console.warn(err);
@@ -513,7 +469,7 @@ export default function HomeClient() {
                   state: { folderTitle: title },
                 })
               }
-              onUnpin={(folderSub) => handleTogglePin(folderSub)}
+              onUnpin={unpin}
             />
 
             <TabsSwitcher activeTab={activeTab} onChange={handleTabChange} />
@@ -561,8 +517,8 @@ export default function HomeClient() {
                         >
                           <FolderCard
                             folder={folder}
-                            pinned={isFolderPinned(folder.sub, pinnedFolderSubs)}
-                            onTogglePin={() => handleTogglePin(folder.sub)}
+                            pinned={isPinned(folder.sub)}
+                            onTogglePin={() => togglePin(folder.sub)}
                             onClick={() =>
                               navigate(`/folder/${folder.sub}`, {
                                 state: { folderTitle: folder.title },

@@ -6,7 +6,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAuthContext } from "@/context/AuthContext";
 import {
@@ -16,6 +16,7 @@ import {
   USER_DESKS,
   USER_FOLDERS,
   FOLDERS_FLAT,
+  PINNED_FOLDERS,
 } from "@/routes/react-query";
 import { useProtectedRequest } from "@/utils/protected";
 import { SectionLoader } from "@/components/ui/Loader";
@@ -53,12 +54,7 @@ import {
 import MoveItemModal from "@/components/modals/MoveItem/MoveItem.modal";
 import DeleteFolderModal from "@/components/modals/DeleteFolder/DeleteFolder.modal";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import {
-  isFolderPinned,
-  loadPinnedFolderSubs,
-  savePinnedFolderSubs,
-  togglePinnedFolder,
-} from "@/lib/homeLayoutPrefs";
+import { usePinnedFolders } from "@/hooks/usePinnedFolders";
 
 export default function FolderClient() {
   const params = useParams() as { id: string };
@@ -85,30 +81,8 @@ export default function FolderClient() {
     title: string;
     currentLocationSub: string | null;
   } | null>(null);
-  const [pinnedFolderSubs, setPinnedFolderSubs] = useState<string[]>([]);
-  const [pinsHydrated, setPinsHydrated] = useState(false);
   const [sortBy, updateSortBy] = useFolderSortSettings(folderSub);
-
-  useEffect(() => {
-    setPinnedFolderSubs(loadPinnedFolderSubs());
-    setPinsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!pinsHydrated) {
-      return;
-    }
-    savePinnedFolderSubs(pinnedFolderSubs);
-  }, [pinnedFolderSubs, pinsHydrated]);
-
-  const handleTogglePin = (targetFolderSub: string) => {
-    const { next, result } = togglePinnedFolder(targetFolderSub, pinnedFolderSubs);
-    if (result === "limit") {
-      notifyError("Max 8 pinned folders");
-      return;
-    }
-    setPinnedFolderSubs(next);
-  };
+  const { isPinned, togglePin } = usePinnedFolders();
 
   const { data: folderInfo, isLoading: isFolderInfoLoading } = useQuery({
     queryKey: [FOLDER_INFO, folderSub],
@@ -293,10 +267,8 @@ export default function FolderClient() {
     onSuccess: (_data, payload) => {
       setOpenDeleteModal(false);
       setDeleteTarget(null);
-      setPinnedFolderSubs((prev) =>
-        prev.filter((sub) => sub !== payload.folderSub)
-      );
       invalidateMoveQueries();
+      void queryClient.invalidateQueries({ queryKey: [PINNED_FOLDERS] });
       notifySuccess("Folder deleted successfully");
 
       if (payload.navigateAfter) {
@@ -348,13 +320,13 @@ export default function FolderClient() {
   const isLoading = isFolderInfoLoading || isContentsLoading;
   const canDeleteCurrentFolder = !isLoading && !!contents && contents.length === 0;
 
-  const currentFolderPinned = isFolderPinned(folderSub, pinnedFolderSubs);
+  const currentFolderPinned = isPinned(folderSub);
 
   const RightButtons = () => (
     <Box sx={{ display: "flex", gap: 1 }}>
       <IconButton
         aria-label={currentFolderPinned ? "Unpin folder" : "Pin folder"}
-        onClick={() => handleTogglePin(folderSub)}
+        onClick={() => togglePin(folderSub)}
       >
         {currentFolderPinned ? (
           <PushPinIcon sx={{ color: "white", fontSize: 24 }} />
@@ -435,8 +407,8 @@ export default function FolderClient() {
                     {item.type === "folder" ? (
                       <FolderCard
                         folder={item}
-                        pinned={isFolderPinned(item.sub, pinnedFolderSubs)}
-                        onTogglePin={() => handleTogglePin(item.sub)}
+                        pinned={isPinned(item.sub)}
+                        onTogglePin={() => togglePin(item.sub)}
                         onClick={() =>
                           navigate(`/folder/${item.sub}`, {
                             state: { folderTitle: item.title },
