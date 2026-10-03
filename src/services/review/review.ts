@@ -22,10 +22,11 @@ export async function getReviewSummaryRequest(
 }
 
 export async function startReviewRequest(
-  token: string
+  token: string,
+  body: { deskSubs: string[]; includeInbox: boolean }
 ): Promise<StartReviewResponse> {
   return handleApiRequest(
-    api.post(START_REVIEW_API, {}, {
+    api.post(START_REVIEW_API, body, {
       headers: { Authorization: `Bearer ${token}` },
     })
   );

@@ -9,18 +9,22 @@ import {
 interface ReviewDueCardProps {
   totalDueCount: number;
   inboxCount: number;
-  onStartStudy: () => void;
-  isStarting: boolean;
+  selectedDueCount: number;
+  selectedInboxCount: number;
+  onOpenPicker: () => void;
 }
 
 export function ReviewDueCard({
   totalDueCount,
   inboxCount,
-  onStartStudy,
-  isStarting,
+  selectedDueCount,
+  selectedInboxCount,
+  onOpenPicker,
 }: ReviewDueCardProps) {
   const totalStudyCount = totalDueCount + inboxCount;
+  const selectedStudyCount = selectedDueCount + selectedInboxCount;
   const hasStudyCards = totalStudyCount > 0;
+  const hasFilteredSelection = selectedStudyCount > 0;
 
   return (
     <Card variant="outlined">
@@ -38,18 +42,22 @@ export function ReviewDueCard({
               {hasStudyCards ? "Today's practice" : "All caught up"}
             </Typography>
             <Typography variant="caption" color="text.secondary" display="block">
-              Due {totalDueCount} · Feed {inboxCount}
+              {hasStudyCards
+                ? selectedStudyCount === totalStudyCount
+                  ? `Due ${totalDueCount} · Feed ${inboxCount}`
+                  : `Selected ${selectedStudyCount} of ${totalStudyCount}`
+                : "Due 0 · Feed 0"}
             </Typography>
           </Box>
 
           <Button
             size="small"
             variant="contained"
-            disabled={!hasStudyCards || isStarting}
-            onClick={onStartStudy}
+            disabled={!hasStudyCards}
+            onClick={onOpenPicker}
             sx={{ flexShrink: 0, minWidth: 72 }}
           >
-            {isStarting ? "..." : "Study"}
+            {hasFilteredSelection ? "Study" : "Choose"}
           </Button>
         </Box>
       </CardContent>

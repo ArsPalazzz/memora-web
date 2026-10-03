@@ -15,7 +15,7 @@ import {
 } from "../services/desk/desk";
 import AddIcon from "@mui/icons-material/Add";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import NewDeskModal from "@/components/modals/NewDesk/NewDesk.modal";
 import {
@@ -65,7 +65,14 @@ import { useNotification } from "@/context/NotificationContext";
 import { invalidateDeskListQueries } from "@/utils/invalidateDeskQueries";
 import { getFriendsActivityRequest, getFriendsLeagueRequest } from "@/services/friends/friends";
 import { ROUTES } from "@/routes/paths";
-import { WeeklyLeagueCard } from "./ui/WeeklyLeagueCard";
+import StudyDeskPickerModal from "@/components/modals/StudyDeskPicker/StudyDeskPicker.modal";
+import {
+  getSelectedDeskSubs,
+  getSelectedDueCount,
+  loadReviewDeskSelection,
+  saveReviewDeskSelection,
+} from "@/lib/reviewDeskSelection";
+// import { WeeklyLeagueCard } from "./ui/WeeklyLeagueCard";
 
 export default function HomeClient() {
   const { authenticated } = useAuth();
@@ -73,6 +80,11 @@ export default function HomeClient() {
   const queryClient = useQueryClient();
   const { call } = useProtectedRequest();
   const navigate = useNavigate();
+
+  const [studyPickerOpen, setStudyPickerOpen] = useState(false);
+  const [excludedDeskSubs, setExcludedDeskSubs] = useState<string[]>([]);
+  const [includeInbox, setIncludeInbox] = useState(true);
+  const [selectionHydrated, setSelectionHydrated] = useState(false);
 
   const [openDeskModal, setOpenDeskModal] = useState(false);
   const [openFolderModal, setOpenFolderModal] = useState(false);
@@ -114,6 +126,20 @@ export default function HomeClient() {
 
   const { notifySuccess, notifyError } = useNotification();
 
+  useEffect(() => {
+    const selection = loadReviewDeskSelection();
+    setExcludedDeskSubs(selection.excludedDeskSubs);
+    setIncludeInbox(selection.includeInbox);
+    setSelectionHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!selectionHydrated) {
+      return;
+    }
+    saveReviewDeskSelection({ excludedDeskSubs, includeInbox });
+  }, [excludedDeskSubs, includeInbox, selectionHydrated]);
+
   const { data: daily, isLoading: isDailyLoading } = useQuery({
     queryKey: [USER_DAILY],
     queryFn: async () => call((token) => getUserDailyRequest(token)),
@@ -139,14 +165,26 @@ export default function HomeClient() {
     queryFn: async () => call((token) => getFriendsLeagueRequest(token)),
   });
 
+  const reviewDesks = reviewSummary?.desks ?? [];
+  const selectedDueCount = useMemo(
+    () => getSelectedDueCount(reviewDesks, excludedDeskSubs),
+    [reviewDesks, excludedDeskSubs]
+  );
+  const selectedInboxCount = includeInbox ? (inboxSummary?.count ?? 0) : 0;
+
   const startStudyMutation = useMutation({
     mutationFn: () =>
       call(async (token) => {
-        const { batchId } = await startReviewRequest(token);
+        const deskSubs = getSelectedDeskSubs(reviewDesks, excludedDeskSubs);
+        const { batchId } = await startReviewRequest(token, {
+          deskSubs,
+          includeInbox,
+        });
         const { sessionId } = await startReviewSessionRequest({ batchId }, token);
         return { sessionId };
       }),
     onSuccess: ({ sessionId }) => {
+      setStudyPickerOpen(false);
       navigate(`/review/${sessionId}/play`, {
         replace: true,
         state: { from: ROUTES.HOME },
@@ -404,11 +442,12 @@ export default function HomeClient() {
               <ReviewDueCard
                 totalDueCount={reviewSummary!.totalDueCount}
                 inboxCount={inboxSummary!.count}
-                onStartStudy={() => startStudyMutation.mutate()}
-                isStarting={startStudyMutation.isPending}
+                selectedDueCount={selectedDueCount}
+                selectedInboxCount={selectedInboxCount}
+                onOpenPicker={() => setStudyPickerOpen(true)}
               />
 
-              <WeeklyLeagueCard league={friendsLeague!} compact />
+              {/* <WeeklyLeagueCard league={friendsLeague!} compact /> */}
 
               {!!friendsActivity?.length && (
                 <SocialHomeSection
@@ -599,6 +638,24 @@ export default function HomeClient() {
           onClose={() => setDeleteFolderSub(null)}
           onSubmit={() => deleteFolderMutation.mutate(deleteFolderSub)}
           isPending={deleteFolderMutation.isPending}
+        />
+      )}
+
+      {studyPickerOpen && (
+        <StudyDeskPickerModal
+          desks={reviewDesks}
+          inboxCount={inboxSummary?.count ?? 0}
+          excludedDeskSubs={excludedDeskSubs}
+          includeInbox={includeInbox}
+          isStarting={startStudyMutation.isPending}
+          onExcludedChange={setExcludedDeskSubs}
+          onIncludeInboxChange={setIncludeInbox}
+          onClose={() => setStudyPickerOpen(false)}
+          onStart={() => startStudyMutation.mutate()}
+          onOpenDesk={(deskSub) => {
+            setStudyPickerOpen(false);
+            navigate(`/desk/${deskSub}`);
+          }}
         />
       )}
     </WithBottomNav>
