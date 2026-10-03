@@ -2,12 +2,16 @@ import { Box, Card, CardContent, IconButton, Typography } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DriveFileMoveOutlinedIcon from "@mui/icons-material/DriveFileMoveOutlined";
+import PushPinIcon from "@mui/icons-material/PushPin";
+import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 
 export const FolderCard = ({
   folder,
   onClick,
   onMove,
   onDelete,
+  pinned = false,
+  onTogglePin,
 }: {
   folder: {
     title: string;
@@ -18,6 +22,8 @@ export const FolderCard = ({
   onClick: () => void;
   onMove?: (event: React.MouseEvent) => void;
   onDelete?: (event: React.MouseEvent) => void;
+  pinned?: boolean;
+  onTogglePin?: (event: React.MouseEvent) => void;
 }) => {
   const canDelete = folder.deskCount === 0 && folder.folderCount === 0;
 
@@ -64,6 +70,24 @@ export const FolderCard = ({
                   </Typography>
                 )}
               </Box>
+
+              {onTogglePin && (
+                <IconButton
+                  size="small"
+                  aria-label={pinned ? "Unpin folder" : "Pin folder"}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onTogglePin(event);
+                  }}
+                  sx={{ flexShrink: 0 }}
+                >
+                  {pinned ? (
+                    <PushPinIcon fontSize="small" color="primary" />
+                  ) : (
+                    <PushPinOutlinedIcon fontSize="small" />
+                  )}
+                </IconButton>
+              )}
 
               {canDelete && onDelete && (
                 <IconButton

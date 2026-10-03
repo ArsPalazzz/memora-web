@@ -9,6 +9,7 @@ import {
   deleteFolderRequest,
   fetchDeskRequest,
   fetchMyDesksRequest,
+  getFoldersFlatRequest,
   getFoldersRequest,
   moveDeskToFolderRequest,
   moveFolderToParentRequest,
@@ -29,6 +30,7 @@ import {
   USER_DESKS,
   USER_DESK,
   ROOT_FOLDERS,
+  FOLDERS_FLAT,
   USER_REVIEW_SUMMARY,
   USER_INBOX_SUMMARY,
   FRIENDS_ACTIVITY,
@@ -56,6 +58,7 @@ import { ReviewDueCard } from "./ui/ReviewDueCard";
 import { SocialHomeSection } from "./ui/SocialHomeSection";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import { FolderCard } from "./ui/FolterCard";
+import { PinnedFoldersSection } from "./ui/PinnedFoldersSection";
 import NewFolderModal from "./modals/NewFolder/NewFolder.modal";
 import MoveItemModal from "@/components/modals/MoveItem/MoveItem.modal";
 import DeleteFolderModal from "@/components/modals/DeleteFolder/DeleteFolder.modal";
@@ -72,6 +75,17 @@ import {
   loadReviewDeskSelection,
   saveReviewDeskSelection,
 } from "@/lib/reviewDeskSelection";
+import {
+  homeIndexToTab,
+  homeTabToIndex,
+  isFolderPinned,
+  loadPinnedFolderSubs,
+  resolveInitialHomeTab,
+  resolvePinnedFolders,
+  saveHomeLastTab,
+  savePinnedFolderSubs,
+  togglePinnedFolder,
+} from "@/lib/homeLayoutPrefs";
 // import { WeeklyLeagueCard } from "./ui/WeeklyLeagueCard";
 
 export default function HomeClient() {
@@ -85,6 +99,7 @@ export default function HomeClient() {
   const [excludedDeskSubs, setExcludedDeskSubs] = useState<string[]>([]);
   const [includeInbox, setIncludeInbox] = useState(true);
   const [selectionHydrated, setSelectionHydrated] = useState(false);
+  const [pinnedFolderSubs, setPinnedFolderSubs] = useState<string[]>([]);
 
   const [openDeskModal, setOpenDeskModal] = useState(false);
   const [openFolderModal, setOpenFolderModal] = useState(false);
@@ -102,26 +117,18 @@ export default function HomeClient() {
 
   const [searchParams] = useSearchParams();
 
-  const urlTab = searchParams.get("tab");
-  const initialTab = urlTab === "folders" ? 1 : 0;
-
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, setActiveTab] = useState(() =>
+    homeTabToIndex(resolveInitialHomeTab(searchParams.get("tab")))
+  );
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    const currentTabParam = params.get("tab");
+    const tabParam = homeIndexToTab(activeTab);
+    const currentTabParam = searchParams.get("tab");
 
-    if (
-      !currentTabParam ||
-      (activeTab === 0 && currentTabParam === "folders")
-    ) {
-      navigate({ pathname: "/home", search: "tab=desks" }, { replace: true });
-      return;
+    if (currentTabParam !== tabParam) {
+      navigate({ pathname: "/home", search: `tab=${tabParam}` }, { replace: true });
     }
-
-    if (activeTab === 1 && currentTabParam === "desks") {
-      navigate({ pathname: "/home", search: "tab=folders" }, { replace: true });
-    }
+    saveHomeLastTab(tabParam);
   }, [activeTab, navigate, searchParams]);
 
   const { notifySuccess, notifyError } = useNotification();
@@ -130,6 +137,7 @@ export default function HomeClient() {
     const selection = loadReviewDeskSelection();
     setExcludedDeskSubs(selection.excludedDeskSubs);
     setIncludeInbox(selection.includeInbox);
+    setPinnedFolderSubs(loadPinnedFolderSubs());
     setSelectionHydrated(true);
   }, []);
 
@@ -139,6 +147,22 @@ export default function HomeClient() {
     }
     saveReviewDeskSelection({ excludedDeskSubs, includeInbox });
   }, [excludedDeskSubs, includeInbox, selectionHydrated]);
+
+  useEffect(() => {
+    if (!selectionHydrated) {
+      return;
+    }
+    savePinnedFolderSubs(pinnedFolderSubs);
+  }, [pinnedFolderSubs, selectionHydrated]);
+
+  const handleTogglePin = (folderSub: string) => {
+    const { next, result } = togglePinnedFolder(folderSub, pinnedFolderSubs);
+    if (result === "limit") {
+      notifyError("Max 8 pinned folders");
+      return;
+    }
+    setPinnedFolderSubs(next);
+  };
 
   const { data: daily, isLoading: isDailyLoading } = useQuery({
     queryKey: [USER_DAILY],
@@ -213,8 +237,31 @@ export default function HomeClient() {
   const { data: folders, isLoading: isFoldersLoading } = useQuery({
     queryKey: [ROOT_FOLDERS],
     queryFn: async () => call((token) => getFoldersRequest(token)),
-    enabled: activeTab === 1,
+    enabled: activeTab === 0,
   });
+
+  const { data: foldersFlat = [] } = useQuery({
+    queryKey: [FOLDERS_FLAT],
+    queryFn: async () => call((token) => getFoldersFlatRequest(token)),
+    staleTime: 5 * 60_000,
+  });
+
+  const pinnedFolders = useMemo(
+    () => resolvePinnedFolders(pinnedFolderSubs, foldersFlat),
+    [pinnedFolderSubs, foldersFlat]
+  );
+
+  useEffect(() => {
+    if (!selectionHydrated || foldersFlat.length === 0) {
+      return;
+    }
+    const validSubs = pinnedFolderSubs.filter((sub) =>
+      foldersFlat.some((folder) => folder.sub === sub)
+    );
+    if (validSubs.length !== pinnedFolderSubs.length) {
+      setPinnedFolderSubs(validSubs);
+    }
+  }, [foldersFlat, pinnedFolderSubs, selectionHydrated]);
 
   const isHomeLoading =
     isDailyLoading ||
@@ -223,8 +270,7 @@ export default function HomeClient() {
     isFriendsActivityLoading ||
     isFriendsLeagueLoading ||
     (isDesksLoading && desks === undefined) ||
-    (activeTab === 1 && isFoldersLoading && folders === undefined);
-
+    (activeTab === 0 && isFoldersLoading && folders === undefined);
   const {
     handleSubmit,
     register,
@@ -284,8 +330,9 @@ export default function HomeClient() {
   const deleteFolderMutation = useMutation({
     mutationFn: (folderSub: string) =>
       call((token) => deleteFolderRequest(folderSub, token)),
-    onSuccess: () => {
+    onSuccess: (_data, folderSub) => {
       setDeleteFolderSub(null);
+      setPinnedFolderSubs((prev) => prev.filter((sub) => sub !== folderSub));
       notifySuccess("Folder deleted successfully");
       void invalidateDeskListQueries(queryClient);
     },
@@ -392,12 +439,12 @@ export default function HomeClient() {
         </IconButton>
 
         {activeTab === 0 ? (
-          <IconButton onClick={() => setOpenDeskModal(true)}>
-            <AddIcon sx={{ color: "white", fontSize: 30 }} />
-          </IconButton>
-        ) : (
           <IconButton onClick={() => setOpenFolderModal(true)}>
             <CreateNewFolderIcon sx={{ color: "white", fontSize: 30 }} />
+          </IconButton>
+        ) : (
+          <IconButton onClick={() => setOpenDeskModal(true)}>
+            <AddIcon sx={{ color: "white", fontSize: 30 }} />
           </IconButton>
         )}
       </Box>
@@ -412,14 +459,14 @@ export default function HomeClient() {
           flexDirection: "column",
           height: "100dvh",
           overflow:
-            (activeTab === 0 && desks && !desks.length) ||
-            (activeTab === 1 && folders && !folders.length)
+            (activeTab === 0 && folders && !folders.length) ||
+            (activeTab === 1 && desks && !desks.length)
               ? "hidden"
               : "inherit",
         }}
       >
         <Header
-          title={activeTab === 0 ? "Decks" : "Folders"}
+          title={activeTab === 0 ? "Folders" : "Decks"}
           RightButton={<RightButton />}
         />
 
@@ -459,6 +506,16 @@ export default function HomeClient() {
               )}
             </Stack>
 
+            <PinnedFoldersSection
+              folders={pinnedFolders}
+              onOpen={(folderSub, title) =>
+                navigate(`/folder/${folderSub}`, {
+                  state: { folderTitle: title },
+                })
+              }
+              onUnpin={(folderSub) => handleTogglePin(folderSub)}
+            />
+
             <TabsSwitcher activeTab={activeTab} onChange={handleTabChange} />
           </Box>
 
@@ -473,6 +530,61 @@ export default function HomeClient() {
             }}
           >
             {activeTab === 0 ? (
+              <>
+                {isFoldersLoading && <Loader />}
+
+                {(!folders || folders.length === 0) && !isFoldersLoading && (
+                  <EmptyState
+                    onCreate={() => setOpenFolderModal(true)}
+                    title="No folders yet"
+                    description="Organize your decks into folders for better management"
+                    icon={
+                      <FolderIcon
+                        sx={{ fontSize: 80, color: "grey.400", mb: 2 }}
+                      />
+                    }
+                    buttonText="Create First Folder"
+                  />
+                )}
+
+                {folders && folders.length > 0 && (
+                  <Grid container spacing={2}>
+                    {folders.map((folder, index) => (
+                      <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={folder.sub}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            duration: 0.3,
+                            delay: Number(`0.${index + 1}`),
+                          }}
+                        >
+                          <FolderCard
+                            folder={folder}
+                            pinned={isFolderPinned(folder.sub, pinnedFolderSubs)}
+                            onTogglePin={() => handleTogglePin(folder.sub)}
+                            onClick={() =>
+                              navigate(`/folder/${folder.sub}`, {
+                                state: { folderTitle: folder.title },
+                              })
+                            }
+                            onMove={() =>
+                              setMoveTarget({
+                                type: "folder",
+                                sub: folder.sub,
+                                title: folder.title,
+                                currentLocationSub: null,
+                              })
+                            }
+                            onDelete={() => setDeleteFolderSub(folder.sub)}
+                          />
+                        </motion.div>
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </>
+            ) : (
               <>
                 {desks && !desks.length && (
                   <EmptyState
@@ -535,59 +647,6 @@ export default function HomeClient() {
                         </Grid>
                       );
                     })}
-                  </Grid>
-                )}
-              </>
-            ) : (
-              <>
-                {isFoldersLoading && <Loader />}
-
-                {(!folders || folders.length === 0) && !isFoldersLoading && (
-                  <EmptyState
-                    onCreate={() => setOpenFolderModal(true)}
-                    title="No folders yet"
-                    description="Organize your decks into folders for better management"
-                    icon={
-                      <FolderIcon
-                        sx={{ fontSize: 80, color: "grey.400", mb: 2 }}
-                      />
-                    }
-                    buttonText="Create First Folder"
-                  />
-                )}
-
-                {folders && folders.length > 0 && (
-                  <Grid container spacing={2}>
-                    {folders.map((folder, index) => (
-                      <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={folder.sub}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.3,
-                            delay: Number(`0.${index + 1}`),
-                          }}
-                        >
-                          <FolderCard
-                            folder={folder}
-                            onClick={() =>
-                              navigate(`/folder/${folder.sub}`, {
-                                state: { folderTitle: folder.title },
-                              })
-                            }
-                            onMove={() =>
-                              setMoveTarget({
-                                type: "folder",
-                                sub: folder.sub,
-                                title: folder.title,
-                                currentLocationSub: null,
-                              })
-                            }
-                            onDelete={() => setDeleteFolderSub(folder.sub)}
-                          />
-                        </motion.div>
-                      </Grid>
-                    ))}
                   </Grid>
                 )}
               </>

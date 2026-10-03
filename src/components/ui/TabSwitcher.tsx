@@ -7,6 +7,7 @@ interface TabsSwitcherProps {
   onChange: (value: number) => void;
 }
 
+/** Tab 0 = Folders, tab 1 = Decks */
 export const TabsSwitcher = ({ activeTab, onChange }: TabsSwitcherProps) => {
   return (
     <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
@@ -17,8 +18,8 @@ export const TabsSwitcher = ({ activeTab, onChange }: TabsSwitcherProps) => {
         centered
       >
         <Tab
-          icon={<GridViewIcon />}
-          label="Decks"
+          icon={<FolderIcon />}
+          label="Folders"
           sx={{
             textTransform: "none",
             fontWeight: 600,
@@ -27,8 +28,8 @@ export const TabsSwitcher = ({ activeTab, onChange }: TabsSwitcherProps) => {
           iconPosition="start"
         />
         <Tab
-          icon={<FolderIcon />}
-          label="Folders"
+          icon={<GridViewIcon />}
+          label="Decks"
           sx={{
             textTransform: "none",
             fontWeight: 600,
