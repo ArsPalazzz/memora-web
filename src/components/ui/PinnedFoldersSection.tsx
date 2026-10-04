@@ -23,12 +23,12 @@ export function PinnedFoldersSection({
   }
 
   return (
-    <Box sx={{ mb: 1.5 }}>
+    <Box sx={{ mb: 1 }}>
       <Typography
         variant="caption"
         color="text.secondary"
         fontWeight={600}
-        sx={{ display: "block", mb: 0.75, letterSpacing: 0.2 }}
+        sx={{ display: "block", mb: 0.5, letterSpacing: 0.2 }}
       >
         Pinned
       </Typography>
@@ -36,11 +36,8 @@ export function PinnedFoldersSection({
       <Box
         sx={{
           display: "flex",
-          gap: 1,
+          gap: 0.75,
           overflowX: "auto",
-          pb: 0.25,
-          mx: -0.5,
-          px: 0.5,
           scrollbarWidth: "none",
           "&::-webkit-scrollbar": { display: "none" },
         }}
@@ -60,19 +57,18 @@ export function PinnedFoldersSection({
             sx={{
               position: "relative",
               flex: "0 0 auto",
-              width: 152,
-              minHeight: 56,
-              px: 1.25,
-              py: 1.15,
-              pr: 4,
-              borderRadius: 2.5,
+              maxWidth: 140,
+              px: 0.75,
+              py: 0.5,
+              pr: 2.75,
+              borderRadius: 1.5,
               bgcolor: "action.hover",
               border: "1px solid",
               borderColor: "divider",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: 1,
+              gap: 0.75,
               transition: "background-color 0.15s ease, border-color 0.15s ease",
               "&:hover": {
                 bgcolor: "action.selected",
@@ -80,12 +76,12 @@ export function PinnedFoldersSection({
               },
             }}
           >
-            <FolderIcon color="primary" sx={{ fontSize: 20, flexShrink: 0 }} />
+            <FolderIcon color="primary" sx={{ fontSize: 16, flexShrink: 0 }} />
             <Typography
-              variant="body2"
+              variant="caption"
               fontWeight={600}
               noWrap
-              sx={{ flex: 1, minWidth: 0 }}
+              sx={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}
             >
               {folder.title}
             </Typography>
@@ -99,14 +95,14 @@ export function PinnedFoldersSection({
               }}
               sx={{
                 position: "absolute",
-                top: 4,
-                right: 4,
-                p: 0.5,
+                top: 2,
+                right: 2,
+                p: 0.25,
                 color: "text.secondary",
                 "&:hover": { color: "primary.main", bgcolor: "transparent" },
               }}
             >
-              <PushPinIcon sx={{ fontSize: 14 }} />
+              <PushPinIcon sx={{ fontSize: 12 }} />
             </IconButton>
           </Box>
         ))}
