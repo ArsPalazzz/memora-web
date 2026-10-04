@@ -5,14 +5,20 @@ export function invalidateUserDaily(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: [USER_DAILY] });
 }
 
-export function invalidateAfterStudySession(queryClient: QueryClient) {
-  invalidateUserDaily(queryClient);
+/** Due / inbox / desk lists — always refresh after any SRS update. */
+export function invalidateReviewCaches(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: [USER_REVIEW_SUMMARY] });
   void queryClient.invalidateQueries({ queryKey: [USER_INBOX_SUMMARY] });
   void queryClient.invalidateQueries({ queryKey: [USER_DESKS] });
 }
 
-export function shouldInvalidateDailyAfterGrade(quality: number, mode: "reveal" | "match") {
+export function invalidateAfterStudySession(queryClient: QueryClient) {
+  invalidateUserDaily(queryClient);
+  invalidateReviewCaches(queryClient);
+}
+
+/** Daily progress only counts Good/Easy (quality >= 3), matching server recordDailyProgress. */
+export function shouldInvalidateDailyAfterGrade(quality: number, _mode: "reveal" | "match") {
   return quality >= 3;
 }
 

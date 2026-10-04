@@ -8,6 +8,7 @@ import { FINISH_GAME_API } from "@/routes/api";
 import { AnswerResult } from "./play.constants";
 import {
   invalidateAfterStudySession,
+  invalidateReviewCaches,
   shouldInvalidateDailyAfterWriteAnswer,
 } from "@/utils/invalidateUserDaily";
 
@@ -72,9 +73,11 @@ export function useWriteModeSession({
       const { sessionId: activeSessionId, result: activeResult, token: accessToken } =
         finishCleanupRef.current;
 
-      if (!activeSessionId || activeResult?.finished || !accessToken) return;
+      if (!activeSessionId) return;
 
       invalidateAfterStudySession(queryClient);
+
+      if (activeResult?.finished || !accessToken) return;
 
       fetch(`/api${FINISH_GAME_API}`, {
         method: "POST",
@@ -134,6 +137,7 @@ export function useWriteModeSession({
       { sessionId, quality },
       {
         onSuccess: () => {
+          invalidateReviewCaches(queryClient);
           goToNextCard();
         },
       }

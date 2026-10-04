@@ -74,6 +74,7 @@ import {
   loadReviewDeskSelection,
   saveReviewDeskSelection,
 } from "@/lib/reviewDeskSelection";
+import { invalidateReviewCaches } from "@/utils/invalidateUserDaily";
 import {
   homeIndexToTab,
   homeTabToIndex,
@@ -195,6 +196,7 @@ export default function HomeClient() {
     },
     onError: (err) => {
       console.warn(err);
+      invalidateReviewCaches(queryClient);
       notifyError(err.message);
     },
   });

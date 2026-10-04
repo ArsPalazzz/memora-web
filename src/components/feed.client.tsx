@@ -46,6 +46,7 @@ import {
   normalizeFeedStudyMode,
 } from "@/constants/studyMode.const";
 import {
+  invalidateReviewCaches,
   invalidateUserDaily,
   shouldInvalidateDailyAfterGrade,
   shouldInvalidateDailyAfterWriteAnswer,
@@ -413,6 +414,7 @@ function FeedSwipePage() {
         )
       );
 
+      invalidateReviewCaches(queryClient);
       if (feedStudyMode === "reveal" && shouldInvalidateDailyAfterGrade(quality, "reveal")) {
         invalidateUserDaily(queryClient);
       }

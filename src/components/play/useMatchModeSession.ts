@@ -10,6 +10,8 @@ import {
 import { FINISH_GAME_API } from "@/routes/api";
 import {
   invalidateAfterStudySession,
+  invalidateReviewCaches,
+  invalidateUserDaily,
   shouldInvalidateDailyAfterGrade,
 } from "@/utils/invalidateUserDaily";
 
@@ -116,9 +118,11 @@ export function useMatchModeSession({
       const { sessionId: activeSessionId, phase: activePhase, token: accessToken } =
         finishCleanupRef.current;
 
-      if (!activeSessionId || activePhase === "grading" || !accessToken) return;
+      if (!activeSessionId) return;
 
       invalidateAfterStudySession(queryClient);
+
+      if (activePhase === "grading" || !accessToken) return;
 
       fetch(`/api${FINISH_GAME_API}`, {
         method: "POST",
@@ -209,8 +213,9 @@ export function useMatchModeSession({
       { sessionId, quality, cardSub: card.sub },
       {
         onSuccess: () => {
+          invalidateReviewCaches(queryClient);
           if (shouldInvalidateDailyAfterGrade(quality, "match")) {
-            invalidateAfterStudySession(queryClient);
+            invalidateUserDaily(queryClient);
           }
 
           const nextIndex = gradingIndex + 1;
