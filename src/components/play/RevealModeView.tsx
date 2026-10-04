@@ -57,7 +57,7 @@ export function RevealModeView({
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                justifyContent: revealed ? "flex-start" : "center",
+                justifyContent: "safe center",
                 textAlign: "center",
                 px: 3,
                 py: 2,
