@@ -63,6 +63,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import ReviewSettingsCardsPerSessionModal from "./modals/ReviewSettings/ReviewSettingsCardsPerSession.modal";
+import ReviewSettingsCardOrientationModal from "./modals/ReviewSettings/ReviewSettingsCardOrientation.modal";
 import { useNotification } from "@/context/NotificationContext";
 
 export default function ProfileClient() {
@@ -120,6 +121,11 @@ export default function ProfileClient() {
     profileInfo.settings.reviewSettings &&
     profileInfo.settings.reviewSettings.cards_per_session;
 
+  const reviewCardOrientation =
+    profileInfo?.settings?.reviewSettings?.card_orientation &&
+    profileInfo.settings.reviewSettings.card_orientation.charAt(0).toUpperCase() +
+      profileInfo.settings.reviewSettings.card_orientation.slice(1);
+
   const settingsItems = [
     {
       key: "themeMode",
@@ -171,6 +177,13 @@ export default function ProfileClient() {
       value: cardsPerSession,
     },
     {
+      key: "reviewCardOrientation",
+      icon: <ScreenRotationIcon sx={{ color: "primary.main", fontSize: 20 }} />,
+      title: "Card orientation",
+      subtitle: "How cards should be displayed in review",
+      value: reviewCardOrientation,
+    },
+    {
       key: "studyModeReview",
       icon: <MenuBookIcon sx={{ color: "primary.main", fontSize: 20 }} />,
       title: "Study mode",
@@ -181,7 +194,11 @@ export default function ProfileClient() {
 
   const updateReviewSettingsMutation = useMutation({
     mutationFn: (payload: {
-      data: { cards_per_session: number; study_mode: StudyMode };
+      data: {
+        cards_per_session: number;
+        study_mode: StudyMode;
+        card_orientation: CARD_ORIENTATION;
+      };
       token: string;
     }) => {
       return call(() =>
@@ -202,6 +219,7 @@ export default function ProfileClient() {
   const onUpdateReviewSubmit = (data: {
     cards_per_session: number;
     study_mode: StudyMode;
+    card_orientation: CARD_ORIENTATION;
   }) => {
     updateReviewSettingsMutation.mutate({ data, token: accessToken! });
   };
@@ -1018,6 +1036,34 @@ export default function ProfileClient() {
               study_mode:
                 profileInfo.settings.reviewSettings.study_mode ??
                 DEFAULT_REVIEW_STUDY_MODE,
+              card_orientation:
+                profileInfo.settings.reviewSettings.card_orientation ??
+                CARD_ORIENTATION.NORMAL,
+            });
+          }}
+        />
+      )}
+
+      {profileInfo && openSheet === "reviewCardOrientation" && (
+        <ReviewSettingsCardOrientationModal
+          setOpenSheet={setOpenSheet}
+          currentValue={
+            profileInfo.settings.reviewSettings.card_orientation ??
+            CARD_ORIENTATION.NORMAL
+          }
+          onClose={(value: CARD_ORIENTATION) => {
+            const current =
+              profileInfo.settings.reviewSettings.card_orientation ??
+              CARD_ORIENTATION.NORMAL;
+
+            if (value === current) return;
+
+            onUpdateReviewSubmit({
+              cards_per_session: profileInfo.settings.reviewSettings.cards_per_session,
+              study_mode:
+                profileInfo.settings.reviewSettings.study_mode ??
+                DEFAULT_REVIEW_STUDY_MODE,
+              card_orientation: value,
             });
           }}
         />
@@ -1063,6 +1109,9 @@ export default function ProfileClient() {
             onUpdateReviewSubmit({
               cards_per_session: profileInfo.settings.reviewSettings.cards_per_session,
               study_mode: value,
+              card_orientation:
+                profileInfo.settings.reviewSettings.card_orientation ??
+                CARD_ORIENTATION.NORMAL,
             });
           }}
         />

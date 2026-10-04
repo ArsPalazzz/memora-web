@@ -163,6 +163,7 @@ export interface UpdateDeskSettingsParams {
 export interface UpdateReviewSettingsParams {
   cards_per_session: number;
   study_mode: StudyMode;
+  card_orientation: CARD_ORIENTATION;
 }
 
 export interface UpdateFeedSettingsParams {

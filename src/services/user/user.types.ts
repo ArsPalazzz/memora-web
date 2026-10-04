@@ -31,6 +31,7 @@ export interface GetMyProfileResponse {
     reviewSettings: {
       cards_per_session: number;
       study_mode: StudyMode;
+      card_orientation: CARD_ORIENTATION;
     };
   };
 }
